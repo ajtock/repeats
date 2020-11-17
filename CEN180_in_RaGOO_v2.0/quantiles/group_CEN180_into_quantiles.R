@@ -8,7 +8,7 @@
 # into quantiles according to decreasing:
 # 1. weighted SNV values relative to a CEN180 consensus for each chromosome (calculated by Piotr)
 # 2. number of CEN180 sequences in a tandem repeat array of >= 2 near-contiguous CEN180 sequences
-#    (<= 10 bp apart), such that Quantile 4 contains only singletons (?)
+#    (<= 10 bp apart) on the same strand, such that Quantile 4 contains only singletons (?)
 # 3. coverage for various data sets (e.g., mean CENH3 ChIP-seq log2(ChIP/input) values)
 
 # Usage:
@@ -35,7 +35,7 @@ colnames(CEN180) <- c("chr", "start0based", "end", "featureID", "wSNV", "strand"
 CEN180 <- CEN180[which(CEN180$chr %in% chrName),]
 
 # Determine if each CEN180 sequence is part of a tandem repeat array
-# of >= 2 near-contiguous CEN180 sequences (<= 10 bp apart)
+# of >= 2 near-contiguous CEN180 sequences (<= 10 bp apart) on the same strand
 # Assign an array ID number to each CEN180 within a tandem repeat array
 # and count the number of tandem repeats within the array
 CEN180$tandem_repeat <- as.logical("")
@@ -92,98 +92,172 @@ for(i in seq_along(chrName)) {
 }
 CEN180 <- CEN180_TR
 
-# Define set of ordering factors to be used for grouping genes into 4 quantiles
-orderingFactor <- colnames(featuresNLR_pop_list[[1]])[c(7:30, 79:103, 109)]
-outDir <- paste0("quantiles_by_", orderingFactor, "/")
-outDir_list <- lapply(seq_along(outDir), function(w) {
-  sapply(seq_along(pop_name), function(x) {
-    paste0(outDir[w], pop_name[x], "/")
-  })
-})
-plotDir_list <- lapply(seq_along(outDir), function(w) {
-  sapply(seq_along(pop_name), function(x) {
-    paste0(outDir_list[[w]][x], "plots/")
-  })
-})
-#sapply(seq_along(outDir), function(w) {
-# system(paste0("[ -d ", outDir[w], " ] || mkdir ", outDir[w]))
-#})
-#sapply(seq_along(outDir), function(w) {
-#  mclapply(seq_along(pop_name), function(x) {
-#    system(paste0("[ -d ", outDir_list[[w]][x], " ] || mkdir ", outDir_list[[w]][x]))
-#  }, mc.cores = length(pop_name), mc.preschedule = F)
-#})
-#sapply(seq_along(outDir), function(w) {
-#  mclapply(seq_along(pop_name), function(x) {
-#    system(paste0("[ -d ", plotDir_list[[w]][x], " ] || mkdir ", plotDir_list[[w]][x]))
-#  }, mc.cores = length(pop_name), mc.preschedule = F)
-#})
+# Calculate mean log2(CENH3 ChIP/input) in CEN180 sequences 
 
-# For each population, divide features into quantiles based on decreasing orderingFactor
-for(x in 1:length(featuresNLR_pop_list)) {
-  print(pop_name[x])
-  NLR_quants <- data.frame(featuresNLR_pop_list[[x]],
-                           NLR_quantile = as.character(""),
-                           stringsAsFactors = F)
-  mclapply(seq_along(orderingFactor), function(w) {
-    print(orderingFactor[w])
-    # Assign 0s to NA values only for coverage data
-    if(grepl("_in_", orderingFactor[w])) {
-      NLR_quants[,which(colnames(NLR_quants) == orderingFactor[w])][which(is.na(NLR_quants[,which(colnames(NLR_quants) == orderingFactor[w])]))] <- 0
-    }
-    if(grepl("all", orderingFactor[w])) {
-    # 2 quantiles for population genetics stats quantiles
-      quantiles <- 2
+# Load feature matrices for CENH3 and input, calculate log2(ChIP/control) coverage
+ChIPNames <- c(
+               "WT_CENH3_Rep1_ChIP_SRR4430537"
+              )
+ChIPNamesDir <- c(
+                  "CENH3_seedlings_Maheshwari_Comai_2017_GenomeRes"
+                 )
+log2ChIPNamesPlot <- c(
+                       "CENH3"
+                      )
+ChIPDirs <- sapply(seq_along(ChIPNamesDir), function(x) {
+  paste0("/home/ajt200/analysis/", ChIPNamesDir[x],
+         "/snakemake_ChIPseq_RaGOO_v2.0/mapped/CEN180profiles/matrices/")
+})
+
+controlNames <- c(
+                  "WT_REC8_Myc_Rep1_input"
+                 )
+controlNamesDir <- c(
+                     "REC8_pooled"
+                    )
+controlNamesPlot <- c(
+                      "Input"
+                     )
+controlDirs <- sapply(seq_along(controlNamesDir), function(x) {
+  paste0("/home/ajt200/analysis/", controlNamesDir[x],
+         "/snakemake_ChIPseq_RaGOO_v2.0/mapped/CEN180profiles/matrices/")
+})
+
+regionBodyLength <- 180
+upstream <- 1000
+downstream <- 1000
+flankName <- "1kb"
+flankNamePlot <- "1 kb"
+binSize <- 10
+binName <- "10bp"
+
+#WT_CENH3_Rep1_ChIP_SRR4430537_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_both_sort_norm_CEN180_in_Chr1_matrix_bin10bp_flank1kb.tab
+#WT_CENH3_Rep1_ChIP_SRR4430537_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_both_sort_norm_CEN180_in_Chr1_ranLoc_matrix_bin10bp_flank1kb.tab
+## ChIP
+# feature
+ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
+  lapply(seq_along(chrName), function(y) {
+    as.matrix(read.table(paste0(ChIPDirs[x],
+                                ChIPNames[x],
+                                "_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_both_sort_norm_CEN180_in_",
+                                chrName[y], "_matrix_bin", binName, "_flank", flankName, ".tab"),
+                         header = F, skip = 3))
+  })
+}, mc.cores = length(ChIPNames))
+# If features from all 5 chromosomes are to be analysed,
+# concatenate the 5 corresponding feature coverage matrices
+ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
+  if(length(chrName) == 5) {
+    do.call(rbind, ChIP_featureMats[[x]])
+  } else {
+    ChIP_featureMats[[x]][[1]]
+  }
+}, mc.cores = length(ChIP_featureMats))
+
+## control
+# feature
+control_featureMats <- mclapply(seq_along(controlNames), function(x) {
+  lapply(seq_along(chrName), function(y) {
+    as.matrix(read.table(paste0(controlDirs[x],
+                                controlNames[x],
+                                "_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_both_sort_norm_CEN180_in_",
+                                chrName[y], "_matrix_bin", binName, "_flank", flankName, ".tab"),
+                         header = F, skip = 3))
+  })
+}, mc.cores = length(controlNames))
+# If features from all 5 chromosomes are to be analysed,
+# concatenate the 5 corresponding feature coverage matrices
+control_featureMats <- mclapply(seq_along(control_featureMats), function(x) {
+  if(length(chrName) == 5) {
+    do.call(rbind, control_featureMats[[x]])
+  } else {
+    control_featureMats[[x]][[1]]
+  }
+}, mc.cores = length(control_featureMats))
+
+# Calculate log2(ChIP/control) coverage values
+log2ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
+  log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[1]]+1))
+}, mc.cores = length(ChIP_featureMats))
+
+# Calculate mean log2(ChIP/control) coverage values for each CEN180 sequence
+log2ChIP_featureMats_bodies <- lapply(seq_along(log2ChIP_featureMats), function(x) {
+  log2ChIP_featureMats[[x]][,((upstream/binSize)+1):((upstream+regionBodyLength)/binSize)]
+})
+log2ChIP_featureMats_bodiesRowMeans <- lapply(seq_along(log2ChIP_featureMats_bodies), function(x) {
+  rowMeans(log2ChIP_featureMats_bodies[[x]], na.rm = T)
+})
+
+# Add mean coverage values to CEN180 dataframe
+CEN180 <- data.frame(CEN180,
+                     CENH3_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[1]])
+
+# Define set of ordering factors to be used for grouping genes into quantiles
+orderingFactor <- colnames(CEN180)[c(5, 9, 10)]
+outDir <- paste0("quantiles_by_", orderingFactor, "/",
+                 paste0(chrName, collapse = "_"), "/")
+plotDir <- paste0(outDir, "/plots/")
+sapply(seq_along(outDir), function(w) {
+ system(paste0("[ -d ", outDir[w], " ] || mkdir -p ", outDir[w]))
+})
+sapply(seq_along(plotDir), function(w) {
+ system(paste0("[ -d ", plotDir[w], " ] || mkdir -p ", plotDir[w]))
+})
+
+# Group features into quantiles according to decreasing orderingFactor
+mclapply(seq_along(orderingFactor), function(w) {
+  CEN180_DF <- data.frame(CEN180,
+                          quantile = as.character(""))
+  print(orderingFactor[w])
+  # Assign 0s to NA values only for coverage data
+  if(grepl("_in_", orderingFactor[w])) {
+    CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])][
+      which(is.na(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]))] <- 0
+  }
+  quantiles <- 4
+  quantilesStats <- data.frame()
+  for(k in 1:quantiles) {
+    # First quantile should span 1 to greater than, e.g., 0.75 proportions of features
+    if(k < quantiles) {
+      CEN180_DF[ !is.na(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) &
+                 percent_rank(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) <= 1-((k-1)/quantiles) &
+                 percent_rank(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) >  1-(k/quantiles), ]$quantile <- paste0("Quantile ", k)
     } else {
-    # 4 quantiles for coverage and cM/Mb quantiles
-     quantiles <- 4
+    # Final quantile should span 0 to, e.g., 0.25 proportions of features
+      CEN180_DF[ !is.na(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) &
+                 percent_rank(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) <= 1-((k-1)/quantiles) &
+                 percent_rank(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) >= 1-(k/quantiles), ]$quantile <- paste0("Quantile ", k)
     }
-    quantilesStats <- data.frame()
-    for(k in 1:quantiles) {
-      # First quantile should span 1 to greater than, e.g., 0.75 proportions of features
-      if(k < quantiles) {
-        NLR_quants[ !is.na(NLR_quants[,which(colnames(NLR_quants) == orderingFactor[w])]) &
-                    percent_rank(NLR_quants[,which(colnames(NLR_quants) == orderingFactor[w])]) <= 1-((k-1)/quantiles) &
-                    percent_rank(NLR_quants[,which(colnames(NLR_quants) == orderingFactor[w])]) >  1-(k/quantiles), ]$NLR_quantile <- paste0("Quantile ", k)
-      } else {
-      # Final quantile should span 0 to, e.g., 0.25 proportions of features
-        NLR_quants[ !is.na(NLR_quants[,which(colnames(NLR_quants) == orderingFactor[w])]) &
-                    percent_rank(NLR_quants[,which(colnames(NLR_quants) == orderingFactor[w])]) <= 1-((k-1)/quantiles) &
-                    percent_rank(NLR_quants[,which(colnames(NLR_quants) == orderingFactor[w])]) >= 1-(k/quantiles), ]$NLR_quantile <- paste0("Quantile ", k)
-      }
-      write.table(NLR_quants[NLR_quants$NLR_quantile == paste0("Quantile ", k),],
-                  file = paste0(outDir_list[[w]][x],
-                                "quantile", k, "_of_", quantiles,
-                                "_by_", orderingFactor[w],
-                                "_of_NLR_genes_in_",
-                                paste0(substring(chrName, first = 10, last = 16),
-                                       collapse = "_"), "_",
-                                substring(chrName[1][1], first = 18), "_", pop_name[x], ".txt"),
-                  quote = FALSE, sep = "\t", row.names = FALSE)
-      stats <- data.frame(quantile = as.integer(k),
-                          n = as.integer(dim(NLR_quants[NLR_quants$NLR_quantile == paste0("Quantile ", k),])[1]),
-                          mean_width = as.integer(round(mean(NLR_quants[NLR_quants$NLR_quantile == paste0("Quantile ", k),]$width, na.rm = T))),
-                          total_width = as.integer(sum(NLR_quants[NLR_quants$NLR_quantile == paste0("Quantile ", k),]$width, na.rm = T)),
-                          mean_orderingFactor = as.numeric(mean(NLR_quants[NLR_quants$NLR_quantile == paste0("Quantile ", k),][,which(colnames(NLR_quants) == orderingFactor[w])], na.rm = T)))
-      quantilesStats <- rbind(quantilesStats, stats)
-    }
-    write.table(quantilesStats,
-                file = paste0(outDir_list[[w]][x],
-                              "summary_", quantiles, "quantiles",
+    write.table(CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),],
+                file = paste0(outDir[w],
+                              "quantile", k, "_of_", quantiles,
                               "_by_", orderingFactor[w],
-                              "_of_NLR_genes_in_",
-                              paste0(substring(chrName, first = 10, last = 16),
-                                     collapse = "_"), "_",
-                              substring(chrName[1][1], first = 18), "_", pop_name[x], ".txt"),
+                              "_of_CEN180_in_RaGOO_v2.0_",
+                              paste0(chrName, collapse = "_"), ".tsv"),
                 quote = FALSE, sep = "\t", row.names = FALSE)
-    write.table(NLR_quants,
-                file = paste0(outDir_list[[w]][x],
-                              "features_", quantiles, "quantiles",
-                              "_by_", orderingFactor[w],
-                              "_of_NLR_genes_in_",
-                              paste0(substring(chrName, first = 10, last = 16),
-                                     collapse = "_"), "_",
-                              substring(chrName[1][1], first = 18), "_", pop_name[x], ".txt"),
-                quote = FALSE, sep = "\t", row.names = FALSE)
-  }, mc.cores = length(orderingFactor), mc.preschedule = F)
-}
+    stats <- data.frame(quantile = as.integer(k),
+                        n = as.integer(dim(CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),])[1]),
+                        mean_width = as.integer(round(mean(
+                          CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),]$end -
+                          CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),]$start0based, na.rm = T))),
+                        total_width = as.integer(sum(
+                          CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),]$end -
+                          CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),]$start0based, na.rm = T)),
+                        mean_orderingFactor = as.numeric(mean(CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),][,which(colnames(CEN180_DF) == orderingFactor[w])], na.rm = T)))
+    quantilesStats <- rbind(quantilesStats, stats)
+  }
+  write.table(quantilesStats,
+              file = paste0(outDir[w],
+                            "summary_", quantiles, "quantiles",
+                            "_by_", orderingFactor[w],
+                            "_of_CEN180_in_RaGOO_v2.0_",
+                            paste0(chrName, collapse = "_"), ".tsv"),
+              quote = FALSE, sep = "\t", row.names = FALSE)
+  write.table(CEN180_DF,
+              file = paste0(outDir[w],
+                            "features_", quantiles, "quantiles",
+                            "_by_", orderingFactor[w],
+                            "_of_CEN180_in_RaGOO_v2.0_",
+                            paste0(chrName, collapse = "_"), ".tsv"),
+              quote = FALSE, sep = "\t", row.names = FALSE)
+}, mc.cores = length(orderingFactor), mc.preschedule = F)
