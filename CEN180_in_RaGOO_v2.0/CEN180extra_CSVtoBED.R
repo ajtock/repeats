@@ -22,8 +22,11 @@ regionGR <- GRanges(seqnames = chrs,
                     ranges = IRanges(start = 1,
                                      end = chrLens),
                     strand = "*")
-
-tab <- read.csv("CEN180extra.csv", header = T)
+if(length(chrName) == 5) {
+  tab <- read.csv("CEN180extra.csv", header = T)
+} else {
+ tab <- read.csv("CEN180extra_perChrSNV.csv", header = T)
+}
 tab$strand <- gsub(pattern = "plus", replacement = "+",
                    x = tab$strand, ignore.case = T)
 tab$strand <- gsub(pattern = "minus", replacement = "-",
@@ -84,6 +87,9 @@ for(i in 1:length(chrs)) {
                          strand = strand(CEN180ChrGR))
   ranLocGR <- append(ranLocGR, ranLocChrGR)
 }
+stopifnot(identical(width(ranLocGR), width(CEN180GR)))
+stopifnot(identical(as.character(seqnames(ranLocGR)), as.character(seqnames(CEN180GR))))
+stopifnot(identical(strand(ranLocGR), strand(CEN180GR)))
 ranLoc_bed <- data.frame(chr = as.character(seqnames(ranLocGR)),
                          start = start(ranLocGR)-1,
                          end = end(ranLocGR),
