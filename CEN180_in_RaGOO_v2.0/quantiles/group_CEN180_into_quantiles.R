@@ -7,8 +7,8 @@
 # Group CEN180 sequences (identified by Piotr and Ian) in RaGOO v2.0 (assembled by Matt)
 # into quantiles according to decreasing:
 # 1. weighted SNV values relative to a CEN180 consensus for each chromosome (calculated by Piotr)
-# 2. number of CEN180 sequences in a tandem repeat array of >= 2 contiguous CEN180 sequences,
-#    such that Quantile 4 contains only singletons (?)
+# 2. number of CEN180 sequences in a tandem repeat array of >= 2 near-contiguous CEN180 sequences
+#    (<= 10 bp apart), such that Quantile 4 contains only singletons (?)
 # 3. coverage for various data sets (e.g., mean CENH3 ChIP-seq log2(ChIP/input) values)
 
 # Usage:
@@ -35,7 +35,7 @@ colnames(CEN180) <- c("chr", "start0based", "end", "featureID", "wSNV", "strand"
 CEN180 <- CEN180[which(CEN180$chr %in% chrName),]
 
 # Determine if each CEN180 sequence is part of a tandem repeat array
-# of >= 2 contiguous CEN180 sequences
+# of >= 2 near-contiguous CEN180 sequences (<= 10 bp apart)
 # Assign an array ID number to each CEN180 within a tandem repeat array
 # and count the number of tandem repeats within the array
 CEN180$tandem_repeat <- as.logical("")
@@ -46,7 +46,7 @@ for(i in seq_along(chrName)) {
   print(chrName[i])
   CEN180_chr <- CEN180[CEN180$chr == chrName[i],]
   # First CEN180 in a chromosome
-  if ( CEN180_chr[2,]$start0based - CEN180_chr[1,]$end < 1 &
+  if ( CEN180_chr[2,]$start0based - CEN180_chr[1,]$end < 9 &
        CEN180_chr[2,]$strand == CEN180_chr[1,]$strand ) {
     CEN180_chr[1,]$tandem_repeat <- TRUE
     CEN180_chr[1,]$array <- as.integer(1)
@@ -55,11 +55,11 @@ for(i in seq_along(chrName)) {
   }
   # All other CEN180 sequences in a chromosome, except the last
   for(j in 2:(dim(CEN180_chr)[1]-1)) {
-    if ( CEN180_chr[j,]$start0based - CEN180_chr[j-1,]$end < 1 &
+    if ( CEN180_chr[j,]$start0based - CEN180_chr[j-1,]$end < 9 &
          CEN180_chr[j,]$strand == CEN180_chr[j-1,]$strand ) {
       CEN180_chr[j,]$tandem_repeat <- TRUE
       CEN180_chr[j,]$array <- as.integer(CEN180_chr[j-1,]$array)
-    } else if ( CEN180_chr[j+1,]$start0based - CEN180_chr[j,]$end < 1 &
+    } else if ( CEN180_chr[j+1,]$start0based - CEN180_chr[j,]$end < 9 &
                 CEN180_chr[j+1,]$strand == CEN180_chr[j,]$strand ) {
       CEN180_chr[j,]$tandem_repeat <- TRUE
       if ( length(CEN180_chr[!is.na(CEN180_chr$array),]$array) > 0 ) {
@@ -73,30 +73,24 @@ for(i in seq_along(chrName)) {
     }
   }
   # Last CEN180 in a chromosome
-  if ( CEN180_chr[dim(CEN180_chr)[1],]$start0based - CEN180_chr[dim(CEN180_chr)[1]-1,]$end < 1 &
+  if ( CEN180_chr[dim(CEN180_chr)[1],]$start0based - CEN180_chr[dim(CEN180_chr)[1]-1,]$end < 9 &
        CEN180_chr[dim(CEN180_chr)[1],]$strand == CEN180_chr[dim(CEN180_chr)[1]-1,]$strand ) {
     CEN180_chr[dim(CEN180_chr)[1],]$tandem_repeat <- TRUE
     CEN180_chr[dim(CEN180_chr)[1],]$array <- as.integer(CEN180_chr[dim(CEN180_chr)[1]-1,]$array)
   } else {
     CEN180_chr[dim(CEN180_chr)[1],]$tandem_repeat <- FALSE
   }
-
-    for(z in 1:dim(featuresNLR_chr)[1]) {
-      if( featuresNLR_chr[z,]$clustered == "yes" ) {
-        featuresNLR_chr[z,]$cluster_members <- as.integer(dim(featuresNLR_chr[which(featuresNLR_chr$cluster == featuresNLR_chr[z,]$cluster),])[1])
-      } else {
-        featuresNLR_chr[z,]$cluster_members <- as.integer(1)
-      }
+  for(k in 1:dim(CEN180_chr)[1]) {
+    if ( CEN180_chr[k,]$tandem_repeat == TRUE ) {
+      CEN180_chr[k,]$array_size <- as.integer(dim(CEN180_chr[
+                                     which(CEN180_chr$array == CEN180_chr[k,]$array),])[1])
+    } else {
+      CEN180_chr[k,]$array_size <- as.integer(1)
     }
-    featuresNLR_cl <- rbind(featuresNLR_cl, featuresNLR_chr)
-  }
-  featuresNLR <- featuresNLR_cl
-  stopifnot(identical(NLR_repres_motifs$featureID, featuresNLR$featureID))
-  stopifnot(identical(NLR_concat_motifs$featureID, featuresNLR$featureID))
-  featuresNLR$repres_motifs <- NLR_repres_motifs$motifs
-  featuresNLR$concat_motifs <- NLR_concat_motifs$motifs
-  return(featuresNLR)
-}, mc.cores = length(pop_name), mc.preschedule = F)
+  } 
+  CEN180_TR <- rbind(CEN180_TR, CEN180_chr)
+}
+CEN180 <- CEN180_TR
 
 # Define set of ordering factors to be used for grouping genes into 4 quantiles
 orderingFactor <- colnames(featuresNLR_pop_list[[1]])[c(7:30, 79:103, 109)]
