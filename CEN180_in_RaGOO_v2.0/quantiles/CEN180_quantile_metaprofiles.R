@@ -265,8 +265,8 @@ controlNames <- c(
                   "input_set1",
                   "input_set2",
                   "input_set3",
-                  "input_set4",
-                  "input_set5"
+                  "input_set5",
+                  "input_set7"
                  )
 controlNamesDir <- c(
                      "REC8_pooled/snakemake_ChIPseq_RaGOO_v2.0",
@@ -300,8 +300,8 @@ ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
                          header = F, skip = 3))
   })
 }, mc.cores = length(ChIPNames))
-# If features from all 5 chromosomes are to be analysed,
-# concatenate the 5 corresponding feature coverage matrices
+# If features from multiple chromosomes are to be analysed,
+# concatenate the corresponding feature coverage matrices
 ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
   if(length(chrName) > 1) {
     do.call(rbind, ChIP_featureMats[[x]])
@@ -321,8 +321,8 @@ control_featureMats <- mclapply(seq_along(controlNames), function(x) {
                          header = F, skip = 3))
   })
 }, mc.cores = length(controlNames))
-# If features from all 5 chromosomes are to be analysed,
-# concatenate the 5 corresponding feature coverage matrices
+# If features from multiple chromosomes are to be analysed,
+# concatenate the corresponding feature coverage matrices
 control_featureMats <- mclapply(seq_along(control_featureMats), function(x) {
   if(length(chrName) > 1) {
     do.call(rbind, control_featureMats[[x]])
@@ -331,42 +331,19 @@ control_featureMats <- mclapply(seq_along(control_featureMats), function(x) {
   }
 }, mc.cores = length(control_featureMats))
 
-
 ## ChIP
-# feature
-ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
-  lapply(seq_along(chrName), function(y) {
-    as.matrix(read.table(paste0(ChIPDirs[x],
-                                ChIPNames[x],
-                                "_MappedOn_wheat_v1.0_lowXM_", align, "_sort_norm_",
-                                dirName, "_peaks_in_", chrName[y], "_matrix_bin", binSize,
-                                "bp_flank", sub(" ", "", flankName), ".tab"),
-                         header = F, skip = 3))
-  })
-}, mc.cores = length(ChIPNames))
-# If features from multiple subgenomes and/or compartments are to be analysed,
-# concatenate the corresponding feature coverage matrices
-ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
-  if(length(chrName) > 1) {
-    do.call(rbind, ChIP_featureMats[[x]])
-  } else {
-    ChIP_featureMats[[x]][[1]]
-  }
-}, mc.cores = length(ChIP_featureMats))
-
 # ranLoc
 ChIP_ranLocMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(ChIPDirs[x],
                                 ChIPNames[x],
-                                "_MappedOn_wheat_v1.0_lowXM_", align, "_sort_norm_",
-                                dirName, "_peaks_in_", chrName[y], "_ranLoc_matrix_bin", binSize,
-                                "bp_flank", sub(" ", "", flankName), ".tab"),
+                                "_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_both_sort_norm_CEN180_in_",
+                                chrName[y], "_ranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
 }, mc.cores = length(ChIPNames))
-# If features from multiple subgenomes and/or compartments are to be analysed,
-# concatenate the corresponding feature coverage matrices
+# If ranLocs from multiple chromosomes are to be analysed,
+# concatenate the corresponding ranLoc coverage matrices
 ChIP_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
   if(length(chrName) > 1) {
     do.call(rbind, ChIP_ranLocMats[[x]])
@@ -376,40 +353,18 @@ ChIP_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
 }, mc.cores = length(ChIP_ranLocMats))
 
 ## control
-# feature
-control_featureMats <- mclapply(seq_along(controlNames), function(x) {
-  lapply(seq_along(chrName), function(y) {
-    as.matrix(read.table(paste0(controlDirs[x],
-                                controlNames[x],
-                                "_MappedOn_wheat_v1.0_lowXM_", align, "_sort_norm_",
-                                dirName, "_peaks_in_", chrName[y], "_matrix_bin", binSize,
-                                "bp_flank", sub(" ", "", flankName), ".tab"),
-                         header = F, skip = 3))
-  })
-}, mc.cores = length(controlNames))
-# If features from multiple subgenomes and/or compartments are to be analysed,
-# concatenate the corresponding feature coverage matrices
-control_featureMats <- mclapply(seq_along(control_featureMats), function(x) {
-  if(length(chrName) > 1) {
-    do.call(rbind, control_featureMats[[x]])
-  } else {
-    control_featureMats[[x]][[1]]
-  }
-}, mc.cores = length(control_featureMats))
-
 # ranLoc
 control_ranLocMats <- mclapply(seq_along(controlNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(controlDirs[x],
                                 controlNames[x],
-                                "_MappedOn_wheat_v1.0_lowXM_", align, "_sort_norm_",
-                                dirName, "_peaks_in_", chrName[y], "_ranLoc_matrix_bin", binSize,
-                                "bp_flank", sub(" ", "", flankName), ".tab"),
+                                "_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_both_sort_norm_CEN180_in_",
+                                chrName[y], "_ranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
 }, mc.cores = length(controlNames))
-# If features from multiple subgenomes and/or compartments are to be analysed,
-# concatenate the corresponding feature coverage matrices
+# If ranLocs from multiple chromosomes are to be analysed,
+# concatenate the corresponding ranLoc coverage matrices
 control_ranLocMats <- mclapply(seq_along(control_ranLocMats), function(x) {
   if(length(chrName) > 1) {
     do.call(rbind, control_ranLocMats[[x]])
@@ -418,47 +373,68 @@ control_ranLocMats <- mclapply(seq_along(control_ranLocMats), function(x) {
   }
 }, mc.cores = length(control_ranLocMats))
 
-# Conditionally calculate log2(ChIP/input) or log2(ChIP/MNase)
+# Conditionally calculate log2(ChIP/control)
 # for each matrix depending on library
+# feature
 log2ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
-  if(ChIPNames[x] %in% c(
-                         "ASY1_CS_Rep1_ChIP",
-                         "DMC1_Rep1_ChIP",
-                         "H3K4me3_ChIP_SRR6350668",
-                         "H3K27me3_ChIP_SRR6350666",
-                         "H3K36me3_ChIP_SRR6350670",
-                         "H3K9ac_ChIP_SRR6350667",
-                         "H3K4me1_Rep1_ChIP_SRR8126618",
-                         "H3K27ac_Rep1_ChIP_SRR8126621"
-                        )) {
-    print(paste0(ChIPNames[x], " was sonication-based; using ", controlNames[1], " for log2((ChIP+1)/(control+1)) calculation"))
-    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[1]]+1))
-  } else {
-    print(paste0(ChIPNames[x], " was MNase-based; using ", controlNames[2], " for log2((ChIP+1)/(control+1)) calculation"))
+  if ( grepl("MNase", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((MNase+1)/(gDNA+1)) calculation"))
     log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[2]]+1))
+  } else if ( grepl("SPO11oligos", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[3], " for log2((SPO11-1-oligos+1)/(gDNA+1)) calculation"))
+    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[3]]+1))
+  } else if ( grepl("set1", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[4], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[4]]+1))
+  } else if ( grepl("set2", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[5], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[5]]+1))
+  } else if ( grepl("set3", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[6], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[6]]+1))
+  } else if ( grepl("set5", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[7], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[7]]+1))
+  } else if ( grepl("set7", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[8], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[8]]+1))
+  } else {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[1]]+1))
   }
 }, mc.cores = length(ChIP_featureMats))
 
-# Conditionally calculate log2(ChIP/input) or log2(ChIP/MNase)
+# Conditionally calculate log2(ChIP/control)
 # for each matrix depending on library
+# ranLoc
 log2ChIP_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
-  if(ChIPNames[x] %in% c(
-                         "ASY1_CS_Rep1_ChIP",
-                         "DMC1_Rep1_ChIP",
-                         "H3K4me3_ChIP_SRR6350668",
-                         "H3K27me3_ChIP_SRR6350666",
-                         "H3K36me3_ChIP_SRR6350670",
-                         "H3K9ac_ChIP_SRR6350667",
-                         "H3K4me1_Rep1_ChIP_SRR8126618",
-                         "H3K27ac_Rep1_ChIP_SRR8126621"
-                        )) {
-    print(paste0(ChIPNames[x], " was sonication-based; using ", controlNames[1], " for log2((ChIP+1)/(control+1)) calculation"))
-    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[1]]+1))
-  } else {
-    print(paste0(ChIPNames[x], " was MNase-based; using ", controlNames[2], " for log2((ChIP+1)/(control+1)) calculation"))
+  if ( grepl("MNase", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((MNase+1)/(gDNA+1)) calculation"))
     log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[2]]+1))
+  } else if ( grepl("SPO11oligos", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[3], " for log2((SPO11-1-oligos+1)/(gDNA+1)) calculation"))
+    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[3]]+1))
+  } else if ( grepl("set1", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[4], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[4]]+1))
+  } else if ( grepl("set2", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[5], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[5]]+1))
+  } else if ( grepl("set3", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[6], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[6]]+1))
+  } else if ( grepl("set5", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[7], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[7]]+1))
+  } else if ( grepl("set7", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[8], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[8]]+1))
+  } else {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[1]]+1))
   }
 }, mc.cores = length(ChIP_ranLocMats))
+
 
 # Add column names
 for(x in seq_along(log2ChIP_featureMats)) {
