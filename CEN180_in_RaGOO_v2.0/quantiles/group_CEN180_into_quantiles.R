@@ -12,16 +12,30 @@
 # 3. coverage for various data sets (e.g., mean CENH3 ChIP-seq log2(ChIP/input) values)
 
 # Usage:
-# /applications/R/R-3.5.0/bin/Rscript group_CEN180_into_quantiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 4
+# /applications/R/R-3.5.0/bin/Rscript group_CEN180_into_quantiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 4 180 1000 1kb '1 kb' 10 10bp
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
 #quantiles <- 4
+#regionBodyLength <- 180
+#upstream <- 1000
+#downstream <- 1000
+#flankName <- "1kb"
+#flankNamePlot <- "1 kb"
+#binSize <- 10
+#binName <- "10bp"
 
 args <- commandArgs(trailingOnly = T)
 chrName <- unlist(strsplit(args[1],
                            split = ","))
 quantiles <- as.integer(args[2])
+regionBodyLength <- as.integer(args[3])
+upstream <- as.integer(args[4])
+downstream <- as.integer(args[4])
+flankName <- args[5]
+flankNamePlot <- args[6]
+binSize <- as.integer(args[7])
+binName <- args[8]
 
 options(stringsAsFactors = F)
 library(parallel)
@@ -139,14 +153,6 @@ controlDirs <- sapply(seq_along(controlNamesDir), function(x) {
   paste0("/home/ajt200/analysis/", controlNamesDir[x],
          "/snakemake_ChIPseq_RaGOO_v2.0/mapped/CEN180profiles/matrices/")
 })
-
-regionBodyLength <- 180
-upstream <- 1000
-downstream <- 1000
-flankName <- "1kb"
-flankNamePlot <- "1 kb"
-binSize <- 10
-binName <- "10bp"
 
 ## ChIP
 # feature
