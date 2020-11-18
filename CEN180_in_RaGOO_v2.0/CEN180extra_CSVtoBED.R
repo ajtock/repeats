@@ -6,10 +6,12 @@
 # Usage:
 # ./CEN180extra_CSVtoBED.R 'Chr1,Chr2,Chr3,Chr4,Chr5'
 
-#chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5", split = ","))
+#chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
+#                           split = ","))
 
 args <- commandArgs(trailingOnly = T)
-chrName <- unlist(strsplit(args[1], split = ","))
+chrName <- unlist(strsplit(args[1],
+                           split = ","))
 
 options(stringsAsFactors = F)
 library(GenomicRanges)
@@ -22,23 +24,37 @@ regionGR <- GRanges(seqnames = chrs,
                     ranges = IRanges(start = 1,
                                      end = chrLens),
                     strand = "*")
-if(length(chrName) == 5) {
-  tab <- read.csv("CEN180extra.csv", header = T)
-} else {
- tab <- read.csv("CEN180extra_perChrSNV.csv", header = T)
-}
+
+# Load table of CEN180 sequence coordinates
+# with weighted SNVs vs consensus
+tab <- read.csv("CEN180extra_perChrSNV.csv", header = T)
 tab$strand <- gsub(pattern = "plus", replacement = "+",
                    x = tab$strand, ignore.case = T)
 tab$strand <- gsub(pattern = "minus", replacement = "-",
                    x = tab$strand, ignore.case = T)
 tab$chromosome <- gsub(pattern = "^", replacement = "Chr",
                        x = tab$chromosome)
-CEN180GR <- GRanges(seqnames = tab$chromosome,
-                    ranges = IRanges(start = tab$start,
-                                     end = tab$end),
-                    strand = tab$strand,
-                    index = tab$index,
-                    weightedSNV = tab$weightedSNV)
+if(length(chrName) == 1) {
+  CEN180GR <- GRanges(seqnames = tab$chromosome,
+                      ranges = IRanges(start = tab$start,
+                                       end = tab$end),
+                      strand = tab$strand,
+                      index = tab$index,
+                      weightedSNV = tab[,which(colnames(tab) ==
+                                        paste0("SNV", substr(chrName, start = 4, stop = 4)))])
+} else {
+  CEN180GR <- GRanges(seqnames = tab$chromosome,
+                      ranges = IRanges(start = tab$start,
+                                       end = tab$end),
+                      strand = tab$strand,
+                      index = tab$index,
+                      weightedSNV = tab$SNVall)
+}
+# Sort GRanges object (by chromosome, strand, start coordinate and, finally, end coordinate)
+# Sorting data.frame by multiple columns (including that correspodning to strand)
+# would be more complicated
+# Necessary to include sorting by strand because intervening CEN180 sequences on the
+# opposite strand would otherwise result in non-detection of tandem repeats on the same strand
 CEN180GR <- sort(CEN180GR)
 CEN180GR <- CEN180GR[seqnames(CEN180GR) %in% chrName]
 CEN180_bed <- data.frame(chr = as.character(seqnames(CEN180GR)),
