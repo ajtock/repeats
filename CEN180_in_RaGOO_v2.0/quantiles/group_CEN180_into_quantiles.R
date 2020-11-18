@@ -31,10 +31,25 @@ library(dplyr)
 CEN180 <- read.table(paste0("CEN180_in_RaGOO_v2.0_",
                             paste0(chrName, collapse = "_"), ".bed"),
                      header = F)
-colnames(CEN180) <- c("chr", "start0based", "end", "featureID", "wSNV", "strand")
+# Convert 0-based start coordinates (BED)
+# into 1-based start coordinates (for output as TSV below)
+CEN180[,2] <- CEN180[,2]+1
+colnames(CEN180) <- c("chr", "start", "end", "featureID", "wSNV", "strand")
 
 # Get CEN180 coordinates within chrName
 CEN180 <- CEN180[which(CEN180$chr %in% chrName),]
+
+# Load table of coordinates for random loci in BED format
+ranLoc <- read.table(paste0("CEN180_in_RaGOO_v2.0_",
+                            paste0(chrName, collapse = "_"), "_randomLoci.bed"),
+                     header = F)
+# Convert 0-based start coordinates (BED)
+# into 1-based start coordinates (for output as TSV below)
+ranLoc[,2] <- ranLoc[,2]+1
+colnames(ranLoc) <- c("chr", "start", "end", "featureID", "wSNV", "strand")
+
+# Get ranLoc coordinates within chrName
+ranLoc <- ranLoc[which(ranLoc$chr %in% chrName),]
 
 # Determine if each CEN180 sequence is part of a tandem repeat array
 # of >= 2 near-contiguous CEN180 sequences (<= 10 bp apart) on the same strand
@@ -48,7 +63,7 @@ for(i in seq_along(chrName)) {
   print(chrName[i])
   CEN180_chr <- CEN180[CEN180$chr == chrName[i],]
   # First CEN180 in a chromosome
-  if ( CEN180_chr[2,]$start0based - CEN180_chr[1,]$end < 9 &
+  if ( CEN180_chr[2,]$start - CEN180_chr[1,]$end <= 10 &
        CEN180_chr[2,]$strand == CEN180_chr[1,]$strand ) {
     CEN180_chr[1,]$tandem_repeat <- TRUE
     CEN180_chr[1,]$array <- as.integer(1)
@@ -57,11 +72,11 @@ for(i in seq_along(chrName)) {
   }
   # All other CEN180 sequences in a chromosome, except the last
   for(j in 2:(dim(CEN180_chr)[1]-1)) {
-    if ( CEN180_chr[j,]$start0based - CEN180_chr[j-1,]$end < 9 &
+    if ( CEN180_chr[j,]$start - CEN180_chr[j-1,]$end <= 10 &
          CEN180_chr[j,]$strand == CEN180_chr[j-1,]$strand ) {
       CEN180_chr[j,]$tandem_repeat <- TRUE
       CEN180_chr[j,]$array <- as.integer(CEN180_chr[j-1,]$array)
-    } else if ( CEN180_chr[j+1,]$start0based - CEN180_chr[j,]$end < 9 &
+    } else if ( CEN180_chr[j+1,]$start - CEN180_chr[j,]$end <= 10 &
                 CEN180_chr[j+1,]$strand == CEN180_chr[j,]$strand ) {
       CEN180_chr[j,]$tandem_repeat <- TRUE
       if ( length(CEN180_chr[!is.na(CEN180_chr$array),]$array) > 0 ) {
@@ -75,7 +90,7 @@ for(i in seq_along(chrName)) {
     }
   }
   # Last CEN180 in a chromosome
-  if ( CEN180_chr[dim(CEN180_chr)[1],]$start0based - CEN180_chr[dim(CEN180_chr)[1]-1,]$end < 9 &
+  if ( CEN180_chr[dim(CEN180_chr)[1],]$start - CEN180_chr[dim(CEN180_chr)[1]-1,]$end <= 10 &
        CEN180_chr[dim(CEN180_chr)[1],]$strand == CEN180_chr[dim(CEN180_chr)[1]-1,]$strand ) {
     CEN180_chr[dim(CEN180_chr)[1],]$tandem_repeat <- TRUE
     CEN180_chr[dim(CEN180_chr)[1],]$array <- as.integer(CEN180_chr[dim(CEN180_chr)[1]-1,]$array)
@@ -133,8 +148,6 @@ flankNamePlot <- "1 kb"
 binSize <- 10
 binName <- "10bp"
 
-#WT_CENH3_Rep1_ChIP_SRR4430537_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_both_sort_norm_CEN180_in_Chr1_matrix_bin10bp_flank1kb.tab
-#WT_CENH3_Rep1_ChIP_SRR4430537_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_both_sort_norm_CEN180_in_Chr1_ranLoc_matrix_bin10bp_flank1kb.tab
 ## ChIP
 # feature
 ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
@@ -218,18 +231,29 @@ mclapply(seq_along(orderingFactor), function(w) {
     CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])][
       which(is.na(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]))] <- 0
   }
+  if(orderingFactor[w] == "array_size" & length(chrName) == 1) {
+    quantiles <- 2
+  }
   quantilesStats <- data.frame()
   for(k in 1:quantiles) {
     # First quantile should span 1 to greater than, e.g., 0.75 proportions of features
     if(k < quantiles) {
       CEN180_DF[ !is.na(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) &
-                 percent_rank(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) <= 1-((k-1)/quantiles) &
-                 percent_rank(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) >  1-(k/quantiles), ]$quantile <- paste0("Quantile ", k)
+                 rank(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) /
+                 length(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) <=
+                 1-((k-1)/quantiles) &
+                 rank(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) /
+                 length(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) >
+                 1-(k/quantiles), ]$quantile <- paste0("Quantile ", k)
     } else {
     # Final quantile should span 0 to, e.g., 0.25 proportions of features
       CEN180_DF[ !is.na(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) &
-                 percent_rank(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) <= 1-((k-1)/quantiles) &
-                 percent_rank(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) >= 1-(k/quantiles), ]$quantile <- paste0("Quantile ", k)
+                 rank(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) /
+                 length(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) <=
+                 1-((k-1)/quantiles) &
+                 rank(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) /
+                 length(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]) >=
+                 1-(k/quantiles), ]$quantile <- paste0("Quantile ", k)
     }
     write.table(CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),],
                 file = paste0(outDir[w],
@@ -241,11 +265,11 @@ mclapply(seq_along(orderingFactor), function(w) {
     stats <- data.frame(quantile = as.integer(k),
                         n = as.integer(dim(CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),])[1]),
                         mean_width = as.integer(round(mean(
-                          CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),]$end -
-                          CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),]$start0based, na.rm = T))),
+                          (CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),]$end -
+                           CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),]$start) + 1, na.rm = T))),
                         total_width = as.integer(sum(
-                          CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),]$end -
-                          CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),]$start0based, na.rm = T)),
+                          (CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),]$end -
+                           CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),]$start) + 1, na.rm = T)),
                         mean_orderingFactor = as.numeric(mean(CEN180_DF[CEN180_DF$quantile == paste0("Quantile ", k),][,which(colnames(CEN180_DF) == orderingFactor[w])], na.rm = T)))
     quantilesStats <- rbind(quantilesStats, stats)
   }
@@ -262,5 +286,23 @@ mclapply(seq_along(orderingFactor), function(w) {
                             "_by_", orderingFactor[w],
                             "_of_CEN180_in_RaGOO_v2.0_",
                             paste0(chrName, collapse = "_"), ".tsv"),
+              quote = FALSE, sep = "\t", row.names = FALSE)
+
+  # Divide ranLoc into quantiles based on feature quantile indices
+  ranLoc_DF <- data.frame(ranLoc,
+                          random = as.character(""))
+  # Get row indices for each feature quantile
+  quantileIndices <- lapply(1:quantiles, function(k) {
+    which(CEN180_DF$quantile == paste0("Quantile ", k))
+  })
+  for(k in 1:quantiles) {
+    ranLoc_DF[quantileIndices[[k]],]$random <- paste0("Random ", k)
+  }
+  write.table(ranLoc_DF,
+              file = paste0(outDir[w],
+                            "features_", quantiles, "quantiles",
+                            "_by_", orderingFactor[w],
+                            "_of_CEN180_in_RaGOO_v2.0_",
+                            paste0(chrName, collapse = "_"), "_ranLoc.tsv"),
               quote = FALSE, sep = "\t", row.names = FALSE)
 }, mc.cores = length(orderingFactor), mc.preschedule = F)
