@@ -8,18 +8,20 @@
 # into quantiles according to decreasing:
 # 1. weighted SNV values relative to a CEN180 consensus for each chromosome (calculated by Piotr)
 # 2. number of CEN180 sequences in a tandem repeat array of >= 2 near-contiguous CEN180 sequences
-#    (<= 10 bp apart) on the same strand, such that Quantile 4 contains only singletons (?)
+#    (<= 10 bp apart) on the same strand
 # 3. coverage for various data sets (e.g., mean CENH3 ChIP-seq log2(ChIP/input) values)
 
 # Usage:
-# /applications/R/R-3.5.0/bin/Rscript group_CEN180_into_quantiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5'
+# /applications/R/R-3.5.0/bin/Rscript group_CEN180_into_quantiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 4
 
-chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
-                           split = ","))
+#chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
+#                           split = ","))
+#quantiles <- 4
 
 args <- commandArgs(trailingOnly = T)
 chrName <- unlist(strsplit(args[1],
                            split = ","))
+quantiles <- as.integer(args[2])
 
 options(stringsAsFactors = F)
 library(parallel)
@@ -206,6 +208,8 @@ sapply(seq_along(plotDir), function(w) {
 
 # Group features into quantiles according to decreasing orderingFactor
 mclapply(seq_along(orderingFactor), function(w) {
+  # Note that CEN180_DF could be defined on
+  # line above or below mclapply(), with the same results
   CEN180_DF <- data.frame(CEN180,
                           quantile = as.character(""))
   print(orderingFactor[w])
@@ -214,7 +218,6 @@ mclapply(seq_along(orderingFactor), function(w) {
     CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])][
       which(is.na(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]))] <- 0
   }
-  quantiles <- 4
   quantilesStats <- data.frame()
   for(k in 1:quantiles) {
     # First quantile should span 1 to greater than, e.g., 0.75 proportions of features
