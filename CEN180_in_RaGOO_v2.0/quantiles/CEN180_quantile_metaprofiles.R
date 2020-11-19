@@ -155,6 +155,8 @@ lapply(seq_along(1:quantiles), function(k) {
 # and sort by decreasing log2mat1RegionRowMeans
 ChIPNames <- c(
                "WT_CENH3_Rep1_ChIP_SRR4430537",
+               "LoCENH3_Rep1_ChIP_SRR4430543",
+               "ZmCENH3_Rep1_ChIP_SRR4430549",
                "WT_MNase_Rep1",
                "WT_REC8_HA_Rep2_ChIP",
                "WT_ASY1_Rep1_ChIP",
@@ -195,7 +197,7 @@ ChIPNames <- c(
 #               "HTB4_ChIP_set7"
               )
 ChIPNamesDir <- c(
-                  "CENH3_seedlings_Maheshwari_Comai_2017_GenomeRes/snakemake_ChIPseq_RaGOO_v2.0",
+                  rep("CENH3_seedlings_Maheshwari_Comai_2017_GenomeRes/snakemake_ChIPseq_RaGOO_v2.0", 3),
                   "150701_Kyuha_MNase/WT/snakemake_ChIPseq_RaGOO_v2.0",
                   "REC8_pooled/snakemake_ChIPseq_RaGOO_v2.0",
                   "20190722_cal66_Athaliana_ChIPseq_ASY1/fastq_pooled/snakemake_ChIPseq_RaGOO_v2.0",
@@ -210,6 +212,8 @@ ChIPNamesDir <- c(
                  )
 log2ChIPNamesPlot <- c(
                        "CENH3",
+                       "LoCENH3",
+                       "ZmCENH3",
                        "MNase",
                        "REC8-HA",
                        "ASY1",
@@ -295,7 +299,7 @@ ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(ChIPDirs[x],
                                 ChIPNames[x],
-                                "_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_both_sort_norm_CEN180_in_",
+                                "_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_", align, "_sort_norm_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
@@ -316,7 +320,7 @@ control_featureMats <- mclapply(seq_along(controlNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(controlDirs[x],
                                 controlNames[x],
-                                "_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_both_sort_norm_CEN180_in_",
+                                "_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_", align, "_sort_norm_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
@@ -337,7 +341,7 @@ ChIP_ranLocMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(ChIPDirs[x],
                                 ChIPNames[x],
-                                "_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_both_sort_norm_CEN180_in_",
+                                "_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_", align, "_sort_norm_CEN180_in_",
                                 chrName[y], "_ranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
@@ -358,7 +362,7 @@ control_ranLocMats <- mclapply(seq_along(controlNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(controlDirs[x],
                                 controlNames[x],
-                                "_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_both_sort_norm_CEN180_in_",
+                                "_MappedOn_Athaliana_ONT_RaGOO_v2.0_lowXM_", align, "_sort_norm_CEN180_in_",
                                 chrName[y], "_ranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
@@ -784,7 +788,7 @@ ggsave(paste0(plotDir,
               "log2ChIPcontrol_avgProfiles_around_", quantiles, "quantiles",
                "_by_", orderingFactor,
                "_of_CEN180_in_RaGOO_v2.0_",
-               paste0(chrName, collapse = "_"), ".pdf"),
+               paste0(chrName, collapse = "_"), "_", align, ".pdf"),
        plot = ggObjGA_combined,
        height = 6.5*length(c(log2ChIPNamesPlot)), width = 21, limitsize = FALSE)
 
