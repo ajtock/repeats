@@ -214,7 +214,9 @@ CEN180 <- data.frame(CEN180,
                      CENH3_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[1]])
 
 # Define set of ordering factors to be used for grouping genes into quantiles
-orderingFactor <- colnames(CEN180)[c(5, 9, 10)]
+#orderingFactor <- colnames(CEN180)[c(5, 9, 10)]
+# array_size only
+orderingFactor <- colnames(CEN180)[c(9)]
 outDir <- paste0("quantiles_by_", orderingFactor, "/",
                  paste0(chrName, collapse = "_"), "/")
 plotDir <- paste0(outDir, "/plots/")
@@ -237,9 +239,11 @@ mclapply(seq_along(orderingFactor), function(w) {
     CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])][
       which(is.na(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]))] <- 0
   }
-  if(orderingFactor[w] == "array_size" & length(chrName) == 1) {
+  if(orderingFactor[w] == "array_size" & chrName == "Chr1") {
     quantiles <- 2
-  }
+  } else if(orderingFactor[w] == "array_size" & chrName == "Chr2") {
+    quantiles <- 3
+  } 
   quantilesStats <- data.frame()
   for(k in 1:quantiles) {
     # First quantile should span 1 to greater than, e.g., 0.75 proportions of features
