@@ -4,55 +4,34 @@
 # of given statistic for each group of CEN180 sequences
 
 # Usage:
-#/applications/R/R-3.5.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R wSNV 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV CEN180 4 array_size "Array size" 0.99 0.2 '%1.1f' '%1.1f' '%1.2f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R wSNV SNVs 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%2.0f' '%3.1f' '%2.0f' 0.65
 
-#libName <- "wSNV"
-#dirName <- "DMC1"
-#featureName <- unlist(strsplit("genes_in_Agenome_genomewide,genes_in_Bgenome_genomewide,genes_in_Dgenome_genomewide",
-#                               split = ","))
-#region <- "genes"
+#parName <- "wSNV"
+#parNamePlot <- "SNVs"
+#chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
+#                           split = ","))
+#orderingFactor <- "wSNV"
 #quantiles <- 4
-#orderingFactor <- "TajimaD_all"
-#orderingFactor <- "RozasR2_all"
-#orderingFactorName <- bquote("Tajima's" ~ italic("D"))
-#orderingFactorName <- bquote("Rozas'" ~ italic("R")[2])
-#orderingFactorName <- unlist(strsplit("Tajima's D", split = " "))
-#orderingFactorName <- unlist(strsplit("Rozas' R 2", split = " "))
 #densityProp <- 0.99
 #maxDensityPlus <- 0.2
 #xDec <- "%1.1f"
 #yDec <- "%1.1f"
 #yDec2 <- "%1.2f"
-#legendLabX <- "0.65"
+#legendLabX <- 0.65
 
 args <- commandArgs(trailingOnly = T)
-libName <- args[1]
-dirName <- args[2]
-featureName <- unlist(strsplit(args[3],
-                               split = ","))
-region <- args[4]
+parName <- args[1]
+parNamePlot <- args[2]
+chrName <- unlist(strsplit(args[3],
+                           split = ","))
+orderingFactor <- args[4]
 quantiles <- as.numeric(args[5])
-orderingFactor <- args[6]
-orderingFactorName <- unlist(strsplit(args[7], split = " "))
-if(grepl("Tajima", paste(orderingFactorName, collapse = " "))) {
-  orderingFactorName <- bquote(.(orderingFactorName[1]) ~ italic(.(orderingFactorName[2])))
-} else if(grepl("Rozas' Z", paste(orderingFactorName, collapse = " "))) {
-  orderingFactorName <- bquote(.(orderingFactorName[1]) ~ italic(.(orderingFactorName[2])))
-} else if(grepl("Rozas' R", paste(orderingFactorName, collapse = " "))) {
-  orderingFactorName <- bquote(.(orderingFactorName[1]) ~ italic(.(orderingFactorName[2]))[.(as.numeric(orderingFactorName[3]))])
-} else if(grepl("Hudson's R", paste(orderingFactorName, collapse = " "))) {
-  orderingFactorName <- bquote(.(orderingFactorName[1]) ~ italic(.(orderingFactorName[2])[.(as.character(orderingFactorName[3]))]))
-} else if(grepl("Diversity", paste(orderingFactorName, collapse = " "))) {
-  orderingFactorName <- bquote(.(orderingFactorName[1]) ~ "(" * .(as.symbol(orderingFactorName[2])) * ")")
-} else {
-  orderingFactorName <- paste(orderingFactorName, collapse = " ")
-}
-densityProp <- as.numeric(args[8])
-maxDensityPlus <- as.numeric(args[9])
-xDec <- as.character(args[10])
-yDec <- as.character(args[11])
-yDec2 <- as.character(args[12])
-legendLabX <- as.numeric(args[13])
+densityProp <- as.numeric(args[6])
+maxDensityPlus <- as.numeric(args[7])
+xDec <- as.character(args[8])
+yDec <- as.character(args[9])
+yDec2 <- as.character(args[10])
+legendLabX <- as.numeric(args[11])
 
 library(parallel)
 library(tidyr)
@@ -64,56 +43,24 @@ library(grid)
 library(gridExtra)
 library(extrafont)
 
-pop_name <- c(
-              "Africa",
-              "MiddleEast",
-              "Asia",
-              "FormerSU",
-              "EasternEurope",
-              "WesternEurope",
-              "NorthAmerica",
-              "CentralAmerica",
-              "SouthAmerica",
-              "Oceania"
-             )
-
-pop_name_plot <- c(
-                   "Africa",
-                   "Middle East",
-                   "Asia",
-                   "Former SU",
-                   "Eastern Europe",
-                   "Western Europe",
-                   "North America",
-                   "Central America",
-                   "South America",
-                   "Oceania"
-                  )
-
-if(libName %in% "cMMb") {
-  outDir <- paste0("quantiles_by_", sub("_\\w+", "", libName), "/")
-} else {
-  outDir <- paste0("quantiles_by_", sub("_\\w+", "", libName),
-                   "_in_", region, "/")
-}
-outDir <- sapply(seq_along(pop_name), function(x) {
-  paste0(outDir, pop_name[x], "/")
-})
+outDir <- paste0("quantiles_by_", orderingFactor, "/",
+                 paste0(chrName, collapse = "_"), "/")
 plotDir <- paste0(outDir, "plots/")
+system(paste0("[ -d ", outDir, " ] || mkdir -p ", outDir))
+system(paste0("[ -d ", plotDir, " ] || mkdir -p ", plotDir))
 
 # Define plot titles
-if(libName %in% "cMMb") {
-  featureNamePlot <- paste0("cM/Mb ",
-                            substr(featureName[1], start = 1, stop = 4),
-                            " quantiles")
-} else {
-  featureNamePlot <- paste0(sub("_\\w+", "", libName), " ",
-                            substr(featureName[1], start = 1, stop = 4),
-                            " quantiles (", region, ")")
+if(grepl("_in_", orderingFactor)) {
+  featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                            sub("_in_\\w+", "", orderingFactor), " quantiles")
+} else if(grepl("SNV", orderingFactor)) {
+  featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                            "SNV quantiles")
+} else if(orderingFactor == "array_size") {
+  featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                            "array-size quantiles")
 }
-ranFeatNamePlot <- paste0("Random ",
-                          substr(featureName[1], start = 1, stop = 4),
-                          " quantiles")
+ranFeatNamePlot <- "Random quantiles"
 
 # Define quantile colours
 quantileColours <- c("red", "purple", "blue", "navy")
@@ -127,49 +74,32 @@ makeTransparent <- function(thisColour, alpha = 250)
 }
 quantileColours <- makeTransparent(quantileColours)
 
-# Genomic definitions
-chrs <- paste0(rep("chr", 21), rep(1:7, 3),
-               c(rep("A", 7), rep("B", 7), rep("D", 7)))
-
 # Load table of features grouped into quantiles
-mclapply(seq_along(pop_name), function(x) {
-if(libName %in% "cMMb") {
-  featuresDF <- read.table(paste0(outDir[x], "features_", quantiles, "quantiles",
-                                  "_by_", libName, "_of_",
-                                  substring(featureName[1][1], first = 1, last = 5), "_in_",
-                                  paste0(substring(featureName, first = 10, last = 16),
-                                         collapse = "_"), "_",
-                                  substring(featureName[1][1], first = 18), "_", pop_name[x], ".txt"),
-                           header = T, sep = "\t")
-} else {
-  featuresDF <- read.table(paste0(outDir[x], "features_", quantiles, "quantiles",
-                                  "_by_", sub("_\\w+", "", libName), "_in_",
-                                  region, "_of_",
-                                  substring(featureName[1][1], first = 1, last = 5), "_in_",
-                                  paste0(substring(featureName, first = 10, last = 16),
-                                         collapse = "_"), "_",
-                                  substring(featureName[1][1], first = 18), "_", pop_name[x], ".txt"),
-                           header = T, sep = "\t")
-}
+featuresDF <- read.table(paste0(outDir,
+                                "features_", quantiles, "quantiles",
+                                "_by_", orderingFactor,
+                                "_of_CEN180_in_RaGOO_v2.0_",
+                                paste0(chrName, collapse = "_"), ".tsv"),
+                         header = T, sep = "\t", row.names = NULL)
 
 # Load features to confirm feature (row) ordering in "featuresDF" is the same
 # as in "features" (which was used for generating the coverage matrices)
-features <- lapply(seq_along(featureName), function(x) {
-  read.table(paste0("/home/ajt200/analysis/wheat/annotation/221118_download/iwgsc_refseqv1.1_genes_2017July06/IWGSC_v1.1_HC_20170706_representative_mRNA_in_",
-                    paste0(substring(featureName[x], first = 10, last = 16),
-                           collapse = "_"), "_",
-                    substring(featureName[1][1], first = 18), ".gff3"),
+features <- lapply(seq_along(chrName), function(y) {
+  read.table(paste0("CEN180_in_RaGOO_v2.0_",
+                    chrName[y], ".bed"),
              header = F)
 })
-# If features from all 3 subgenomes are to be analysed,
-# concatenate the 3 corresponding feature data.frames
-if(length(featureName) == 3) {
- features <- do.call(rbind, features)
+# If features from multiple subgenomes and/or compartments are to be analysed,
+# concatenate the corresponding feature data.frames
+if(length(chrName) > 1) {
+  features <- do.call(rbind, features)
 } else {
- features <- features[[1]]
+  features <- features[[1]]
 }
+colnames(features) <- c("chr", "start", "end", "featureID", "wSNV", "strand")
 stopifnot(identical(as.character(featuresDF$featureID),
-                    as.character(features$V9)))
+                    as.character(features$featureID)))
+rm(features); gc()
 
 # Get row indices for each feature quantile
 quantileIndices <- lapply(1:quantiles, function(k) {
@@ -186,26 +116,26 @@ selectRandomFeatures <- function(features, n) {
 }
 
 # Define seed so that random selections are reproducible
-set.seed(453838430)
+set.seed(93750174)
 
 # Divide features into random sets of equal number,
-# with the same number of genes per chromosome as
-# above-defined libName-defined feature quantiles
+# with the same number of CEN180s per chromosome as
+# above-defined orderingFactor-defined feature quantiles
 randomPCIndices <- lapply(1:quantiles, function(k) {
   randomPCIndicesk <- NULL
-  for(i in 1:length(chrs)) {
-    randomPCfeatureskChr <- selectRandomFeatures(features = featuresDF[featuresDF$seqnames == chrs[i],],
+  for(i in 1:length(chrName)) {
+    randomPCfeatureskChr <- selectRandomFeatures(features = featuresDF[featuresDF$chr == chrName[i],],
                                                  n = dim(featuresDF[featuresDF$quantile == paste0("Quantile ", k) &
-                                                                    featuresDF$seqnames == chrs[i],])[1])
+                                                                    featuresDF$chr == chrName[i],])[1])
     randomPCIndicesk <- c(randomPCIndicesk, as.integer(rownames(randomPCfeatureskChr)))
   }
   randomPCIndicesk
 })
 # Confirm per-chromosome feature numbers are the same for quantiles and random groupings
 lapply(seq_along(1:quantiles), function(k) {
-  sapply(seq_along(chrs), function(x) {
-    if(!identical(dim(featuresDF[randomPCIndices[[k]],][featuresDF[randomPCIndices[[k]],]$seqnames == chrs[x],]),
-                  dim(featuresDF[quantileIndices[[k]],][featuresDF[quantileIndices[[k]],]$seqnames == chrs[x],])))     {
+  sapply(seq_along(chrName), function(x) {
+    if(!identical(dim(featuresDF[randomPCIndices[[k]],][featuresDF[randomPCIndices[[k]],]$chr == chrName[x],]),
+                  dim(featuresDF[quantileIndices[[k]],][featuresDF[quantileIndices[[k]],]$chr == chrName[x],])))    {
       stop("Quantile features and random features do not consist of the same number of features per chromosome")
     }
   })
@@ -224,10 +154,10 @@ for(k in 1:quantiles) {
 # Calculate means, SDs, SEMs and 95% CIs
 # and create dataframe of summary statistics for plotting
 featuresDF_quantileMean <- sapply(1:quantiles, function(k) {
-  mean(featuresDF[featuresDF$quantile == paste0("Quantile ", k),][,colnames(featuresDF) == orderingFactor,], na.rm = T)
+  mean(featuresDF[featuresDF$quantile == paste0("Quantile ", k),][,colnames(featuresDF) == parName,], na.rm = T)
 })
 featuresDF_quantileSD <- sapply(1:quantiles, function(k) {
-  sd(featuresDF[featuresDF$quantile == paste0("Quantile ", k),][,colnames(featuresDF) == orderingFactor,], na.rm = T)
+  sd(featuresDF[featuresDF$quantile == paste0("Quantile ", k),][,colnames(featuresDF) == parName,], na.rm = T)
 })
 featuresDF_quantileSEM <- sapply(1:quantiles, function(k) {
   featuresDF_quantileSD[k] / sqrt( (dim(featuresDF[featuresDF$quantile == paste0("Quantile ", k),])[1] - 1) )
@@ -251,10 +181,10 @@ featuresDF_summary_stats <- data.frame(quantile = paste0("Quantile ", 1:quantile
                                        stringsAsFactors = F)
 
 ranFeatsDF_randomMean <- sapply(1:quantiles, function(k) {
-  mean(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),][,colnames(ranFeatsDF) == orderingFactor,], na.rm = T)
+  mean(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),][,colnames(ranFeatsDF) == parName,], na.rm = T)
 })
 ranFeatsDF_randomSD <- sapply(1:quantiles, function(k) {
-  sd(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),][,colnames(ranFeatsDF) == orderingFactor,], na.rm = T)
+  sd(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),][,colnames(ranFeatsDF) == parName,], na.rm = T)
 })
 ranFeatsDF_randomSEM <- sapply(1:quantiles, function(k) {
   ranFeatsDF_randomSD[k] / sqrt( (dim(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),])[1] - 1) )
@@ -279,25 +209,25 @@ ranFeatsDF_summary_stats <- data.frame(random = paste0("Random ", 1:quantiles),
 summary_stats_min <- min(c(featuresDF_summary_stats$CIlower, ranFeatsDF_summary_stats$CIlower), na.rm = T)
 summary_stats_max <- max(c(featuresDF_summary_stats$CIupper, ranFeatsDF_summary_stats$CIupper), na.rm = T)
 
-featuresDF <- featuresDF[which(featuresDF[,which(colnames(featuresDF) == orderingFactor)] <=
-                               quantile(featuresDF[,which(colnames(featuresDF) == orderingFactor)],
+featuresDF <- featuresDF[which(featuresDF[,which(colnames(featuresDF) == parName)] <=
+                               quantile(featuresDF[,which(colnames(featuresDF) == parName)],
                                         probs = densityProp, na.rm = T)),]
-ranFeatsDF <- ranFeatsDF[which(ranFeatsDF[,which(colnames(ranFeatsDF) == orderingFactor)] <=
-                               quantile(ranFeatsDF[,which(colnames(ranFeatsDF) == orderingFactor)],
+ranFeatsDF <- ranFeatsDF[which(ranFeatsDF[,which(colnames(ranFeatsDF) == parName)] <=
+                               quantile(ranFeatsDF[,which(colnames(ranFeatsDF) == parName)],
                                         probs = densityProp, na.rm = T)),]
-xmin <- min(c(featuresDF[,which(colnames(featuresDF) == orderingFactor)]),
+xmin <- min(c(featuresDF[,which(colnames(featuresDF) == parName)]),
               na.rm = T)
-xmax <- max(c(featuresDF[,which(colnames(featuresDF) == orderingFactor)]),
+xmax <- max(c(featuresDF[,which(colnames(featuresDF) == parName)]),
               na.rm = T)
 minDensity <- 0
-maxDensity <- max(density(featuresDF[featuresDF$quantile == "Quantile 4",][,which(colnames(featuresDF) == orderingFactor)],
+maxDensity <- max(density(featuresDF[featuresDF$quantile == "Quantile 4",][,which(colnames(featuresDF) == parName)],
                           na.rm = T)$y)+maxDensityPlus
 maxDensity <- max(
   c(
     sapply(1:quantiles, function(k) {
-      max(c(max(density(featuresDF[featuresDF$quantile == paste0("Quantile ", k),][,which(colnames(featuresDF) == orderingFactor)],
+      max(c(max(density(featuresDF[featuresDF$quantile == paste0("Quantile ", k),][,which(colnames(featuresDF) == parName)],
                         na.rm = T)$y),
-            max(density(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),][,which(colnames(featuresDF) == orderingFactor)],
+            max(density(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),][,which(colnames(featuresDF) == parName)],
                         na.rm = T)$y)))
      })
    )
@@ -315,7 +245,7 @@ legendLabs_ranFeat <- lapply(1:quantiles, function(x) {
                     gp = gpar(col = quantileColours[x], fontsize = 22)))
 })
 
-# Population genetics statistic density plot function
+# Parameter density plot function
 popgen_stats_plotFun <- function(lociDF,
                                  parameter,
                                  parameterLab,
@@ -395,57 +325,42 @@ popgen_stats_meanCIs <- function(dataFrame,
 }
 
 ggObjGA_feature <- popgen_stats_plotFun(lociDF = featuresDF[grepl("Quantile ", featuresDF$quantile),],
-                                        parameter = orderingFactor,
-                                        parameterLab = bquote(.(orderingFactorName) ~ "(" * .(pop_name_plot[x]) * ")"),
+                                        parameter = parName,
+                                        parameterLab = bquote(.(parNamePlot)),
                                         featureGroup = "quantile", 
                                         featureNamePlot = featureNamePlot,
                                         legendLabs = legendLabs_feature,
                                         quantileColours = quantileColours
                                        )
 ggObjGA_ranFeat <- popgen_stats_plotFun(lociDF = ranFeatsDF[grepl("Random ", ranFeatsDF$random),],
-                                        parameter = orderingFactor,
-                                        parameterLab = bquote(.(orderingFactorName) ~ "(" * .(pop_name_plot[x]) * ")"),
+                                        parameter = parName,
+                                        parameterLab = bquote(.(parNamePlot)),
                                         featureGroup = "random", 
                                         featureNamePlot = ranFeatNamePlot,
                                         legendLabs = legendLabs_ranFeat,
                                         quantileColours = quantileColours
                                        )
 ggObjGA_feature_mean <- popgen_stats_meanCIs(dataFrame = featuresDF_summary_stats,
-                                        parameterLab = bquote(.(orderingFactorName) ~ "(" * .(pop_name_plot[x]) * ")"),
-                                        featureGroup = "quantile",
-                                        featureNamePlot = featureNamePlot,
-                                        quantileColours = quantileColours
-                                       )
+                                             parameterLab = bquote(.(parNamePlot)),
+                                             featureGroup = "quantile",
+                                             featureNamePlot = featureNamePlot,
+                                             quantileColours = quantileColours
+                                            )
 ggObjGA_ranFeat_mean <- popgen_stats_meanCIs(dataFrame = ranFeatsDF_summary_stats,
-                                        parameterLab = bquote(.(orderingFactorName) ~ "(" * .(pop_name_plot[x]) * ")"),
-                                        featureGroup = "random",
-                                        featureNamePlot = ranFeatNamePlot,
-                                        quantileColours = quantileColours
-                                       )
+                                             parameterLab = bquote(.(parNamePlot)),
+                                             featureGroup = "random",
+                                             featureNamePlot = ranFeatNamePlot,
+                                             quantileColours = quantileColours
+                                            )
 ggObjGA_combined <- grid.arrange(ggObjGA_feature,
                                  ggObjGA_feature_mean,
                                  ggObjGA_ranFeat,
                                  ggObjGA_ranFeat_mean,
                                  ncol = 2, as.table = F)
-if(libName %in% "cMMb") {
-  ggsave(paste0(plotDir[x],
-                orderingFactor, "_densityProp", densityProp, "_around_", quantiles, "quantiles",
-                "_by_", libName, "_of_",
-                substring(featureName[1][1], first = 1, last = 5), "_in_",
-                paste0(substring(featureName, first = 10, last = 16),
-                       collapse = "_"), "_",
-                substring(featureName[1][1], first = 18), "_", pop_name[x], ".pdf"),
-         plot = ggObjGA_combined,
-         height = 13, width = 14)
-} else {  
-  ggsave(paste0(plotDir[x],
-                orderingFactor, "_densityProp", densityProp, "_around_", quantiles, "quantiles",
-                "_by_log2_", libName, "_control_in_", region, "_of_",
-                substring(featureName[1][1], first = 1, last = 5), "_in_",
-                paste0(substring(featureName, first = 10, last = 16),
-                       collapse = "_"), "_",
-                substring(featureName[1][1], first = 18), "_", pop_name[x], ".pdf"),
-         plot = ggObjGA_combined,
-         height = 13, width = 14)
-}
-}, mc.cores = length(pop_name), mc.preschedule = F)
+ggsave(paste0(plotDir,
+              parName, "_densityProp", densityProp, "_around_", quantiles, "quantiles",
+              "_by_", orderingFactor,
+              "_of_CEN180_in_RaGOO_v2.0_",
+              paste0(chrName, collapse = "_"), ".pdf"),
+       plot = ggObjGA_combined,
+       height = 13, width = 14)
