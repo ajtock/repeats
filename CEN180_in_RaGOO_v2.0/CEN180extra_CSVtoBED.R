@@ -1,7 +1,9 @@
 #!/applications/R/R-3.5.0/bin/Rscript
 
 # Convert CEN180 sequence coordinates identified in RaGOO v2.0
-# from CSV (1-based start coordinates) to BED format (0-based start coordinates)
+# from CSV (1-based start coordinates) into BED format (0-based start coordinates)
+# Convert coordinates corresponding to the intervening sequences between CEN180
+# sequences from CSV into BED format
 
 # Usage:
 # ./CEN180extra_CSVtoBED.R 'Chr1,Chr2,Chr3,Chr4,Chr5'
@@ -115,4 +117,47 @@ ranLoc_bed <- data.frame(chr = as.character(seqnames(ranLocGR)),
 write.table(ranLoc_bed,
             file = paste0("CEN180_in_RaGOO_v2.0_",
                           paste0(chrName, collapse = "_"), "_randomLoci.bed"),
+            quote = F, sep = "\t", row.names = F, col.names = F)
+
+# Load table of gaps in CEN180 sequence coordinates
+# Load table of coordinates corresponding to the intervening sequences between CEN180 sequences
+gap <- read.csv("inter_CEN180_centromeric_seqs.csv", header = T)
+gap$chr <- gsub(pattern = "^", replacement = "Chr",
+                x = gap$chr)
+colnames(gap)[2] <- "start"
+colnames(gap)[3] <- "end"
+CENgapGR <- GRanges()
+for(i in 1:length(chrs)) {
+  CEN180ChrGR <- CEN180GR[seqnames(CEN180GR) == chrs[i]]
+  gapChr <- gap[gap$chr == chrs[i],] 
+  CENgapChrStart <- unlist(lapply(1:dim(gapChr)[1], function(x) {
+                             seq(from = gapChr$start[x],
+                                 to = gapChr$end[x],
+                                 by = median(width(CEN180ChrGR)))
+                           }))
+  CENgapChrGR <- GRanges(seqnames = chrs[i],
+                         ranges = IRanges(start = CENgapChrStart,
+                                          width = median(width(CEN180ChrGR))),
+                         strand = "*")
+  CENgapGR <- append(CENgapGR, CENgapChrGR)
+}
+CENgapGR_CEN180GR_ol <- findOverlaps(query = CEN180GR,
+                                     subject = CENgapGR,
+                                     type = "any",
+                                     select = "all",
+                                     ignore.strand = TRUE)
+CENgapGR <- CENgapGR[-subjectHits(CENgapGR_CEN180GR_ol)]
+
+# Sort GRanges object (by chromosome, strand, start coordinate and, finally, end coordinate)
+CENgapGR <- sort(CENgapGR)
+CENgapGR <- CENgapGR[seqnames(CENgapGR) %in% chrName]
+CENgap_bed <- data.frame(chr = as.character(seqnames(CENgapGR)),
+                         start = start(CENgapGR)-1,
+                         end = end(CENgapGR),
+                         name = 1:length(CENgapGR),
+                         score = "NA",
+                         strand = strand(CENgapGR))
+write.table(CENgap_bed,
+            file = paste0("CENgap_in_RaGOO_v2.0_",
+                          paste0(chrName, collapse = "_"), ".bed"),
             quote = F, sep = "\t", row.names = F, col.names = F)
