@@ -9,7 +9,7 @@
 # for all CEN180 sequences and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENAthila_CENgap_metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 11000 1000 1kb 10 '10bp' 1000 '1kb' '0.02,0.96'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENAthila_CENgap_metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 11000 1000 1kb 10 1000 '10bp' '1kb' '0.02,0.96'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -520,7 +520,7 @@ log2ChIP_mats <- mclapply(seq_along(log2ChIP_featureMats), function(x) {
        log2ChIP_featureMats[[x]],
        # gaps
        log2ChIP_gapMats[[x]],
-       # ranLocs
+       # Athilas
        log2ChIP_AthilaMats[[x]]
       ) 
 }, mc.cores = length(log2ChIP_featureMats))
@@ -600,7 +600,7 @@ ymin_list_log2ChIP <- lapply(seq_along(summaryDFfeature_log2ChIP), function(x) {
 })
 ymax_list_log2ChIP <- lapply(seq_along(summaryDFfeature_log2ChIP), function(x) {
   max(c(summaryDFfeature_log2ChIP[[x]][[1]]$CI_upper,
-        summaryDFfeature_log2ChIP[[x]][[2]]$CI_lower,
+        summaryDFfeature_log2ChIP[[x]][[2]]$CI_upper,
         summaryDFfeature_log2ChIP[[x]][[3]]$CI_upper))
 })
 
@@ -889,7 +889,7 @@ ymin_list_control <- lapply(seq_along(summaryDFfeature_control), function(x) {
 })
 ymax_list_control <- lapply(seq_along(summaryDFfeature_control), function(x) {
   max(c(summaryDFfeature_control[[x]][[1]]$CI_upper,
-        summaryDFfeature_control[[x]][[2]]$CI_lower,
+        summaryDFfeature_control[[x]][[2]]$CI_upper,
         summaryDFfeature_control[[x]][[3]]$CI_upper))
 })
 
@@ -1179,7 +1179,7 @@ ymin_list_ChIP <- lapply(seq_along(summaryDFfeature_ChIP), function(x) {
 })
 ymax_list_ChIP <- lapply(seq_along(summaryDFfeature_ChIP), function(x) {
   max(c(summaryDFfeature_ChIP[[x]][[1]]$CI_upper,
-        summaryDFfeature_ChIP[[x]][[2]]$CI_lower,
+        summaryDFfeature_ChIP[[x]][[2]]$CI_upper,
         summaryDFfeature_ChIP[[x]][[3]]$CI_upper))
 })
 
@@ -1560,7 +1560,7 @@ ymin_list_DNAmeth <- lapply(seq_along(summaryDFfeature_DNAmeth), function(x) {
 })
 ymax_list_DNAmeth <- lapply(seq_along(summaryDFfeature_DNAmeth), function(x) {
   max(c(summaryDFfeature_DNAmeth[[x]][[1]]$CI_upper,
-        summaryDFfeature_DNAmeth[[x]][[2]]$CI_lower,
+        summaryDFfeature_DNAmeth[[x]][[2]]$CI_upper,
         summaryDFfeature_DNAmeth[[x]][[3]]$CI_upper))
 })
 
