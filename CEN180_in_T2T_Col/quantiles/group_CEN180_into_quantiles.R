@@ -1,18 +1,20 @@
-#!/applications/R/R-3.5.0/bin/Rscript
+#!/applications/R/R-4.0.0/bin/Rscript
 
 # author: Andy Tock
 # contact: ajt200@cam.ac.uk
-# date: 17.11.2020
+# date: 12.01.2021
 
-# Group CEN180 sequences (identified by Piotr and Ian) in RaGOO v2.0 (assembled by Matt)
+# Group CEN180 sequences (identified by Piotr and Ian) in T2T_Col (assembled partly by Matt)
 # into quantiles according to decreasing:
-# 1. weighted SNV values relative to a CEN180 consensus for each chromosome (calculated by Piotr)
+# 1. weighted SNV values relative to a genome-wide CEN180 consensus (calculated by Piotr)
 # 2. number of CEN180 sequences in a tandem repeat array of >= 2 near-contiguous CEN180 sequences
 #    (<= 10 bp apart) on the same strand
-# 3. coverage for various data sets (e.g., mean CENH3 ChIP-seq log2(ChIP/input) values)
+# 3. repeat activity (calculated by Piotr; column titled "HORlengthsSum" by Piotr; i.e., the sum of repeat units that make up the HORs of which a given repeat unit is a member)
+# 4. coverage for various data sets (e.g., mean CENH3 ChIP-seq log2(ChIP/input) values)
+# 5. mappability given various k-mers
 
 # Usage:
-# /applications/R/R-3.5.0/bin/Rscript group_CEN180_into_quantiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 4 180 1000 1kb '1 kb' 10 10bp
+# /applications/R/R-4.0.0/bin/Rscript group_CEN180_into_quantiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 4 180 1000 1kb '1 kb' 10 10bp
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -40,30 +42,21 @@ binName <- args[8]
 options(stringsAsFactors = F)
 library(parallel)
 library(dplyr)
+library(Hmisc) # includes rcorr() function which computes significance levels for Pearson and Spearman correlations
+library(reshape)
+library(ggplot2)
+library(ggcorrplot)
 
 # Load table of CEN180 coordinates in BED format
-CEN180 <- read.table(paste0("CEN180_in_T2T_Col_",
+CEN180 <- read.table(paste0("/home/ajt200/analysis/repeats/CEN180_in_T2T_Col/CEN180_in_T2T_Col_",
                             paste0(chrName, collapse = "_"), ".bed"),
                      header = F)
 # Convert 0-based start coordinates (BED)
 # into 1-based start coordinates (for output as TSV below)
 CEN180[,2] <- CEN180[,2]+1
-colnames(CEN180) <- c("chr", "start", "end", "featureID", "wSNV", "strand")
-
+colnames(CEN180) <- c("chr", "start", "end", "featureID", "wSNV", "strand", "HORlengthsSum", "HORcount")
 # Get CEN180 coordinates within chrName
 CEN180 <- CEN180[which(CEN180$chr %in% chrName),]
-
-# Load table of coordinates for random loci in BED format
-ranLoc <- read.table(paste0("CEN180_in_T2T_Col_",
-                            paste0(chrName, collapse = "_"), "_randomLoci.bed"),
-                     header = F)
-# Convert 0-based start coordinates (BED)
-# into 1-based start coordinates (for output as TSV below)
-ranLoc[,2] <- ranLoc[,2]+1
-colnames(ranLoc) <- c("chr", "start", "end", "featureID", "wSNV", "strand")
-
-# Get ranLoc coordinates within chrName
-ranLoc <- ranLoc[which(ranLoc$chr %in% chrName),]
 
 # Determine if each CEN180 sequence is part of a tandem repeat array
 # of >= 2 near-contiguous CEN180 sequences (<= 10 bp apart) on the same strand
@@ -123,36 +116,172 @@ for(i in seq_along(chrName)) {
 }
 CEN180 <- CEN180_TR
 
-# Calculate mean log2(CENH3 ChIP/input) in CEN180 sequences 
+# Load table of coordinates for random loci in BED format
+ranLoc <- read.table(paste0("/home/ajt200/analysis/repeats/CEN180_in_T2T_Col/CEN180_in_T2T_Col_",
+                            paste0(chrName, collapse = "_"), "_randomLoci.bed"),
+                     header = F)
+# Convert 0-based start coordinates (BED)
+# into 1-based start coordinates (for output as TSV below)
+ranLoc[,2] <- ranLoc[,2]+1
+colnames(ranLoc) <- c("chr", "start", "end", "featureID", "wSNV", "strand")
+ranLoc <- data.frame(ranLoc,
+                     HORlengthsSum = NA,
+                     HORcount = NA,
+                     tandem_repeat = NA,
+                     array = NA,
+                     array_size = NA)
+# Get ranLoc coordinates within chrName
+ranLoc <- ranLoc[which(ranLoc$chr %in% chrName),]
+
+# Calculate mean coverage and mappability in CEN180 sequences and random loci
 
 # Load feature matrices for CENH3 and input, calculate log2(ChIP/control) coverage
 ChIPNames <- c(
-               "WT_CENH3_Rep1_ChIP_SRR4430537"
+               "WT_CENH3_Rep1_ChIP_SRR4430537",
+               "WT_H3K9me2_Rep1_ChIP",
+               "WT_H3K27me1_Rep1_ChIP",
+               "WT_H3K4me1_Rep1_ChIP",
+               "WT_H3K4me2_Rep1_ChIP",
+               "WT_H3K4me3_ChIP14",
+               "H2AW6_ChIP_SRR5298545",
+               "H2AW7_ChIP_SRR5298546",
+               "WT_MNase_Rep1",
+               "WT_REC8_HA_Rep2_ChIP",
+               "WT_ASY1_Rep1_ChIP",
+               "WT_MTOPVIB_HA_Rep1_ChIP",
+               "WT_MTOPVIB_HA_Rep2_ChIP",
+               "WT_DMC1_V5_Rep1_ChIP",
+               "WT_DMC1_V5_Rep2_ChIP",
+               "WT_SPO11oligos_Rep1"
               )
 ChIPNamesDir <- c(
-                  "CENH3_seedlings_Maheshwari_Comai_2017_GenomeRes"
+                  "CENH3_seedlings_Maheshwari_Comai_2017_GenomeRes/snakemake_ChIPseq_T2T_Col",
+                  "170101_Chris_H3K9me2_ChIP/WT/snakemake_ChIPseq_T2T_Col",
+                  rep("170920_Chris_histone_ChIP/snakemake_ChIPseq_T2T_Col", 3),
+                  "160601_Kyuha_H3K4me3_ChIP/WT/snakemake_ChIPseq_T2T_Col",
+                  rep("HTA6_HTA7_leaf_Lorkovic_Berger_2017_CurrBiol/snakemake_ChIPseq_T2T_Col", 2),
+                  "150701_Kyuha_MNase/WT/snakemake_ChIPseq_T2T_Col",
+                  "REC8_pooled/snakemake_ChIPseq_T2T_Col",
+                  "20190722_cal66_Athaliana_ChIPseq_ASY1/fastq_pooled/snakemake_ChIPseq_T2T_Col",
+                  rep("20190819_dh580_Athaliana_ChIPseq_MTOPVIB/fastq_pooled/snakemake_ChIPseq_T2T_Col", 2),
+                  rep("20190917_dh580_Athaliana_ChIPseq_DMC1/fastq_pooled/snakemake_ChIPseq_T2T_Col", 2),
+                  "160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col"
                  )
 log2ChIPNamesPlot <- c(
-                       "CENH3"
+                       "CENH3",
+                       "H3K9me2",
+                       "H3K27me1",
+                       "H3K4me1",
+                       "H3K4me2",
+                       "H3K4me3",
+                       "H2A.W.6",
+                       "H2A.W.7",
+                       "MNase",
+                       "REC8-HA",
+                       "ASY1",
+                       "MTOPVIB-HA Rep1",
+                       "MTOPVIB-HA Rep2",
+                       "DMC1-V5 Rep1",
+                       "DMC1-V5 Rep2",
+                       "SPO11-1-oligos"
                       )
+ChIPNamesPlot <- log2ChIPNamesPlot
 ChIPDirs <- sapply(seq_along(ChIPNamesDir), function(x) {
   paste0("/home/ajt200/analysis/", ChIPNamesDir[x],
-         "/snakemake_ChIPseq_T2T_Col/mapped/CEN180profiles/matrices/")
+         "/mapped/CEN180profiles/matrices/")
 })
 
 controlNames <- c(
-                  "WT_REC8_Myc_Rep1_input"
+                  "WT_REC8_Myc_Rep1_input",
+                  "H2AW_input_SRR5298544",
+                  "WT_gDNA_Rep1",
+                  "WT_gDNA_Rep1_R1",
+                  "map_K40_E2",
+                  "map_K45_E2",
+                  "map_K50_E2",
+                  "map_K150_E4",
+                  "map_K200_E4",
+                  "map_K300_E4"
                  )
 controlNamesDir <- c(
-                     "REC8_pooled"
+                     "REC8_pooled/snakemake_ChIPseq_T2T_Col",
+                     "HTA6_HTA7_leaf_Lorkovic_Berger_2017_CurrBiol/snakemake_ChIPseq_T2T_Col",
+                     "150701_Natasha_gDNA/WT/snakemake_ChIPseq_T2T_Col",
+                     "150701_Natasha_gDNA/WT/R1/snakemake_SPO11oligos_T2T_Col",
+                     rep("nanopore/T2T_Col/genmap_mappability", 6)
                     )
 controlNamesPlot <- c(
-                      "Input"
+                      "PE input (sonic)",
+                      "PE input (MNase)",
+                      "PE gDNA",
+                      "SE gDNA",
+                      "k=40 e=2 mappability",
+                      "k=45 e=2 mappability",
+                      "k=50 e=2 mappability",
+                      "k=150 e=4 mappability",
+                      "k=200 e=4 mappability",
+                      "k=300 e=4 mappability"
                      )
 controlDirs <- sapply(seq_along(controlNamesDir), function(x) {
   paste0("/home/ajt200/analysis/", controlNamesDir[x],
-         "/snakemake_ChIPseq_T2T_Col/mapped/CEN180profiles/matrices/")
+         "/mapped/CEN180profiles/matrices/")
 })
+
+## DNAmeth
+DNAmethNames <- c(
+                  "WT_nanopolishDNAmeth_95_10kb",
+                  rep("Col0_BSseq_Rep1", 3),
+                  rep("WT_BSseq_Rep1_2014", 3)
+                 )
+DNAmethNamesDir <- c(
+                     "nanopore/T2T_Col/nanopolish_DNAmeth",
+                     rep("BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col/coverage", 3),
+                     rep("BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_T2T_Col/coverage", 3)
+                    )
+DNAmethContexts <- c(
+                     "CpG",
+                     "CpG",
+                     "CHG",
+                     "CHH",
+                     "CpG",
+                     "CHG",
+                     "CHH"
+                    )
+DNAmethNamesPlot <- c(
+                      "mCG (Nanopolish)",
+                      "mCG (PE BS-seq)",
+                      "mCHG (PE BS-seq)",
+                      "mCHH (PE BS-seq)",
+                      "mCG (SE BS-seq)",
+                      "mCHG (SE BS-seq)",
+                      "mCHH (SE BS-seq)"
+                     )
+DNAmethDirs <- sapply(seq_along(DNAmethNamesDir), function(x) {
+  paste0("/home/ajt200/analysis/",
+         DNAmethNamesDir[x],
+         "/CEN180profiles/matrices/")
+})
+
+## DNAmeth
+# feature
+DNAmeth_featureMats <- mclapply(seq_along(DNAmethContexts), function(x) {
+  lapply(seq_along(chrName), function(y) {
+    as.matrix(read.table(paste0(DNAmethDirs[x],
+                                DNAmethNames[x],
+                                "_MappedOn_T2T_Col_", DNAmethContexts[x], "_CEN180_in_",
+                                chrName[y], "_matrix_bin", binName, "_flank", flankName, ".tab"),
+                         header = F, skip = 3))
+  })
+}, mc.cores = length(DNAmethContexts))
+# If features from multiple chromosomes are to be analysed,
+# concatenate the corresponding feature coverage matrices
+DNAmeth_featureMats <- mclapply(seq_along(DNAmeth_featureMats), function(x) {
+  if(length(chrName) > 1) {
+    do.call(rbind, DNAmeth_featureMats[[x]])
+  } else {
+    DNAmeth_featureMats[[x]][[1]]
+  }
+}, mc.cores = length(DNAmeth_featureMats))
 
 ## ChIP
 # feature
@@ -179,27 +308,57 @@ ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
 # feature
 control_featureMats <- mclapply(seq_along(controlNames), function(x) {
   lapply(seq_along(chrName), function(y) {
-    as.matrix(read.table(paste0(controlDirs[x],
-                                controlNames[x],
-                                "_MappedOn_T2T_Col_lowXM_both_sort_norm_CEN180_in_",
-                                chrName[y], "_matrix_bin", binName, "_flank", flankName, ".tab"),
-                         header = F, skip = 3))
+    if( grepl("map_K", controlNames[x]) ) {
+      as.matrix(read.table(paste0(controlDirs[x],
+                                  controlNames[x],
+                                  "_MappedOn_T2T_Col_CEN180_in_",
+                                  chrName[y], "_matrix_bin", binName, "_flank", flankName, ".tab"),
+                           header = F, skip = 3))
+    } else {
+      as.matrix(read.table(paste0(controlDirs[x],
+                                  controlNames[x],
+                                  "_MappedOn_T2T_Col_lowXM_both_sort_norm_CEN180_in_",
+                                  chrName[y], "_matrix_bin", binName, "_flank", flankName, ".tab"),
+                           header = F, skip = 3))
+      }
   })
 }, mc.cores = length(controlNames))
-# If features from all 5 chromosomes are to be analysed,
-# concatenate the 5 corresponding feature coverage matrices
+# If features from multiple chromosomes are to be analysed,
+# concatenate the corresponding feature coverage matrices
 control_featureMats <- mclapply(seq_along(control_featureMats), function(x) {
-  if(length(chrName) == 5) {
+  if(length(chrName) > 1) {
     do.call(rbind, control_featureMats[[x]])
   } else {
     control_featureMats[[x]][[1]]
   }
 }, mc.cores = length(control_featureMats))
 
-# Calculate log2(ChIP/control) coverage values
+# Conditionally calculate log2(ChIP/control)
+# for each matrix depending on library
+# feature
 log2ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
-  log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[1]]+1))
+  if ( grepl("SRR529854", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((MNase+1)/(gDNA+1)) calculation"))
+    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[2]]+1))
+  } else if ( grepl("MNase", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[3], " for log2((SPO11-1-oligos+1)/(gDNA+1)) calculation"))
+    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[3]]+1))
+  } else if ( grepl("SPO11oligos", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[4], " for log2((SPO11-1-oligos+1)/(gDNA+1)) calculation"))
+    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[4]]+1))
+  } else {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[1]]+1))
+  }
 }, mc.cores = length(ChIP_featureMats))
+
+# Calculate mean DNAmeth-dataset values for each CEN180 sequence
+DNAmeth_featureMats_bodies <- lapply(seq_along(DNAmeth_featureMats), function(x) {
+  DNAmeth_featureMats[[x]][,((upstream/binSize)+1):((upstream+regionBodyLength)/binSize)]
+})
+DNAmeth_featureMats_bodiesRowMeans <- lapply(seq_along(DNAmeth_featureMats_bodies), function(x) {
+  rowMeans(DNAmeth_featureMats_bodies[[x]], na.rm = T)
+})
 
 # Calculate mean log2(ChIP/control) coverage values for each CEN180 sequence
 log2ChIP_featureMats_bodies <- lapply(seq_along(log2ChIP_featureMats), function(x) {
@@ -209,14 +368,202 @@ log2ChIP_featureMats_bodiesRowMeans <- lapply(seq_along(log2ChIP_featureMats_bod
   rowMeans(log2ChIP_featureMats_bodies[[x]], na.rm = T)
 })
 
+# Calculate mean control-dataset values for each CEN180 sequence
+control_featureMats_bodies <- lapply(seq_along(control_featureMats), function(x) {
+  control_featureMats[[x]][,((upstream/binSize)+1):((upstream+regionBodyLength)/binSize)]
+})
+control_featureMats_bodiesRowMeans <- lapply(seq_along(control_featureMats_bodies), function(x) {
+  rowMeans(control_featureMats_bodies[[x]], na.rm = T)
+})
+
 # Add mean coverage values to CEN180 dataframe
 CEN180 <- data.frame(CEN180,
-                     CENH3_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[1]])
+                     CENH3_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[1]],
+                     H3K9me2_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[2]],
+                     H3K27me1_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[3]],
+                     H3K4me1_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[4]],
+                     H3K4me2_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[5]],
+                     H3K4me3_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[6]],
+                     H2AW6_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[7]],
+                     H2AW7_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[8]],
+                     MNase_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[9]],
+                     REC8_HA_Rep2_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[10]],
+                     ASY1_Rep1_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[11]],
+                     MTOPVIB_HA_Rep1_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[12]],
+                     MTOPVIB_HA_Rep2_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[13]],
+                     DMC1_V5_Rep1_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[14]],
+                     DMC1_V5_Rep2_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[15]],
+                     SPO11oligos_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[16]],
+                     mCG_Nanopolish_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[1]], 
+                     mCG_PE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[2]], 
+                     mCHG_PE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[3]], 
+                     mCHH_PE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[4]], 
+                     mCG_SE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[5]], 
+                     mCHG_SE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[6]], 
+                     mCHH_SE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[7]], 
+                     PE_input_sonic_in_bodies = control_featureMats_bodiesRowMeans[[1]],
+                     PE_input_MNase_in_bodies = control_featureMats_bodiesRowMeans[[2]],
+                     PE_gDNA_in_bodies = control_featureMats_bodiesRowMeans[[3]],
+                     SE_gDNA_in_bodies = control_featureMats_bodiesRowMeans[[4]],
+                     map_K40_E2_in_bodies = control_featureMats_bodiesRowMeans[[5]],
+                     map_K45_E2_in_bodies = control_featureMats_bodiesRowMeans[[6]],
+                     map_K50_E2_in_bodies = control_featureMats_bodiesRowMeans[[7]],
+                     map_K150_E4_in_bodies = control_featureMats_bodiesRowMeans[[8]],
+                     map_K200_E4_in_bodies = control_featureMats_bodiesRowMeans[[9]],
+                     map_K300_E4_in_bodies = control_featureMats_bodiesRowMeans[[10]])
+
+## DNAmeth
+# ranLoc
+DNAmeth_ranLocMats <- mclapply(seq_along(DNAmethContexts), function(x) {
+  lapply(seq_along(chrName), function(y) {
+    as.matrix(read.table(paste0(DNAmethDirs[x],
+                                DNAmethNames[x],
+                                "_MappedOn_T2T_Col_", DNAmethContexts[x], "_CEN180_in_",
+                                chrName[y], "_ranLoc_matrix_bin", binName, "_flank", flankName, ".tab"),
+                         header = F, skip = 3))
+  })
+}, mc.cores = length(DNAmethContexts))
+# If ranLocs from multiple chromosomes are to be analysed,
+# concatenate the corresponding ranLoc coverage matrices
+DNAmeth_ranLocMats <- mclapply(seq_along(DNAmeth_ranLocMats), function(x) {
+  if(length(chrName) > 1) {
+    do.call(rbind, DNAmeth_ranLocMats[[x]])
+  } else {
+    DNAmeth_ranLocMats[[x]][[1]]
+  }
+}, mc.cores = length(DNAmeth_ranLocMats))
+
+## ChIP
+# ranLoc
+ChIP_ranLocMats <- mclapply(seq_along(ChIPNames), function(x) {
+  lapply(seq_along(chrName), function(y) {
+    as.matrix(read.table(paste0(ChIPDirs[x],
+                                ChIPNames[x],
+                                "_MappedOn_T2T_Col_lowXM_both_sort_norm_CEN180_in_",
+                                chrName[y], "_ranLoc_matrix_bin", binName, "_flank", flankName, ".tab"),
+                         header = F, skip = 3))
+  })
+}, mc.cores = length(ChIPNames))
+# If ranLocs from all 5 chromosomes are to be analysed,
+# concatenate the 5 corresponding ranLoc coverage matrices
+ChIP_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
+  if(length(chrName) == 5) {
+    do.call(rbind, ChIP_ranLocMats[[x]])
+  } else {
+    ChIP_ranLocMats[[x]][[1]]
+  }
+}, mc.cores = length(ChIP_ranLocMats))
+
+## control
+# ranLoc
+control_ranLocMats <- mclapply(seq_along(controlNames), function(x) {
+  lapply(seq_along(chrName), function(y) {
+    if( grepl("map_K", controlNames[x]) ) {
+      as.matrix(read.table(paste0(controlDirs[x],
+                                  controlNames[x],
+                                  "_MappedOn_T2T_Col_CEN180_in_",
+                                  chrName[y], "_ranLoc_matrix_bin", binName, "_flank", flankName, ".tab"),
+                           header = F, skip = 3))
+    } else {
+      as.matrix(read.table(paste0(controlDirs[x],
+                                  controlNames[x],
+                                  "_MappedOn_T2T_Col_lowXM_both_sort_norm_CEN180_in_",
+                                  chrName[y], "_ranLoc_matrix_bin", binName, "_flank", flankName, ".tab"),
+                           header = F, skip = 3))
+      }
+  })
+}, mc.cores = length(controlNames))
+# If ranLocs from multiple chromosomes are to be analysed,
+# concatenate the corresponding ranLoc coverage matrices
+control_ranLocMats <- mclapply(seq_along(control_ranLocMats), function(x) {
+  if(length(chrName) > 1) {
+    do.call(rbind, control_ranLocMats[[x]])
+  } else {
+    control_ranLocMats[[x]][[1]]
+  }
+}, mc.cores = length(control_ranLocMats))
+
+# Conditionally calculate log2(ChIP/control)
+# for each matrix depending on library
+# ranLoc
+log2ChIP_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
+  if ( grepl("SRR529854", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((MNase+1)/(gDNA+1)) calculation"))
+    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[2]]+1))
+  } else if ( grepl("MNase", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[3], " for log2((SPO11-1-oligos+1)/(gDNA+1)) calculation"))
+    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[3]]+1))
+  } else if ( grepl("SPO11oligos", ChIPNames[x]) ) {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[4], " for log2((SPO11-1-oligos+1)/(gDNA+1)) calculation"))
+    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[4]]+1))
+  } else {
+    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
+    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[1]]+1))
+  }
+}, mc.cores = length(ChIP_ranLocMats))
+
+# Calculate mean DNAmeth-dataset values for each ranLoc
+DNAmeth_ranLocMats_bodies <- lapply(seq_along(DNAmeth_ranLocMats), function(x) {
+  DNAmeth_ranLocMats[[x]][,((upstream/binSize)+1):((upstream+regionBodyLength)/binSize)]
+})
+DNAmeth_ranLocMats_bodiesRowMeans <- lapply(seq_along(DNAmeth_ranLocMats_bodies), function(x) {
+  rowMeans(DNAmeth_ranLocMats_bodies[[x]], na.rm = T)
+})
+
+# Calculate mean log2(ChIP/control) coverage values for each ranLoc
+log2ChIP_ranLocMats_bodies <- lapply(seq_along(log2ChIP_ranLocMats), function(x) {
+  log2ChIP_ranLocMats[[x]][,((upstream/binSize)+1):((upstream+regionBodyLength)/binSize)]
+})
+log2ChIP_ranLocMats_bodiesRowMeans <- lapply(seq_along(log2ChIP_ranLocMats_bodies), function(x) {
+  rowMeans(log2ChIP_ranLocMats_bodies[[x]], na.rm = T)
+})
+
+# Calculate mean control-dataset values for each ranLoc
+control_ranLocMats_bodies <- lapply(seq_along(control_ranLocMats), function(x) {
+  control_ranLocMats[[x]][,((upstream/binSize)+1):((upstream+regionBodyLength)/binSize)]
+})
+control_ranLocMats_bodiesRowMeans <- lapply(seq_along(control_ranLocMats_bodies), function(x) {
+  rowMeans(control_ranLocMats_bodies[[x]], na.rm = T)
+})
+
+# Add mean coverage values to ranLoc dataframe
+ranLoc <- data.frame(CEN180,
+                     CENH3_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[1]],
+                     H3K9me2_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[2]],
+                     H3K27me1_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[3]],
+                     H3K4me1_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[4]],
+                     H3K4me2_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[5]],
+                     H3K4me3_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[6]],
+                     H2AW6_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[7]],
+                     H2AW7_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[8]],
+                     MNase_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[9]],
+                     REC8_HA_Rep2_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[10]],
+                     ASY1_Rep1_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[11]],
+                     MTOPVIB_HA_Rep1_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[12]],
+                     MTOPVIB_HA_Rep2_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[13]],
+                     DMC1_V5_Rep1_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[14]],
+                     DMC1_V5_Rep2_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[15]],
+                     SPO11oligos_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[16]],
+                     mCG_Nanopolish_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[1]], 
+                     mCG_PE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[2]], 
+                     mCHG_PE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[3]], 
+                     mCHH_PE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[4]], 
+                     mCG_SE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[5]], 
+                     mCHG_SE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[6]], 
+                     mCHH_SE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[7]], 
+                     PE_input_sonic_in_bodies = control_ranLocMats_bodiesRowMeans[[1]],
+                     PE_input_MNase_in_bodies = control_ranLocMats_bodiesRowMeans[[2]],
+                     PE_gDNA_in_bodies = control_ranLocMats_bodiesRowMeans[[3]],
+                     SE_gDNA_in_bodies = control_ranLocMats_bodiesRowMeans[[4]],
+                     map_K40_E2_in_bodies = control_ranLocMats_bodiesRowMeans[[5]],
+                     map_K45_E2_in_bodies = control_ranLocMats_bodiesRowMeans[[6]],
+                     map_K50_E2_in_bodies = control_ranLocMats_bodiesRowMeans[[7]],
+                     map_K150_E4_in_bodies = control_ranLocMats_bodiesRowMeans[[8]],
+                     map_K200_E4_in_bodies = control_ranLocMats_bodiesRowMeans[[9]],
+                     map_K300_E4_in_bodies = control_ranLocMats_bodiesRowMeans[[10]])
 
 # Define set of ordering factors to be used for grouping genes into quantiles
-#orderingFactor <- colnames(CEN180)[c(5, 9, 10)]
-# array_size only
-orderingFactor <- colnames(CEN180)[c(9)]
+orderingFactor <- colnames(CEN180)[c(5, 7, 8, 11, 12, 28, 29, 35:length(colnames(CEN180)))]
 outDir <- paste0("quantiles_by_", orderingFactor, "/",
                  paste0(chrName, collapse = "_"), "/")
 plotDir <- paste0(outDir, "/plots/")
@@ -234,14 +581,14 @@ mclapply(seq_along(orderingFactor), function(w) {
   CEN180_DF <- data.frame(CEN180,
                           quantile = as.character(""))
   print(orderingFactor[w])
-  # Assign 0s to NA values only for coverage data
-  if(grepl("_in_", orderingFactor[w])) {
-    CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])][
-      which(is.na(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]))] <- 0
-  }
-  if(orderingFactor[w] == "array_size" & chrName == "Chr1") {
+  ## Assign 0s to NA values only for coverage data
+  #if(grepl("_in_", orderingFactor[w])) {
+  #  CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])][
+  #    which(is.na(CEN180_DF[,which(colnames(CEN180_DF) == orderingFactor[w])]))] <- 0
+  #}
+  if(orderingFactor[w] == "array_size" & chrName[length(chrName)] == "Chr1") {
     quantiles <- 2
-  } else if(orderingFactor[w] == "array_size" & chrName == "Chr2") {
+  } else if(orderingFactor[w] == "array_size" & chrName[length(chrName)] == "Chr2") {
     quantiles <- 3
   } 
   quantilesStats <- data.frame()
