@@ -47,6 +47,11 @@ library(reshape)
 library(ggplot2)
 library(ggcorrplot)
 
+outDir <- paste0(paste0(chrName, collapse = "_"), "/")
+plotDir <- paste0(outDir, "plots/")
+system(paste0("[ -d ", outDir, " ] || mkdir -p ", outDir))
+system(paste0("[ -d ", plotDir, " ] || mkdir -p ", plotDir))
+
 # Load table of CEN180 coordinates in BED format
 CEN180 <- read.table(paste0("/home/ajt200/analysis/repeats/CEN180_in_T2T_Col/CEN180_in_T2T_Col_",
                             paste0(chrName, collapse = "_"), ".bed"),
@@ -337,10 +342,10 @@ control_featureMats <- mclapply(seq_along(control_featureMats), function(x) {
 # for each matrix depending on library
 # feature
 log2ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
-  if ( grepl("SRR529854", ChIPNames[x]) ) {
+  if ( grepl("SRR529854X", ChIPNames[x]) ) {
     print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
     log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[2]]+1))
-  } else if ( grepl("MNase", ChIPNames[x]) ) {
+  } else if ( grepl("MNaseX", ChIPNames[x]) ) {
     print(paste0(ChIPNames[x], " library; using ", controlNames[3], " for log2((MNase+1)/(gDNA+1)) calculation"))
     log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[3]]+1))
   } else if ( grepl("SPO11oligos", ChIPNames[x]) ) {
@@ -495,10 +500,10 @@ control_ranLocMats <- mclapply(seq_along(control_ranLocMats), function(x) {
 # for each matrix depending on library
 # ranLoc
 log2ChIP_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
-  if ( grepl("SRR529854", ChIPNames[x]) ) {
+  if ( grepl("SRR529854X", ChIPNames[x]) ) {
     print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
     log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[2]]+1))
-  } else if ( grepl("MNase", ChIPNames[x]) ) {
+  } else if ( grepl("MNaseX", ChIPNames[x]) ) {
     print(paste0(ChIPNames[x], " library; using ", controlNames[3], " for log2((MNase+1)/(gDNA+1)) calculation"))
     log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[3]]+1))
   } else if ( grepl("SPO11oligos", ChIPNames[x]) ) {
@@ -699,8 +704,8 @@ profilesDF_feature <- as.data.frame(do.call(cbind, profilesVal_feature),
                                     stringsAsFactors = F)
 profileNames_feature <- c("SNVs",
                           "Activity",
-                          "HORs",
-                          "Array",
+                          "HOR count",
+                          "Array size",
                           log2ChIPNamesPlot,
                           DNAmethNamesPlot,
                            controlNamesPlot)
@@ -788,7 +793,7 @@ ggObj <- ggplot(data = corDat_feature,
                                 title.position = "top", title.hjust = 0.5)) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 0, size = 39, colour = "black"),
-        axis.text.y = element_text(angle = 0, vjust = 1, hjust = 1, size = 39, colour = "black"),
+        axis.text.y = element_text(angle = 0, vjust = 0.5, hjust = 1, size = 39, colour = "black"),
         panel.grid.major = element_blank(),
         panel.border = element_blank(),
         panel.background = element_blank(),
@@ -799,12 +804,40 @@ ggObj <- ggplot(data = corDat_feature,
         legend.position = c(0.65, 0.05),
         legend.direction = "horizontal",
         legend.background = element_rect(fill = "transparent"),
-        plot.margin = unit(c(5.5, 70.5, 5.5, 5.5), "pt"),
+        plot.margin = unit(c(5.5, 110.5, 5.5, 5.5), "pt"),
         plot.title = element_text(hjust = 0.5, size = 30, colour = "black")) +
   ggtitle(bquote("Spearman's" ~ italic(r[s]) ~
 #  ggtitle(bquote("Pearson's" ~ italic(r) ~
                  "for mean levels at CEN180 in T2T_Col" ~
                  .(paste0(chrName, collapse = ",")))) 
-ggsave(paste0("Spearman_correlation_matrix_mean_levels_at_CEN180_in_T2T_Col_",
+ggsave(paste0(plotDir, "Spearman_correlation_matrix_mean_levels_at_CEN180_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_qVals.pdf"),
        plot = ggObj, height = 30, width = 30)
+
+# Make scatter plots with trend lines
+ggTrend1 <- ggplot(data = CEN180) +
+  geom_point(mapping = aes(x = map_K150_E4_in_bodies,
+                           y = wSNV),
+             size = 1) +
+  geom_smooth(mapping = aes(x = map_K150_E4_in_bodies,
+                            y = wSNV),
+              method = lm)
+ggsave(paste0(plotDir,
+              "trend_map_K150_E4_in_bodies_vs_wSNV_mean_levels_at_CEN180_in_T2T_Col_",
+              paste0(chrName, collapse = "_"), ".pdf"),
+       plot = ggTrend1, height = 7, width = 7)
+
+
+
+ggObjGA_combined <- grid.arrange(grobs = c(
+                                           ggObj1_combined_DNAmeth,
+                                           ggObj2_combined_DNAmeth,
+                                           ggObj3_combined_DNAmeth
+                                          ),
+                                 layout_matrix = cbind(
+                                                       1:length(c(DNAmethNamesPlot)),
+                                                       (length(c(DNAmethNamesPlot))+1):(length(c(DNAmethNamesPlot))*2),
+                                                       ((length(c(DNAmethNamesPlot))*2)+1):(length(c(DNAmethNamesPlot))*3)
+                                                      ))
+
+
