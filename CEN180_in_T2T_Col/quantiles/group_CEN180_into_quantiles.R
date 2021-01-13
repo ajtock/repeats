@@ -177,13 +177,13 @@ log2ChIPNamesPlot <- c(
                        "H2A.W.6",
                        "H2A.W.7",
                        "MNase",
-                       "REC8-HA",
+                       "REC8",
                        "ASY1",
-                       "MTOPVIB-HA Rep1",
-                       "MTOPVIB-HA Rep2",
-                       "DMC1-V5 Rep1",
-                       "DMC1-V5 Rep2",
-                       "SPO11-1-oligos"
+                       "MTOPVIB Rep1",
+                       "MTOPVIB Rep2",
+                       "DMC1 Rep1",
+                       "DMC1 Rep2",
+                       "SPO11-1"
                       )
 ChIPNamesPlot <- log2ChIPNamesPlot
 ChIPDirs <- sapply(seq_along(ChIPNamesDir), function(x) {
@@ -211,16 +211,16 @@ controlNamesDir <- c(
                      rep("nanopore/T2T_Col/genmap_mappability", 6)
                     )
 controlNamesPlot <- c(
-                      "PE input (sonic)",
-                      "PE input (MNase)",
+                      "Input (sonic.)",
+                      "Input (MNase)",
                       "PE gDNA",
                       "SE gDNA",
-                      "k=40 e=2 mappability",
-                      "k=45 e=2 mappability",
-                      "k=50 e=2 mappability",
-                      "k=150 e=4 mappability",
-                      "k=200 e=4 mappability",
-                      "k=300 e=4 mappability"
+                      "k=40 e=2",
+                      "k=45 e=2",
+                      "k=50 e=2",
+                      "k=150 e=4",
+                      "k=200 e=4",
+                      "k=300 e=4"
                      )
 controlDirs <- sapply(seq_along(controlNamesDir), function(x) {
   paste0("/home/ajt200/analysis/", controlNamesDir[x],
@@ -376,6 +376,14 @@ control_featureMats_bodiesRowMeans <- lapply(seq_along(control_featureMats_bodie
   rowMeans(control_featureMats_bodies[[x]], na.rm = T)
 })
 
+# Calculate mean ChIP-dataset coverage values for each CEN180 sequence
+ChIP_featureMats_bodies <- lapply(seq_along(ChIP_featureMats), function(x) {
+  ChIP_featureMats[[x]][,((upstream/binSize)+1):((upstream+regionBodyLength)/binSize)]
+})
+ChIP_featureMats_bodiesRowMeans <- lapply(seq_along(ChIP_featureMats_bodies), function(x) {
+  rowMeans(ChIP_featureMats_bodies[[x]], na.rm = T)
+})
+
 # Add mean coverage values to CEN180 dataframe
 CEN180 <- data.frame(CEN180,
                      CENH3_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[1]],
@@ -526,6 +534,14 @@ control_ranLocMats_bodiesRowMeans <- lapply(seq_along(control_ranLocMats_bodies)
   rowMeans(control_ranLocMats_bodies[[x]], na.rm = T)
 })
 
+# Calculate mean ChIP-dataset coverage values for each CEN180 sequence
+ChIP_ranLocMats_bodies <- lapply(seq_along(ChIP_ranLocMats), function(x) {
+  ChIP_ranLocMats[[x]][,((upstream/binSize)+1):((upstream+regionBodyLength)/binSize)]
+})
+ChIP_ranLocMats_bodiesRowMeans <- lapply(seq_along(ChIP_ranLocMats_bodies), function(x) {
+  rowMeans(ChIP_ranLocMats_bodies[[x]], na.rm = T)
+})
+
 # Add mean coverage values to ranLoc dataframe
 ranLoc <- data.frame(CEN180,
                      CENH3_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[1]],
@@ -664,59 +680,70 @@ mclapply(seq_along(orderingFactor), function(w) {
               quote = FALSE, sep = "\t", row.names = FALSE)
 }, mc.cores = length(orderingFactor), mc.preschedule = F)
 
-
 # Make correlation matrix (colour-gradient heatmap)
 # Combine profiles into one data.frame in which each profile is a column
-profilesVal <- lapply(seq_along(profilesGR), function(x) {
-  profilesGR[[x]]$value
-})
-
-profilesDF <- as.data.frame(do.call(cbind, profilesVal),
-                            stringsAsFactors = F)
-colnames(profilesDF) <- profileNames
+profilesVal_feature <- c(
+                         list(CEN180$wSNV,
+                              CEN180$HORlengthsSum,
+                              CEN180$HORcount,
+                              CEN180$array_size),
+                         log2ChIP_featureMats_bodiesRowMeans,
+                         DNAmeth_featureMats_bodiesRowMeans,
+                         control_featureMats_bodiesRowMeans
+                        )
+profilesDF_feature <- as.data.frame(do.call(cbind, profilesVal_feature),
+                                    stringsAsFactors = F)
+profileNames_feature <- c("SNVs",
+                          "Activity",
+                          "HORs",
+                          "Array",
+                          log2ChIPNamesPlot,
+                          DNAmethNamesPlot,
+                           controlNamesPlot)
+colnames(profilesDF_feature) <- profileNames_feature
 
 # Create correlation matrix
-corMat <- round(cor(profilesDF,
-                    method = "spearman",
-                    use = "pairwise.complete.obs"),
-                digits = 2)
+corMat_feature <- round(cor(profilesDF_feature,
+                            method = "spearman",
+                            use = "pairwise.complete.obs"),
+                        digits = 2)
 
 # Set duplicates to NA
-for(x in 1:dim(corMat)[1]) {
-  corMat[x, x] <- NA
+for(x in 1:dim(corMat_feature)[1]) {
+  corMat_feature[x, x] <- NA
   if(x > 1) {
-    corMat[x, 1:x-1] <- NA
+    corMat_feature[x, 1:x-1] <- NA
   }
 }
-corMat <- corMat[,-1]
+corMat_feature <- corMat_feature[,-1]
 
 # Convert into reshape::melt formatted data.frame
 # and remove duplicate pairs
-corDat <- melt(corMat)
-corDat <- corDat[-which(is.na(corDat[,3])),]
+corDat_feature <- melt(corMat_feature)
+corDat_feature <- corDat_feature[-which(is.na(corDat_feature[,3])),]
 
 # Order the data.frame for plotting
-profileNamesList <- as.list(profileNames)
-names(profileNamesList) <- profileNames
-levels(corDat$X1) <- rev(profileNamesList)
-levels(corDat$X2) <- profileNamesList[-1]
+profileNamesList_feature <- as.list(profileNames_feature)
+names(profileNamesList_feature) <- profileNames_feature
+levels(corDat_feature$X1) <- rev(profileNamesList_feature)
+levels(corDat_feature$X2) <- profileNamesList_feature[-1]
 
 # Get P-values for correlation matrix
-corMatSig <- rcorr(as.matrix(profilesDF),
-                   type = "spearman")$P
+corMatSig_feature <- rcorr(as.matrix(profilesDF_feature),
+                           type = "spearman")$P
 # Set duplicates to NA
-for(x in 1:dim(corMatSig)[1]) {
-  corMatSig[x, x] <- NA
+for(x in 1:dim(corMatSig_feature)[1]) {
+  corMatSig_feature[x, x] <- NA
   if(x > 1) {
-    corMatSig[x, 1:x-1] <- NA
+    corMatSig_feature[x, 1:x-1] <- NA
   }
 }
-corMatSig <- corMatSig[,-1]
+corMatSig_feature <- corMatSig_feature[,-1]
 
 # Convert into reshape::melt formatted data.frame
 # and remove duplicate pairs
-corDatSig <- melt(corMatSig)
-corDatSig <- corDatSig[-which(is.na(corDatSig[,3])),]
+corDatSig_feature <- melt(corMatSig_feature)
+corDatSig_feature <- corDatSig_feature[-which(is.na(corDatSig_feature[,3])),]
 
 # Standardise P-values to a sample size of 100 (q-values) as proposed by
 # Good (1982) Standardized tail-area probabilities. Journal of Computation and Simulation 16: 65-66
@@ -729,22 +756,22 @@ corDatSig <- corDatSig[-which(is.na(corDatSig[,3])),]
 # Formally, the standardised p-value is defined as:
 # q = min(0.5, p * sqrt( (n/100) ))
 # Woolley (2003): "The value of 0.5 is somewhat arbitrary, though its purpose is to avoid q-values of greater than 1."
-n <- dim(profilesDF)[1]
-corDatSig$value <- sapply(corDatSig$value, function(x) {
+n <- dim(profilesDF_feature)[1]
+corDatSig_feature$value <- sapply(corDatSig_feature$value, function(x) {
   round(min(0.5, x * sqrt( (n/100) )),
         digits = 2)
 })
 
 # Order the data.frame for plotting
-levels(corDatSig$X1) <- rev(profileNamesList)
-levels(corDatSig$X2) <- profileNamesList[-1]
+levels(corDatSig_feature$X1) <- rev(profileNamesList_feature)
+levels(corDatSig_feature$X2) <- profileNamesList_feature[-1]
 
 # Plot
-ggObj <- ggplot(data = corDat,
+ggObj <- ggplot(data = corDat_feature,
                 mapping = aes(X2, X1, fill = value)) +
   geom_tile() +
 #  geom_text(mapping = aes(X2, X1, label = value), size = 5) +
-  geom_text(data = corDatSig,
+  geom_text(data = corDatSig_feature,
             mapping = aes(X2, X1, label = value), size = 8) +
   scale_fill_gradient2(name = bquote("Spearman's" ~ italic(r[s])),
                        low = "blue", mid = "white", high = "red",
@@ -769,12 +796,9 @@ ggObj <- ggplot(data = corDat,
         legend.background = element_rect(fill = "transparent"),
         plot.margin = unit(c(5.5, 70.5, 5.5, 5.5), "pt"),
         plot.title = element_text(hjust = 0.5, size = 30, colour = "black")) +
-  ggtitle(bquote(.(winSize/1e6) * "-Mb Spearman's" ~ italic(r[s]) ~ "for" ~
-          .(paste0(genomeName, collapse = "-, ")) * "-genome" ~
-          .(region) ~ "regions (" * .(smoothing) * ")"))
-ggsave(paste0(plotDir,
-              "Spearman_correlation_matrix_", winName,
-              "_log2ChIPcontrol_cMMb_MNase_DNAmeth_genes_TEsuperfams_in_",
-              paste0(genomeName, collapse = "_"), "_genome_", region, "_", smoothing, "_qVals.pdf"),
-       plot = ggObj, height = 20, width = 20)
-
+  ggtitle(bquote("Spearman's" ~ italic(r[s]) ~
+                 "for mean levels at CEN180 in T2T_Col" ~
+                 .(paste0(chrName, collapse = ",")))) 
+ggsave(paste0("Spearman_correlation_matrix_mean_levels_at_CEN180_in_T2T_Col_",
+              paste0(chrName, collapse = "_"), "_qVals.pdf"),
+       plot = ggObj, height = 30, width = 30)
