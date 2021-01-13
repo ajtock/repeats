@@ -338,10 +338,10 @@ control_featureMats <- mclapply(seq_along(control_featureMats), function(x) {
 # feature
 log2ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
   if ( grepl("SRR529854", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((MNase+1)/(gDNA+1)) calculation"))
+    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
     log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[2]]+1))
   } else if ( grepl("MNase", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[3], " for log2((SPO11-1-oligos+1)/(gDNA+1)) calculation"))
+    print(paste0(ChIPNames[x], " library; using ", controlNames[3], " for log2((MNase+1)/(gDNA+1)) calculation"))
     log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[3]]+1))
   } else if ( grepl("SPO11oligos", ChIPNames[x]) ) {
     print(paste0(ChIPNames[x], " library; using ", controlNames[4], " for log2((SPO11-1-oligos+1)/(gDNA+1)) calculation"))
@@ -496,10 +496,10 @@ control_ranLocMats <- mclapply(seq_along(control_ranLocMats), function(x) {
 # ranLoc
 log2ChIP_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
   if ( grepl("SRR529854", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((MNase+1)/(gDNA+1)) calculation"))
+    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
     log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[2]]+1))
   } else if ( grepl("MNase", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[3], " for log2((SPO11-1-oligos+1)/(gDNA+1)) calculation"))
+    print(paste0(ChIPNames[x], " library; using ", controlNames[3], " for log2((MNase+1)/(gDNA+1)) calculation"))
     log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[3]]+1))
   } else if ( grepl("SPO11oligos", ChIPNames[x]) ) {
     print(paste0(ChIPNames[x], " library; using ", controlNames[4], " for log2((SPO11-1-oligos+1)/(gDNA+1)) calculation"))
@@ -592,6 +592,7 @@ sapply(seq_along(plotDir), function(w) {
 
 # Group features into quantiles according to decreasing orderingFactor
 mclapply(seq_along(orderingFactor), function(w) {
+#lapply(seq_along(orderingFactor), function(w) {
   # Note that CEN180_DF could be defined on
   # line above or below mclapply(), with the same results
   CEN180_DF <- data.frame(CEN180,
@@ -606,7 +607,9 @@ mclapply(seq_along(orderingFactor), function(w) {
     quantiles <- 2
   } else if(orderingFactor[w] == "array_size" & chrName[length(chrName)] == "Chr2") {
     quantiles <- 3
-  } 
+  } else if(orderingFactor[w] == "mCG_PE_BSseq_in_bodies" & chrName[length(chrName)] == "Chr4") {
+    quantiles <- 3
+  }
   quantilesStats <- data.frame()
   for(k in 1:quantiles) {
     # First quantile should span 1 to greater than, e.g., 0.75 proportions of features
@@ -678,6 +681,7 @@ mclapply(seq_along(orderingFactor), function(w) {
                             "_of_CEN180_in_T2T_Col_",
                             paste0(chrName, collapse = "_"), "_ranLoc.tsv"),
               quote = FALSE, sep = "\t", row.names = FALSE)
+#})
 }, mc.cores = length(orderingFactor), mc.preschedule = F)
 
 # Make correlation matrix (colour-gradient heatmap)
@@ -774,6 +778,7 @@ ggObj <- ggplot(data = corDat_feature,
   geom_text(data = corDatSig_feature,
             mapping = aes(X2, X1, label = value), size = 8) +
   scale_fill_gradient2(name = bquote("Spearman's" ~ italic(r[s])),
+#  scale_fill_gradient2(name = bquote("Pearson's" ~ italic(r)),
                        low = "blue", mid = "white", high = "red",
                        midpoint = 0, breaks = seq(-1, 1, by = 0.4), limits = c(-1, 1)) +
   scale_x_discrete(expand = c(0, 0), position = "top") +
@@ -797,6 +802,7 @@ ggObj <- ggplot(data = corDat_feature,
         plot.margin = unit(c(5.5, 70.5, 5.5, 5.5), "pt"),
         plot.title = element_text(hjust = 0.5, size = 30, colour = "black")) +
   ggtitle(bquote("Spearman's" ~ italic(r[s]) ~
+#  ggtitle(bquote("Pearson's" ~ italic(r) ~
                  "for mean levels at CEN180 in T2T_Col" ~
                  .(paste0(chrName, collapse = ",")))) 
 ggsave(paste0("Spearman_correlation_matrix_mean_levels_at_CEN180_in_T2T_Col_",

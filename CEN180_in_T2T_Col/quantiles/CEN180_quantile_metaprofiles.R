@@ -74,7 +74,7 @@ if(grepl("_in_", orderingFactor)) {
   featureNamePlot <- "Array-size quantiles"
 } else if(orderingFactor == "HORlengthsSum") {
   featureNamePlot <- "Activity quantiles"
-} else if(orderingFactor = "HORcount") {
+} else if(orderingFactor == "HORcount") {
   featureNamePlot <- "HORcount quantiles"
 }
 ranFeatNamePlot <- "Random quantiles"
