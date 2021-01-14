@@ -690,11 +690,9 @@ mclapply(seq_along(orderingFactor), function(w) {
 }, mc.cores = length(orderingFactor), mc.preschedule = F)
 
 # Make correlation matrix (colour-gradient heatmap)
-# Redefine outDir and plotDir
+# Redefine outDir
 outDir <- paste0(paste0(chrName, collapse = "_"), "/")
-plotDir <- paste0(outDir, "plots/")
 system(paste0("[ -d ", outDir, " ] || mkdir -p ", outDir))
-system(paste0("[ -d ", plotDir, " ] || mkdir -p ", plotDir))
 
 # Combine profiles into one data.frame in which each profile is a column
 profilesVal_feature <- c(
@@ -816,7 +814,7 @@ ggObj <- ggplot(data = corDat_feature,
 #  ggtitle(bquote("Pearson's" ~ italic(r) ~
                  "for mean levels at CEN180 in T2T_Col" ~
                  .(paste0(chrName, collapse = ",")))) 
-ggsave(paste0(plotDir, "Spearman_correlation_matrix_mean_levels_at_CEN180_in_T2T_Col_",
+ggsave(paste0(outDir, "Spearman_correlation_matrix_mean_levels_at_CEN180_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_qVals.pdf"),
        plot = ggObj, height = 30, width = 30)
 
@@ -1067,7 +1065,7 @@ ggTrend_combined <- grid.arrange(grobs = list(
                                                        1:4,
                                                        5:8
                                                       ))
-ggsave(paste0(plotDir,
+ggsave(paste0(outDir,
               "trends_for_mean_levels_at_CEN180_in_T2T_Col_",
               paste0(chrName, collapse = "_"), ".pdf"),
        plot = ggTrend_combined, height = 7*2, width = 8*4)
