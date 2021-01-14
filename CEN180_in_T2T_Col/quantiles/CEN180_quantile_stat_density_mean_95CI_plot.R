@@ -5,6 +5,12 @@
 
 # Usage:
 # /applications/R/R-3.5.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R wSNV SNVs 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%2.0f' '%3.1f' '%2.0f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R map_K150_E4_in_bodies 'Mappability (k=150 e=4)' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.2f' '%3.1f' '%1.2f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R CENH3_in_bodies 'CENH3' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.1f' '%3.1f' '%1.1f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R H3K9me2_in_bodies 'H3K9me2' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.1f' '%3.1f' '%1.1f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R H3K27me1_in_bodies 'H3K27me1' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.1f' '%3.1f' '%1.2f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R HORlengthsSum 'Activity' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.0f' '%1.2f' '%1.0f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R array_size 'Array size' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.0f' '%1.2f' '%1.0f' 0.65
 
 #parName <- "wSNV"
 #parNamePlot <- "SNVs"
@@ -50,17 +56,45 @@ system(paste0("[ -d ", outDir, " ] || mkdir -p ", outDir))
 system(paste0("[ -d ", plotDir, " ] || mkdir -p ", plotDir))
 
 # Define plot titles
-if(grepl("_in_", orderingFactor)) {
-  featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
-                            sub("_in_\\w+", "", orderingFactor), " quantiles")
-} else if(grepl("SNV", orderingFactor)) {
-  featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
-                            "SNV quantiles")
-} else if(orderingFactor == "array_size") {
-  featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
-                            "array-size quantiles")
+if(length(chrName) == 5) {
+  if(grepl("_in_", orderingFactor)) {
+    featureNamePlot <- paste0("Genome-wide", " ",
+                              sub("_in_\\w+", "", orderingFactor), " quantiles")
+  } else if(grepl("SNV", orderingFactor)) {
+    featureNamePlot <- paste0("Genome-wide", " ",
+                              "SNV quantiles")
+  } else if(orderingFactor == "array_size") {
+    featureNamePlot <- paste0("Genome-wide", " ",
+                              "array-size quantiles")
+  } else if(orderingFactor == "HORlengthsSum") {
+    featureNamePlot <- paste0("Genome-wide", " ",
+                              "activity quantiles")
+  } else if(orderingFactor == "HORcount") {
+    featureNamePlot <- paste0("Genome-wide", " ",
+                              "HORcount quantiles")
+  }
+  ranFeatNamePlot <- paste0("Genome-wide", " ",
+                            "random quantiles")
+} else {
+  if(grepl("_in_", orderingFactor)) {
+    featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                              sub("_in_\\w+", "", orderingFactor), " quantiles")
+  } else if(grepl("SNV", orderingFactor)) {
+    featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                              "SNV quantiles")
+  } else if(orderingFactor == "array_size") {
+    featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                              "array-size quantiles")
+  } else if(orderingFactor == "HORlengthsSum") {
+    featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                              "activity quantiles")
+  } else if(orderingFactor == "HORcount") {
+    featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                              "HORcount quantiles")
+  }
+  ranFeatNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                            "random quantiles")
 }
-ranFeatNamePlot <- "Random quantiles"
 
 # Define quantile colours
 quantileColours <- c("red", "purple", "blue", "navy")
@@ -78,14 +112,14 @@ quantileColours <- makeTransparent(quantileColours)
 featuresDF <- read.table(paste0(outDir,
                                 "features_", quantiles, "quantiles",
                                 "_by_", orderingFactor,
-                                "_of_CEN180_in_RaGOO_v2.0_",
+                                "_of_CEN180_in_T2T_Col_",
                                 paste0(chrName, collapse = "_"), ".tsv"),
                          header = T, sep = "\t", row.names = NULL)
 
 # Load features to confirm feature (row) ordering in "featuresDF" is the same
 # as in "features" (which was used for generating the coverage matrices)
 features <- lapply(seq_along(chrName), function(y) {
-  read.table(paste0("CEN180_in_RaGOO_v2.0_",
+  read.table(paste0("CEN180_in_T2T_Col_",
                     chrName[y], ".bed"),
              header = F)
 })
@@ -360,7 +394,7 @@ ggObjGA_combined <- grid.arrange(ggObjGA_feature,
 ggsave(paste0(plotDir,
               parName, "_densityProp", densityProp, "_around_", quantiles, "quantiles",
               "_by_", orderingFactor,
-              "_of_CEN180_in_RaGOO_v2.0_",
+              "_of_CEN180_in_T2T_Col_",
               paste0(chrName, collapse = "_"), ".pdf"),
        plot = ggObjGA_combined,
        height = 13, width = 14)

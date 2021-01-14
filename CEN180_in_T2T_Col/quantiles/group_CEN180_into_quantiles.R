@@ -52,11 +52,6 @@ library(grid)
 library(gridExtra)
 library(extrafont)
 
-outDir <- paste0(paste0(chrName, collapse = "_"), "/")
-plotDir <- paste0(outDir, "plots/")
-system(paste0("[ -d ", outDir, " ] || mkdir -p ", outDir))
-system(paste0("[ -d ", plotDir, " ] || mkdir -p ", plotDir))
-
 # Load table of CEN180 coordinates in BED format
 CEN180 <- read.table(paste0("/home/ajt200/analysis/repeats/CEN180_in_T2T_Col/CEN180_in_T2T_Col_",
                             paste0(chrName, collapse = "_"), ".bed"),
@@ -695,6 +690,12 @@ mclapply(seq_along(orderingFactor), function(w) {
 }, mc.cores = length(orderingFactor), mc.preschedule = F)
 
 # Make correlation matrix (colour-gradient heatmap)
+# Redefine outDir and plotDir
+outDir <- paste0(paste0(chrName, collapse = "_"), "/")
+plotDir <- paste0(outDir, "plots/")
+system(paste0("[ -d ", outDir, " ] || mkdir -p ", outDir))
+system(paste0("[ -d ", plotDir, " ] || mkdir -p ", plotDir))
+
 # Combine profiles into one data.frame in which each profile is a column
 profilesVal_feature <- c(
                          list(CEN180$wSNV,

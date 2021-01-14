@@ -2,7 +2,7 @@
 
 # author: Andy Tock
 # contact: ajt200@cam.ac.uk
-# date: 30.11.2020
+# date: 14.01.2021
 
 # Plot windowed CEN180 frequencies for CEN180 sequences within orderingFactor quantiles
 
@@ -42,16 +42,40 @@ system(paste0("[ -d ", outDir, " ] || mkdir -p ", outDir))
 system(paste0("[ -d ", plotDir, " ] || mkdir -p ", plotDir))
 
 # Define plot titles
-if(grepl("_in_", orderingFactor)) {
-  featureNamePlot <- paste0(sub("_in_\\w+", "", orderingFactor), " quantiles")
-} else if(grepl("SNV", orderingFactor)) {
-  featureNamePlot <- "SNV quantiles"
-} else if(orderingFactor == "array_size") {
-  featureNamePlot <- "Array-size quantiles"
-} else if(orderingFactor == "HORlengthsSum") {
-  featureNamePlot <- "Activity quantiles"
-} else if(orderingFactor == "HORcount") {
-  featureNamePlot <- "HORcount quantiles"
+if(length(chrName) == 5) {
+  if(grepl("_in_", orderingFactor)) {
+    featureNamePlot <- paste0("Genome-wide", " ",
+                              sub("_in_\\w+", "", orderingFactor), " quantiles")
+  } else if(grepl("SNV", orderingFactor)) {
+    featureNamePlot <- paste0("Genome-wide", " ",
+                              "SNV quantiles")
+  } else if(orderingFactor == "array_size") {
+    featureNamePlot <- paste0("Genome-wide", " ",
+                              "array-size quantiles")
+  } else if(orderingFactor == "HORlengthsSum") {
+    featureNamePlot <- paste0("Genome-wide", " ",
+                              "activity quantiles")
+  } else if(orderingFactor == "HORcount") {
+    featureNamePlot <- paste0("Genome-wide", " ",
+                              "HORcount quantiles")
+  }
+} else {
+  if(grepl("_in_", orderingFactor)) {
+    featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                              sub("_in_\\w+", "", orderingFactor), " quantiles")
+  } else if(grepl("SNV", orderingFactor)) {
+    featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                              "SNV quantiles")
+  } else if(orderingFactor == "array_size") {
+    featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                              "array-size quantiles")
+  } else if(orderingFactor == "HORlengthsSum") {
+    featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                              "activity quantiles")
+  } else if(orderingFactor == "HORcount") {
+    featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
+                              "HORcount quantiles")
+  }
 }
 
 # Define quantile colours
