@@ -4,30 +4,30 @@
 # of given statistic for each group of CEN180 sequences
 
 # Usage:
-# /applications/R/R-3.5.0/bin/Rscript CEN180_CENAthila_chr_stat_density_mean_95CI_plot.R 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%2.0f' '%3.1f' '%2.0f' 0.65
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENAthila_chr_stat_density_mean_95CI_plot.R 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 1.0 '%1.1f' '%1.1f' '%1.1f' 0.80
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
 #orderingFactor <- "wSNV"
 #quantiles <- 4
 #densityProp <- 1.00
-#maxDensityPlus <- 0.2
-#xDec <- "%2.0f"
-#yDec <- "%3.1f"
-#yDec2 <- "%2.0f"
-#legendLabX <- 0.65
+#maxDensityPlus <- 1.0
+#xDec <- "%1.1f"
+#yDec <- "%1.1f"
+#yDec2 <- "%1.1f"
+#legendLabX <- 0.80
 
 args <- commandArgs(trailingOnly = T)
-chrName <- unlist(strsplit(args[3],
+chrName <- unlist(strsplit(args[1],
                            split = ","))
-orderingFactor <- args[4]
-quantiles <- as.numeric(args[5])
-densityProp <- as.numeric(args[6])
-maxDensityPlus <- as.numeric(args[7])
-xDec <- as.character(args[8])
-yDec <- as.character(args[9])
-yDec2 <- as.character(args[10])
-legendLabX <- as.numeric(args[11])
+orderingFactor <- args[2]
+quantiles <- as.numeric(args[3])
+densityProp <- as.numeric(args[4])
+maxDensityPlus <- as.numeric(args[5])
+xDec <- as.character(args[6])
+yDec <- as.character(args[7])
+yDec2 <- as.character(args[8])
+legendLabX <- as.numeric(args[9])
 
 options(stringsAsFactors = F)
 library(GenomicRanges)
@@ -59,7 +59,7 @@ CENGR <- GRanges(seqnames = chrs,
                  strand = "*")
 
 # Define chr colours
-chrColours <- viridis_pal()(length(chrs))
+chrColours <- viridis_pal()(length(chrName))
 chrColours[length(chrColours)] <- "orange"
 makeTransparent <- function(thisColour, alpha = 250)
 {
@@ -170,7 +170,7 @@ outDir <- paste0("correlations/", paste0(chrName, collapse = "_"), "/")
 ggTrend1 <- ggplot(data = featuresDF,
                    mapping = aes(x = minDistToCENAthila,
                                  y = wSNV)) +
-  geom_hex(bins = 40) +
+  geom_hex(bins = 60) +
   scale_x_continuous(trans = log10_trans(),
                      breaks = trans_breaks("log10", function(x) 10^x),
                      labels = trans_format("log10", math_format(10^.x))) +
@@ -201,13 +201,13 @@ ggTrend1 <- ggplot(data = featuresDF,
                  ";" ~ italic(P) ~ "=" ~
                  .(round(min(0.5, cor.test(featuresDF$minDistToCENAthila, featuresDF$wSNV, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(featuresDF)[1]/100) )),
                          digits = 5)) ~
-                 "(T2T_Col" ~ .(paste0(chrName, collapse = ",")) ~ ")"))
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
 
 # minDistToCENAthila vs HORlengthsSum
 ggTrend2 <- ggplot(data = featuresDF,
                    mapping = aes(x = minDistToCENAthila,
                                  y = HORlengthsSum+1)) +
-  geom_hex(bins = 40) +
+  geom_hex(bins = 60) +
   scale_x_continuous(trans = log10_trans(),
                      breaks = trans_breaks("log10", function(x) 10^x),
                      labels = trans_format("log10", math_format(10^.x))) +
@@ -238,13 +238,13 @@ ggTrend2 <- ggplot(data = featuresDF,
                  ";" ~ italic(P) ~ "=" ~
                  .(round(min(0.5, cor.test(featuresDF$minDistToCENAthila, featuresDF$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(featuresDF)[1]/100) )),
                          digits = 5)) ~
-                 "(T2T_Col" ~ .(paste0(chrName, collapse = ",")) ~ ")"))
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
 
 # minDistToCENAthila vs HORcount
 ggTrend3 <- ggplot(data = featuresDF,
                    mapping = aes(x = minDistToCENAthila,
                                  y = HORcount+1)) +
-  geom_hex(bins = 40) +
+  geom_hex(bins = 60) +
   scale_x_continuous(trans = log10_trans(),
                      breaks = trans_breaks("log10", function(x) 10^x),
                      labels = trans_format("log10", math_format(10^.x))) +
@@ -275,13 +275,13 @@ ggTrend3 <- ggplot(data = featuresDF,
                  ";" ~ italic(P) ~ "=" ~
                  .(round(min(0.5, cor.test(featuresDF$minDistToCENAthila, featuresDF$HORcount, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(featuresDF)[1]/100) )),
                          digits = 5)) ~
-                 "(T2T_Col" ~ .(paste0(chrName, collapse = ",")) ~ ")"))
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
 
 # minDistToCENAthila vs CENH3_in_bodies
 ggTrend4 <- ggplot(data = featuresDF,
                    mapping = aes(x = minDistToCENAthila,
                                  y = CENH3_in_bodies)) +
-  geom_hex(bins = 40) +
+  geom_hex(bins = 60) +
   scale_x_continuous(trans = log10_trans(),
                      breaks = trans_breaks("log10", function(x) 10^x),
                      labels = trans_format("log10", math_format(10^.x))) +
@@ -309,7 +309,7 @@ ggTrend4 <- ggplot(data = featuresDF,
                  ";" ~ italic(P) ~ "=" ~
                  .(round(min(0.5, cor.test(featuresDF$minDistToCENAthila, featuresDF$CENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(featuresDF)[1]/100) )),
                          digits = 5)) ~
-                 "(T2T_Col" ~ .(paste0(chrName, collapse = ",")) ~ ")"))
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
 
 ggTrend_combined <- grid.arrange(grobs = list(
                                               ggTrend1,
@@ -325,6 +325,7 @@ ggsave(paste0(outDir,
               paste0(chrName, collapse = "_"), ".pdf"),
        plot = ggTrend_combined, height = 7*1, width = 8*4)
 
+if(length(chrName) > 1) {
 
 # Get row indices for each feature chr
 chrIndices <- lapply(seq_along(chrName), function(k) {
@@ -333,7 +334,7 @@ chrIndices <- lapply(seq_along(chrName), function(k) {
 
 # Calculate means, SDs, SEMs and 95% CIs
 # and create dataframe of summary statistics for plotting
-featureNamePlot <- "CEN180 in T2T_Col"
+featureNamePlot <- "CEN180"
 parName <- colnames(featuresDF)[c(5, 7, 8, 12, 46)]
 print(parName)
 parNamePlot <- c("SNVs", "Activity", "HOR count", "CENH3", "Distance to nearest CENAthila (bp)")
@@ -370,6 +371,9 @@ for(i in seq_along(parName)) {
   featuresDFq <- featuresDF[which(featuresDF[,which(colnames(featuresDF) == parName[i])] <=
                                   quantile(featuresDF[,which(colnames(featuresDF) == parName[i])],
                                            probs = densityProp, na.rm = T)),]
+  if(parName[i] %in% c("HORlengthsSum", "HORcount")) { 
+    featuresDFq[,which(colnames(featuresDFq) == parName[i])] <- featuresDFq[,which(colnames(featuresDFq) == parName[i])]+1
+  }
   xmin <- min(c(featuresDFq[,which(colnames(featuresDFq) == parName[i])]),
                 na.rm = T)
   xmax <- max(c(featuresDFq[,which(colnames(featuresDFq) == parName[i])]),
@@ -379,14 +383,14 @@ for(i in seq_along(parName)) {
     c(
       sapply(seq_along(chrName), function(k) {
         max(density(featuresDFq[featuresDFq$chr == chrName[k],][,which(colnames(featuresDFq) == parName[i])],
-                          na.rm = T)$y)
+            na.rm = T)$y)
       })
      )
   )+maxDensityPlus
   
   # Define legend labels
   legendLabs_feature <- lapply(seq_along(chrName), function(x) {
-    grobTree(textGrob(bquote(.(paste0("Quantile ", seq_along(chrName))[x])),
+    grobTree(textGrob(bquote(.(chrName[x])),
                       x = legendLabX, y = 0.90-((x-1)*0.07), just = "left",
                       gp = gpar(col = chrColours[x], fontsize = 22)))
   })
@@ -405,9 +409,8 @@ for(i in seq_along(parName)) {
                          group = reorder(x = get(featureGroup), X = desc(get(featureGroup))))) +
     scale_colour_manual(values = rev(chrColours)) +
     geom_density(size = 1.5) +
-    scale_x_continuous(limits = c(xmin, xmax),
-                       labels = function(x) sprintf(xDec, x)) +
-    scale_y_continuous(limits = c(minDensity, maxDensity),
+#    scale_y_continuous(limits = c(minDensity, maxDensity),
+    scale_y_continuous(
                        labels = function(x) sprintf(yDec, x)) +
     labs(x = parameterLab,
          y = "Density") +
@@ -417,10 +420,10 @@ for(i in seq_along(parName)) {
     annotation_custom(legendLabs[[4]]) +
     annotation_custom(legendLabs[[5]]) +
     theme_bw() +
-    theme(axis.line.y = element_line(size = 2.0, colour = "black"),
-          axis.line.x = element_line(size = 2.0, colour = "black"),
-          axis.ticks.y = element_line(size = 2.0, colour = "black"),
-          axis.ticks.x = element_line(size = 2.0, colour = "black"),
+    theme(axis.line.y = element_line(size = 1.0, colour = "black"),
+          axis.line.x = element_line(size = 1.0, colour = "black"),
+          axis.ticks.y = element_line(size = 0.5, colour = "black"),
+          axis.ticks.x = element_line(size = 0.5, colour = "black"),
           axis.ticks.length = unit(0.25, "cm"),
           axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
           axis.text.x = element_text(size = 18, colour = "black", family = "Luxi Mono"),
@@ -450,13 +453,18 @@ for(i in seq_along(parName)) {
                                 ymax = CIupper),
                   width = 0.2, size = 2, position = position_dodge(width = 0.2)) +
     scale_colour_manual(values = chrColours) +
+#    scale_y_continuous(trans = log10_trans(),
+#                       limits = c(summary_stats_min, summary_stats_max),
+#                       breaks = trans_breaks("log10", function(x) 10^x),
+#                       labels = trans_format("log10", math_format(10^.x))) +
+#    annotation_logticks(sides = "l") +
     scale_y_continuous(limits = c(summary_stats_min, summary_stats_max),
                        labels = function(x) sprintf(yDec2, x)) +
     labs(x = "",
          y = parameterLab) +
     theme_bw() +
-    theme(axis.line.y = element_line(size = 2.0, colour = "black"),
-          axis.ticks.y = element_line(size = 2.0, colour = "black"),
+    theme(axis.line.y = element_line(size = 1.0, colour = "black"),
+          axis.ticks.y = element_line(size = 0.5, colour = "black"),
           axis.ticks.x = element_blank(),
           axis.ticks.length = unit(0.25, "cm"),
           axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
@@ -479,6 +487,20 @@ for(i in seq_along(parName)) {
                                           legendLabs = legendLabs_feature,
                                           chrColours = chrColours
                                          )
+  if(parName[i] %in% c("HORlengthsSum", "HORcount", "minDistToCENAthila")) {
+    ggObjGA_feature <- ggObjGA_feature + scale_x_continuous(trans = log10_trans(),
+                                                            breaks = trans_breaks("log10", function(x) 10^x),
+                                                            labels = trans_format("log10", math_format(10^.x))) +
+                                                            annotation_logticks(sides = "b")
+  } else if(parName[i] %in% c("wSNV")) {
+    ggObjGA_feature <- ggObjGA_feature + scale_x_continuous(trans = log2_trans(),
+                                                            breaks = trans_breaks("log2", function(x) 2^x),
+                                                            labels = trans_format("log2", math_format(2^.x))) +
+                                                            annotation_logticks(sides = "b")
+ } else {
+   ggObjGA_feature <- ggObjGA_feature + scale_x_continuous(limits = c(xmin, xmax),
+                                                           labels = function(x) sprintf(xDec, x))
+ }
   ggObjGA_feature_mean <- popgen_stats_meanCIs(dataFrame = featuresDF_summary_stats,
                                                parameterLab = bquote(.(parNamePlot[i])),
                                                featureGroup = "chr",
@@ -494,4 +516,6 @@ for(i in seq_along(parName)) {
                 paste0(chrName, collapse = "_"), ".pdf"),
          plot = ggObjGA_combined,
          height = 13, width = 7)
+}
+
 }
