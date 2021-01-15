@@ -10,11 +10,11 @@
 #                           split = ","))
 #orderingFactor <- "wSNV"
 #quantiles <- 4
-#densityProp <- 0.99
+#densityProp <- 1.00
 #maxDensityPlus <- 0.2
-#xDec <- "%1.1f"
-#yDec <- "%1.1f"
-#yDec2 <- "%1.2f"
+#xDec <- "%2.0f"
+#yDec <- "%3.1f"
+#yDec2 <- "%2.0f"
 #legendLabX <- 0.65
 
 args <- commandArgs(trailingOnly = T)
@@ -60,6 +60,7 @@ CENGR <- GRanges(seqnames = chrs,
 
 # Define chr colours
 chrColours <- viridis_pal()(length(chrs))
+chrColours[length(chrColours)] <- "orange"
 makeTransparent <- function(thisColour, alpha = 250)
 {
   newColour <- col2rgb(thisColour)
@@ -121,9 +122,9 @@ CENAthilaGR <- GRanges(seqnames = CENAthila$chr,
 # Get distance between each CEN180 and the
 # CENAthila that is closest or furthest away
 featuresDF_dists <- data.frame()
-for(i in seq_along(chrs)) {
-  featuresDFchr <- featuresDF[featuresDF$chr == chrs[i],]
-  CENAthilaGRchr <- CENAthilaGR[seqnames(CENAthilaGR) == chrs[i]] 
+for(i in seq_along(chrName)) {
+  featuresDFchr <- featuresDF[featuresDF$chr == chrName[i],]
+  CENAthilaGRchr <- CENAthilaGR[seqnames(CENAthilaGR) == chrName[i]] 
 
   # Calculate distances between start and end coordinates of CEN180 and CENAthila
   featuresStart_vs_CENAthilaStart <- mclapply(seq_along(featuresDFchr$start), function(x) {
@@ -180,18 +181,18 @@ ggTrend1 <- ggplot(data = featuresDF,
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
               method = "gam", formula = y~s(x)) +
-  labs(x = "Distance to nearest CENAthila",
+  labs(x = "Distance to nearest CENAthila (bp)",
        y = "SNVs") +
   theme_bw() +
   theme(
-        axis.ticks = element_line(size = 1.0, colour = "black"),
+        axis.ticks = element_line(size = 0.5, colour = "black"),
         axis.ticks.length = unit(0.25, "cm"),
         axis.text.x = element_text(size = 16, colour = "black"),
         axis.text.y = element_text(size = 16, colour = "black"),
         axis.title = element_text(size = 18, colour = "black"),
         panel.grid = element_blank(),
         panel.background = element_blank(),
-        panel.border = element_rect(size = 3.5, colour = "black"),
+        panel.border = element_rect(size = 1.0, colour = "black"),
         plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
         plot.title = element_text(hjust = 0.5, size = 18)) +
   ggtitle(bquote(italic(r[s]) ~ "=" ~
@@ -205,28 +206,30 @@ ggTrend1 <- ggplot(data = featuresDF,
 # minDistToCENAthila vs HORlengthsSum
 ggTrend2 <- ggplot(data = featuresDF,
                    mapping = aes(x = minDistToCENAthila,
-                                 y = HORlengthsSum)) +
+                                 y = HORlengthsSum+1)) +
   geom_hex(bins = 40) +
-  scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                labels = trans_format("log10", math_format(10^.x))) +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
   annotation_logticks(sides = "lb") +
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
               method = "gam", formula = y~s(x)) +
-  labs(x = "Distance to nearest CENAthila",
+  labs(x = "Distance to nearest CENAthila (bp)",
        y = "Activity") +
   theme_bw() +
   theme(
-        axis.ticks = element_line(size = 1.0, colour = "black"),
+        axis.ticks = element_line(size = 0.5, colour = "black"),
         axis.ticks.length = unit(0.25, "cm"),
         axis.text.x = element_text(size = 16, colour = "black"),
         axis.text.y = element_text(size = 16, colour = "black"),
         axis.title = element_text(size = 18, colour = "black"),
         panel.grid = element_blank(),
         panel.background = element_blank(),
-        panel.border = element_rect(size = 3.5, colour = "black"),
+        panel.border = element_rect(size = 1.0, colour = "black"),
         plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
         plot.title = element_text(hjust = 0.5, size = 18)) +
   ggtitle(bquote(italic(r[s]) ~ "=" ~
@@ -240,28 +243,30 @@ ggTrend2 <- ggplot(data = featuresDF,
 # minDistToCENAthila vs HORcount
 ggTrend3 <- ggplot(data = featuresDF,
                    mapping = aes(x = minDistToCENAthila,
-                                 y = HORcount)) +
+                                 y = HORcount+1)) +
   geom_hex(bins = 40) +
-  scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                labels = trans_format("log10", math_format(10^.x))) +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                labels = trans_format("log10", math_format(10^.x))) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
   annotation_logticks(sides = "lb") +
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
               method = "gam", formula = y~s(x)) +
-  labs(x = "Distance to nearest CENAthila",
-       y = "Activity") +
+  labs(x = "Distance to nearest CENAthila (bp)",
+       y = "HOR count") +
   theme_bw() +
   theme(
-        axis.ticks = element_line(size = 1.0, colour = "black"),
+        axis.ticks = element_line(size = 0.5, colour = "black"),
         axis.ticks.length = unit(0.25, "cm"),
         axis.text.x = element_text(size = 16, colour = "black"),
         axis.text.y = element_text(size = 16, colour = "black"),
         axis.title = element_text(size = 18, colour = "black"),
         panel.grid = element_blank(),
         panel.background = element_blank(),
-        panel.border = element_rect(size = 3.5, colour = "black"),
+        panel.border = element_rect(size = 1.0, colour = "black"),
         plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
         plot.title = element_text(hjust = 0.5, size = 18)) +
   ggtitle(bquote(italic(r[s]) ~ "=" ~
@@ -277,26 +282,25 @@ ggTrend4 <- ggplot(data = featuresDF,
                    mapping = aes(x = minDistToCENAthila,
                                  y = CENH3_in_bodies)) +
   geom_hex(bins = 40) +
-  scale_x_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                labels = trans_format("log10", math_format(10^.x))) +
-  scale_y_log10(breaks = trans_breaks("log10", function(x) 10^x),
-                labels = trans_format("log10", math_format(10^.x))) +
-  annotation_logticks(sides = "lb") +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "b") +
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
               method = "gam", formula = y~s(x)) +
-  labs(x = "Distance to nearest CENAthila",
+  labs(x = "Distance to nearest CENAthila (bp)",
        y = "CENH3") +
   theme_bw() +
   theme(
-        axis.ticks = element_line(size = 1.0, colour = "black"),
+        axis.ticks = element_line(size = 0.5, colour = "black"),
         axis.ticks.length = unit(0.25, "cm"),
         axis.text.x = element_text(size = 16, colour = "black"),
         axis.text.y = element_text(size = 16, colour = "black"),
         axis.title = element_text(size = 18, colour = "black"),
         panel.grid = element_blank(),
         panel.background = element_blank(),
-        panel.border = element_rect(size = 3.5, colour = "black"),
+        panel.border = element_rect(size = 1.0, colour = "black"),
         plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
         plot.title = element_text(hjust = 0.5, size = 18)) +
   ggtitle(bquote(italic(r[s]) ~ "=" ~
@@ -317,227 +321,177 @@ ggTrend_combined <- grid.arrange(grobs = list(
                                                        1:4
                                                       ))
 ggsave(paste0(outDir,
-              "trends_distance_to_nearest_CENAthila_for_CEN180_in_T2T_Col_",
+              "trends_for_CEN180_distance_to_nearest_CENAthila_in_T2T_Col_",
               paste0(chrName, collapse = "_"), ".pdf"),
        plot = ggTrend_combined, height = 7*1, width = 8*4)
 
 
-# Get row indices for each feature quantile
-chrIndices <- lapply(1:quantiles, function(k) {
-  which(featuresDF$chr == paste0("Quantile ", k))
+# Get row indices for each feature chr
+chrIndices <- lapply(seq_along(chrName), function(k) {
+  which(featuresDF$chr == chrName[k])
 })
-
 
 # Calculate means, SDs, SEMs and 95% CIs
 # and create dataframe of summary statistics for plotting
-featuresDF_quantileMean <- sapply(1:quantiles, function(k) {
-  mean(featuresDF[featuresDF$quantile == paste0("Quantile ", k),][,colnames(featuresDF) == parName,], na.rm = T)
-})
-featuresDF_quantileSD <- sapply(1:quantiles, function(k) {
-  sd(featuresDF[featuresDF$quantile == paste0("Quantile ", k),][,colnames(featuresDF) == parName,], na.rm = T)
-})
-featuresDF_quantileSEM <- sapply(1:quantiles, function(k) {
-  featuresDF_quantileSD[k] / sqrt( (dim(featuresDF[featuresDF$quantile == paste0("Quantile ", k),])[1] - 1) )
-})
-featuresDF_quantileCIlower <- sapply(1:quantiles, function(k) {
-  featuresDF_quantileMean[k] -
-    ( qt(0.975, df = dim(featuresDF[featuresDF$quantile == paste0("Quantile ", k),])[1]-1 ) *
-      featuresDF_quantileSEM[k] )
-})
-featuresDF_quantileCIupper <- sapply(1:quantiles, function(k) {
-  featuresDF_quantileMean[k] +
-    ( qt(0.975, df = dim(featuresDF[featuresDF$quantile == paste0("Quantile ", k),])[1]-1 ) *
-      featuresDF_quantileSEM[k] )
-})
-featuresDF_summary_stats <- data.frame(quantile = paste0("Quantile ", 1:quantiles),
-                                       Mean = featuresDF_quantileMean,
-                                       SD = featuresDF_quantileSD,
-                                       SEM = featuresDF_quantileSEM,
-                                       CIlower = featuresDF_quantileCIlower,
-                                       CIupper = featuresDF_quantileCIupper,
-                                       stringsAsFactors = F)
-
-ranFeatsDF_randomMean <- sapply(1:quantiles, function(k) {
-  mean(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),][,colnames(ranFeatsDF) == parName,], na.rm = T)
-})
-ranFeatsDF_randomSD <- sapply(1:quantiles, function(k) {
-  sd(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),][,colnames(ranFeatsDF) == parName,], na.rm = T)
-})
-ranFeatsDF_randomSEM <- sapply(1:quantiles, function(k) {
-  ranFeatsDF_randomSD[k] / sqrt( (dim(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),])[1] - 1) )
-})
-ranFeatsDF_randomCIlower <- sapply(1:quantiles, function(k) {
-  ranFeatsDF_randomMean[k] -
-    ( qt(0.975, df = dim(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),])[1]-1 ) *
-      ranFeatsDF_randomSEM[k] )
-})
-ranFeatsDF_randomCIupper <- sapply(1:quantiles, function(k) {
-  ranFeatsDF_randomMean[k] +
-    ( qt(0.975, df = dim(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),])[1]-1 ) *
-      ranFeatsDF_randomSEM[k] )
-})
-ranFeatsDF_summary_stats <- data.frame(random = paste0("Random ", 1:quantiles),
-                                       Mean = ranFeatsDF_randomMean,
-                                       SD = ranFeatsDF_randomSD,
-                                       SEM = ranFeatsDF_randomSEM,
-                                       CIlower = ranFeatsDF_randomCIlower,
-                                       CIupper = ranFeatsDF_randomCIupper,
-                                       stringsAsFactors = F)
-summary_stats_min <- min(c(featuresDF_summary_stats$CIlower, ranFeatsDF_summary_stats$CIlower), na.rm = T)
-summary_stats_max <- max(c(featuresDF_summary_stats$CIupper, ranFeatsDF_summary_stats$CIupper), na.rm = T)
-
-featuresDF <- featuresDF[which(featuresDF[,which(colnames(featuresDF) == parName)] <=
-                               quantile(featuresDF[,which(colnames(featuresDF) == parName)],
-                                        probs = densityProp, na.rm = T)),]
-ranFeatsDF <- ranFeatsDF[which(ranFeatsDF[,which(colnames(ranFeatsDF) == parName)] <=
-                               quantile(ranFeatsDF[,which(colnames(ranFeatsDF) == parName)],
-                                        probs = densityProp, na.rm = T)),]
-xmin <- min(c(featuresDF[,which(colnames(featuresDF) == parName)]),
-              na.rm = T)
-xmax <- max(c(featuresDF[,which(colnames(featuresDF) == parName)]),
-              na.rm = T)
-minDensity <- 0
-maxDensity <- max(density(featuresDF[featuresDF$quantile == "Quantile 4",][,which(colnames(featuresDF) == parName)],
-                          na.rm = T)$y)+maxDensityPlus
-maxDensity <- max(
-  c(
-    sapply(1:quantiles, function(k) {
-      max(c(max(density(featuresDF[featuresDF$quantile == paste0("Quantile ", k),][,which(colnames(featuresDF) == parName)],
-                        na.rm = T)$y),
-            max(density(ranFeatsDF[ranFeatsDF$random == paste0("Random ", k),][,which(colnames(featuresDF) == parName)],
-                        na.rm = T)$y)))
-     })
-   )
-)+maxDensityPlus
-
-# Define legend labels
-legendLabs_feature <- lapply(1:quantiles, function(x) {
-  grobTree(textGrob(bquote(.(paste0("Quantile ", 1:quantiles)[x])),
-                    x = legendLabX, y = 0.90-((x-1)*0.07), just = "left",
-                    gp = gpar(col = chrColours[x], fontsize = 22)))
-})
-legendLabs_ranFeat <- lapply(1:quantiles, function(x) {
-  grobTree(textGrob(bquote(.(paste0("Random ", 1:quantiles)[x])),
-                    x = legendLabX, y = 0.90-((x-1)*0.07), just = "left",
-                    gp = gpar(col = chrColours[x], fontsize = 22)))
-})
-
-# Parameter density plot function
-popgen_stats_plotFun <- function(lociDF,
-                                 parameter,
-                                 parameterLab,
-                                 featureGroup,
-                                 featureNamePlot,
-                                 legendLabs,
-                                 chrColours) {
-  ggplot(data = lociDF,
-         mapping = aes(x = get(parameter),
-                       colour = reorder(x = get(featureGroup), X = desc(get(featureGroup))),
-                       group = reorder(x = get(featureGroup), X = desc(get(featureGroup))))) +
-  scale_colour_manual(values = rev(chrColours)) +
-  geom_density(size = 1.5) +
-  scale_x_continuous(limits = c(xmin, xmax),
-                     labels = function(x) sprintf(xDec, x)) +
-  scale_y_continuous(limits = c(minDensity, maxDensity),
-                     labels = function(x) sprintf(yDec, x)) +
-  labs(x = parameterLab,
-       y = "Density") +
-  annotation_custom(legendLabs[[1]]) +
-  annotation_custom(legendLabs[[2]]) +
-  annotation_custom(legendLabs[[3]]) +
-  annotation_custom(legendLabs[[4]]) +
-  theme_bw() +
-  theme(axis.line.y = element_line(size = 2.0, colour = "black"),
-        axis.line.x = element_line(size = 2.0, colour = "black"),
-        axis.ticks.y = element_line(size = 2.0, colour = "black"),
-        axis.ticks.x = element_line(size = 2.0, colour = "black"),
-        axis.ticks.length = unit(0.25, "cm"),
-        axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-        axis.text.x = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-        axis.title = element_text(size = 26, colour = "black"),
-        legend.position = "none",
-        panel.grid = element_blank(),
-        panel.border = element_blank(),
-        panel.background = element_blank(),
-        plot.margin = unit(c(0.3,1.2,0.3,0.3),"cm"),
-        plot.title = element_text(hjust = 0.5, size = 30)) +
-  ggtitle(bquote(.(featureNamePlot)))
+featureNamePlot <- "CEN180 in T2T_Col"
+parName <- colnames(featuresDF)[c(5, 7, 8, 12, 46)]
+print(parName)
+parNamePlot <- c("SNVs", "Activity", "HOR count", "CENH3", "Distance to nearest CENAthila (bp)")
+for(i in seq_along(parName)) {
+  featuresDF_chrMean <- sapply(seq_along(chrName), function(k) {
+    mean(featuresDF[featuresDF$chr == chrName[k],][,colnames(featuresDF) == parName[i],], na.rm = T)
+  })
+  featuresDF_chrSD <- sapply(seq_along(chrName), function(k) {
+    sd(featuresDF[featuresDF$chr == chrName[k],][,colnames(featuresDF) == parName[i],], na.rm = T)
+  })
+  featuresDF_chrSEM <- sapply(seq_along(chrName), function(k) {
+    featuresDF_chrSD[k] / sqrt( (dim(featuresDF[featuresDF$chr == chrName[k],])[1] - 1) )
+  })
+  featuresDF_chrCIlower <- sapply(seq_along(chrName), function(k) {
+    featuresDF_chrMean[k] -
+      ( qt(0.975, df = dim(featuresDF[featuresDF$chr == chrName[k],])[1]-1 ) *
+        featuresDF_chrSEM[k] )
+  })
+  featuresDF_chrCIupper <- sapply(seq_along(chrName), function(k) {
+    featuresDF_chrMean[k] +
+      ( qt(0.975, df = dim(featuresDF[featuresDF$chr == chrName[k],])[1]-1 ) *
+        featuresDF_chrSEM[k] )
+  })
+  featuresDF_summary_stats <- data.frame(chr = chrName,
+                                         Mean = featuresDF_chrMean,
+                                         SD = featuresDF_chrSD,
+                                         SEM = featuresDF_chrSEM,
+                                         CIlower = featuresDF_chrCIlower,
+                                         CIupper = featuresDF_chrCIupper)
+  
+  summary_stats_min <- min(c(featuresDF_summary_stats$CIlower), na.rm = T)
+  summary_stats_max <- max(c(featuresDF_summary_stats$CIupper), na.rm = T)
+  
+  featuresDFq <- featuresDF[which(featuresDF[,which(colnames(featuresDF) == parName[i])] <=
+                                  quantile(featuresDF[,which(colnames(featuresDF) == parName[i])],
+                                           probs = densityProp, na.rm = T)),]
+  xmin <- min(c(featuresDFq[,which(colnames(featuresDFq) == parName[i])]),
+                na.rm = T)
+  xmax <- max(c(featuresDFq[,which(colnames(featuresDFq) == parName[i])]),
+                na.rm = T)
+  minDensity <- 0
+  maxDensity <- max(
+    c(
+      sapply(seq_along(chrName), function(k) {
+        max(density(featuresDFq[featuresDFq$chr == chrName[k],][,which(colnames(featuresDFq) == parName[i])],
+                          na.rm = T)$y)
+      })
+     )
+  )+maxDensityPlus
+  
+  # Define legend labels
+  legendLabs_feature <- lapply(seq_along(chrName), function(x) {
+    grobTree(textGrob(bquote(.(paste0("Quantile ", seq_along(chrName))[x])),
+                      x = legendLabX, y = 0.90-((x-1)*0.07), just = "left",
+                      gp = gpar(col = chrColours[x], fontsize = 22)))
+  })
+  
+  # Parameter density plot function
+  popgen_stats_plotFun <- function(lociDF,
+                                   parameter,
+                                   parameterLab,
+                                   featureGroup,
+                                   featureNamePlot,
+                                   legendLabs,
+                                   chrColours) {
+    ggplot(data = lociDF,
+           mapping = aes(x = get(parameter),
+                         colour = reorder(x = get(featureGroup), X = desc(get(featureGroup))),
+                         group = reorder(x = get(featureGroup), X = desc(get(featureGroup))))) +
+    scale_colour_manual(values = rev(chrColours)) +
+    geom_density(size = 1.5) +
+    scale_x_continuous(limits = c(xmin, xmax),
+                       labels = function(x) sprintf(xDec, x)) +
+    scale_y_continuous(limits = c(minDensity, maxDensity),
+                       labels = function(x) sprintf(yDec, x)) +
+    labs(x = parameterLab,
+         y = "Density") +
+    annotation_custom(legendLabs[[1]]) +
+    annotation_custom(legendLabs[[2]]) +
+    annotation_custom(legendLabs[[3]]) +
+    annotation_custom(legendLabs[[4]]) +
+    annotation_custom(legendLabs[[5]]) +
+    theme_bw() +
+    theme(axis.line.y = element_line(size = 2.0, colour = "black"),
+          axis.line.x = element_line(size = 2.0, colour = "black"),
+          axis.ticks.y = element_line(size = 2.0, colour = "black"),
+          axis.ticks.x = element_line(size = 2.0, colour = "black"),
+          axis.ticks.length = unit(0.25, "cm"),
+          axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+          axis.text.x = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+          axis.title = element_text(size = 26, colour = "black"),
+          legend.position = "none",
+          panel.grid = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          plot.margin = unit(c(0.3,1.2,0.3,0.3),"cm"),
+          plot.title = element_text(hjust = 0.5, size = 30)) +
+    ggtitle(bquote(.(featureNamePlot)))
+  }
+  
+  # Plot means and 95% confidence intervals
+  popgen_stats_meanCIs <- function(dataFrame,
+                                   parameterLab,
+                                   featureGroup,
+                                   featureNamePlot,
+                                   chrColours) {
+    ggplot(data = dataFrame,
+           mapping = aes(x = get(featureGroup),
+                         y = Mean,
+                         colour = get(featureGroup))) +
+    labs(colour = "") +
+    geom_point(shape = 19, size = 6, position = position_dodge(width = 0.2)) +
+    geom_errorbar(mapping = aes(ymin = CIlower,
+                                ymax = CIupper),
+                  width = 0.2, size = 2, position = position_dodge(width = 0.2)) +
+    scale_colour_manual(values = chrColours) +
+    scale_y_continuous(limits = c(summary_stats_min, summary_stats_max),
+                       labels = function(x) sprintf(yDec2, x)) +
+    labs(x = "",
+         y = parameterLab) +
+    theme_bw() +
+    theme(axis.line.y = element_line(size = 2.0, colour = "black"),
+          axis.ticks.y = element_line(size = 2.0, colour = "black"),
+          axis.ticks.x = element_blank(),
+          axis.ticks.length = unit(0.25, "cm"),
+          axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+          axis.text.x = element_text(size = 22, colour = chrColours, hjust = 1.0, vjust = 1.0, angle = 45),
+          axis.title = element_text(size = 26, colour = "black"),
+          legend.position = "none",
+          panel.grid = element_blank(),
+          panel.border = element_blank(),
+          panel.background = element_blank(),
+          plot.margin = unit(c(0.3,1.2,0.1,0.3),"cm"),
+          plot.title = element_text(hjust = 0.5, size = 30)) +
+    ggtitle(bquote(.(featureNamePlot)))
+  }
+  
+  ggObjGA_feature <- popgen_stats_plotFun(lociDF = featuresDFq,
+                                          parameter = parName[i],
+                                          parameterLab = bquote(.(parNamePlot[i])),
+                                          featureGroup = "chr", 
+                                          featureNamePlot = featureNamePlot,
+                                          legendLabs = legendLabs_feature,
+                                          chrColours = chrColours
+                                         )
+  ggObjGA_feature_mean <- popgen_stats_meanCIs(dataFrame = featuresDF_summary_stats,
+                                               parameterLab = bquote(.(parNamePlot[i])),
+                                               featureGroup = "chr",
+                                               featureNamePlot = featureNamePlot,
+                                               chrColours = chrColours
+                                              )
+  ggObjGA_combined <- grid.arrange(ggObjGA_feature,
+                                   ggObjGA_feature_mean,
+                                   ncol = 1, as.table = F)
+  ggsave(paste0(outDir,
+                parName[i], "_densityProp", densityProp, "_at_",
+                "_CEN180_in_T2T_Col_",
+                paste0(chrName, collapse = "_"), ".pdf"),
+         plot = ggObjGA_combined,
+         height = 13, width = 7)
 }
-
-# Plot means and 95% confidence intervals
-popgen_stats_meanCIs <- function(dataFrame,
-                                 parameterLab,
-                                 featureGroup,
-                                 featureNamePlot,
-                                 chrColours) {
-  ggplot(data = dataFrame,
-         mapping = aes(x = get(featureGroup),
-                       y = Mean,
-                       colour = get(featureGroup))) +
-  labs(colour = "") +
-  geom_point(shape = 19, size = 6, position = position_dodge(width = 0.2)) +
-  geom_errorbar(mapping = aes(ymin = CIlower,
-                              ymax = CIupper),
-                width = 0.2, size = 2, position = position_dodge(width = 0.2)) +
-  scale_colour_manual(values = chrColours) +
-  scale_y_continuous(limits = c(summary_stats_min, summary_stats_max),
-                     labels = function(x) sprintf(yDec2, x)) +
-  labs(x = "",
-       y = parameterLab) +
-  theme_bw() +
-  theme(axis.line.y = element_line(size = 2.0, colour = "black"),
-        axis.ticks.y = element_line(size = 2.0, colour = "black"),
-        axis.ticks.x = element_blank(),
-        axis.ticks.length = unit(0.25, "cm"),
-        axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-        axis.text.x = element_text(size = 22, colour = chrColours, hjust = 1.0, vjust = 1.0, angle = 45),
-        axis.title = element_text(size = 26, colour = "black"),
-        legend.position = "none",
-        panel.grid = element_blank(),
-        panel.border = element_blank(),
-        panel.background = element_blank(),
-        plot.margin = unit(c(0.3,1.2,0.1,0.3),"cm"),
-        plot.title = element_text(hjust = 0.5, size = 30)) +
-  ggtitle(bquote(.(featureNamePlot)))
-}
-
-ggObjGA_feature <- popgen_stats_plotFun(lociDF = featuresDF[grepl("Quantile ", featuresDF$quantile),],
-                                        parameter = parName,
-                                        parameterLab = bquote(.(parNamePlot)),
-                                        featureGroup = "quantile", 
-                                        featureNamePlot = featureNamePlot,
-                                        legendLabs = legendLabs_feature,
-                                        chrColours = chrColours
-                                       )
-ggObjGA_ranFeat <- popgen_stats_plotFun(lociDF = ranFeatsDF[grepl("Random ", ranFeatsDF$random),],
-                                        parameter = parName,
-                                        parameterLab = bquote(.(parNamePlot)),
-                                        featureGroup = "random", 
-                                        featureNamePlot = ranFeatNamePlot,
-                                        legendLabs = legendLabs_ranFeat,
-                                        chrColours = chrColours
-                                       )
-ggObjGA_feature_mean <- popgen_stats_meanCIs(dataFrame = featuresDF_summary_stats,
-                                             parameterLab = bquote(.(parNamePlot)),
-                                             featureGroup = "quantile",
-                                             featureNamePlot = featureNamePlot,
-                                             chrColours = chrColours
-                                            )
-ggObjGA_ranFeat_mean <- popgen_stats_meanCIs(dataFrame = ranFeatsDF_summary_stats,
-                                             parameterLab = bquote(.(parNamePlot)),
-                                             featureGroup = "random",
-                                             featureNamePlot = ranFeatNamePlot,
-                                             chrColours = chrColours
-                                            )
-ggObjGA_combined <- grid.arrange(ggObjGA_feature,
-                                 ggObjGA_feature_mean,
-                                 ggObjGA_ranFeat,
-                                 ggObjGA_ranFeat_mean,
-                                 ncol = 2, as.table = F)
-ggsave(paste0(plotDir,
-              parName, "_densityProp", densityProp, "_around_", quantiles, "quantiles",
-              "_by_", orderingFactor,
-              "_of_CEN180_in_T2T_Col_",
-              paste0(chrName, collapse = "_"), ".pdf"),
-       plot = ggObjGA_combined,
-       height = 13, width = 14)
