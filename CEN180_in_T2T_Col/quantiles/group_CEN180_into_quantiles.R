@@ -61,6 +61,8 @@ CEN180 <- read.table(paste0("/home/ajt200/analysis/repeats/CEN180_in_T2T_Col/CEN
 # into 1-based start coordinates (for output as TSV below)
 CEN180[,2] <- CEN180[,2]+1
 colnames(CEN180) <- c("chr", "start", "end", "featureID", "wSNV", "strand", "HORlengthsSum", "HORcount")
+CEN180 <- data.frame(CEN180,
+                     HORavgSize = (CEN180$HORlengthsSum+1) / (CEN180$HORcount+1))
 # Get CEN180 coordinates within chrName
 CEN180 <- CEN180[which(CEN180$chr %in% chrName),]
 
@@ -133,6 +135,7 @@ colnames(ranLoc) <- c("chr", "start", "end", "featureID", "wSNV", "strand")
 ranLoc <- data.frame(ranLoc,
                      HORlengthsSum = NA,
                      HORcount = NA,
+                     HORavgSize = NA,
                      tandem_repeat = NA,
                      array = NA,
                      array_size = NA)
@@ -585,7 +588,7 @@ ranLoc <- data.frame(CEN180,
                      map_K300_E4_in_bodies = control_ranLocMats_bodiesRowMeans[[10]])
 
 # Define set of ordering factors to be used for grouping genes into quantiles
-orderingFactor <- colnames(CEN180)[c(5, 7, 8, 11, 12, 28, 29, 35:37, 39:length(colnames(CEN180)))]
+orderingFactor <- colnames(CEN180)[c(5, 7, 8, 9, 12, 13, 29, 30, 36:38, 40:length(colnames(CEN180)))]
 outDir <- paste0("quantiles_by_", orderingFactor, "/",
                  paste0(chrName, collapse = "_"), "/")
 plotDir <- paste0(outDir, "/plots/")
@@ -700,6 +703,7 @@ profilesVal_feature <- c(
                          list(CEN180$wSNV,
                               CEN180$HORlengthsSum,
                               CEN180$HORcount,
+                              CEN180$HORavgSize,
                               CEN180$array_size),
                          log2ChIP_featureMats_bodiesRowMeans,
                          DNAmeth_featureMats_bodiesRowMeans,
@@ -710,6 +714,7 @@ profilesDF_feature <- as.data.frame(do.call(cbind, profilesVal_feature),
 profileNames_feature <- c("SNVs",
                           "Activity",
                           "HOR count",
+                          "HOR avg. size",
                           "Array size",
                           log2ChIPNamesPlot,
                           DNAmethNamesPlot,
@@ -1087,6 +1092,77 @@ ggTrend8 <- ggplot(data = CEN180,
                          digits = 5)) ~
                  "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
 
+# CENH3_in_bodies vs HORavgSize
+ggTrend9 <- ggplot(data = CEN180,
+                   mapping = aes(x = CENH3_in_bodies,
+                                 y = HORavgSize)) +
+  geom_hex(bins = 60) +
+  scale_y_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x),
+                     labels = trans_format("log2", math_format(2^.x))) +
+  annotation_logticks(sides = "l") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y~s(x)) +
+  labs(x = "CENH3",
+       y = "HOR avg. size") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180$CENH3_in_bodies, CEN180$HORavgSize, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180$CENH3_in_bodies, CEN180$HORavgSize, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# wSNV vs HORavgSize 
+ggTrend10 <- ggplot(data = CEN180,
+                    mapping = aes(x = wSNV,
+                                  y = HORavgSize)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x),
+                     labels = trans_format("log2", math_format(2^.x))) +
+  scale_y_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x),
+                     labels = trans_format("log2", math_format(2^.x))) +
+  annotation_logticks(sides = "lb") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y~s(x)) +
+  labs(x = "SNVs",
+       y = "HOR avg. size") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180$wSNV, CEN180$HORavgSize, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180$wSNV, CEN180$HORavgSize, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
 ggTrend_combined <- grid.arrange(grobs = list(
                                               ggTrend1,
                                               ggTrend2,
@@ -1095,13 +1171,16 @@ ggTrend_combined <- grid.arrange(grobs = list(
                                               ggTrend5,
                                               ggTrend6,
                                               ggTrend7,
-                                              ggTrend8
+                                              ggTrend8,
+                                              ggTrend9,
+                                              ggTrend10
                                              ),
                                  layout_matrix = rbind(
                                                        1:4,
-                                                       5:8
+                                                       5:8,
+                                                       9:12
                                                       ))
 ggsave(paste0(outDir,
               "trends_for_mean_levels_at_CEN180_in_T2T_Col_",
               paste0(chrName, collapse = "_"), ".pdf"),
-       plot = ggTrend_combined, height = 7*2, width = 8*4)
+       plot = ggTrend_combined, height = 7*3, width = 8*4)

@@ -76,6 +76,8 @@ if(grepl("_in_", orderingFactor)) {
   featureNamePlot <- "Activity quantiles"
 } else if(orderingFactor == "HORcount") {
   featureNamePlot <- "HORcount quantiles"
+} else if(orderingFactor == "HORavgSize") {
+  featureNamePlot <- "HOR size quantiles"
 }
 ranFeatNamePlot <- "Random quantiles"
 ranLocNamePlot <- "RanLoc quantiles"

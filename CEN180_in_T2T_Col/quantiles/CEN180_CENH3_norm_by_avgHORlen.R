@@ -1,16 +1,16 @@
-#!/applications/R/R-4.0.0/bin/Rscript
+#!/applications/R/R-3.5.0/bin/Rscript
 
 # Plot density and means with 95% confidence intervals (CIs)
 # of given statistic for each group of CEN180 sequences
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R wSNV SNVs 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%2.0f' '%3.1f' '%2.0f' 0.65
-# /applications/R/R-4.0.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R map_K150_E4_in_bodies 'Mappability (k=150 e=4)' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.2f' '%3.1f' '%1.2f' 0.65
-# /applications/R/R-4.0.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R CENH3_in_bodies 'CENH3' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.1f' '%3.1f' '%1.1f' 0.65
-# /applications/R/R-4.0.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R H3K9me2_in_bodies 'H3K9me2' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.1f' '%3.1f' '%1.1f' 0.65
-# /applications/R/R-4.0.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R H3K27me1_in_bodies 'H3K27me1' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.1f' '%3.1f' '%1.2f' 0.65
-# /applications/R/R-4.0.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R HORlengthsSum 'Activity' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.0f' '%1.2f' '%1.0f' 0.65
-# /applications/R/R-4.0.0/bin/Rscript CEN180_quantile_stat_density_mean_95CI_plot.R array_size 'Array size' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.0f' '%1.2f' '%1.0f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_CENH3_norm_by_avgHORlen.R wSNV SNVs 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%2.0f' '%3.1f' '%2.0f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_CENH3_norm_by_avgHORlen.R map_K150_E4_in_bodies 'Mappability (k=150 e=4)' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.2f' '%3.1f' '%1.2f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_CENH3_norm_by_avgHORlen.R CENH3_in_bodies 'CENH3' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.1f' '%3.1f' '%1.1f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_CENH3_norm_by_avgHORlen.R H3K9me2_in_bodies 'H3K9me2' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.1f' '%3.1f' '%1.1f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_CENH3_norm_by_avgHORlen.R H3K27me1_in_bodies 'H3K27me1' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.1f' '%3.1f' '%1.2f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_CENH3_norm_by_avgHORlen.R HORlengthsSum 'Activity' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.0f' '%1.2f' '%1.0f' 0.65
+# /applications/R/R-3.5.0/bin/Rscript CEN180_CENH3_norm_by_avgHORlen.R array_size 'Array size' 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 1.00 0.2 '%1.0f' '%1.2f' '%1.0f' 0.65
 
 #parName <- "wSNV"
 #parNamePlot <- "SNVs"
@@ -18,7 +18,7 @@
 #                           split = ","))
 #orderingFactor <- "wSNV"
 #quantiles <- 4
-#densityProp <- 0.99
+#densityProp <- 1.0
 #maxDensityPlus <- 0.2
 #xDec <- "%1.1f"
 #yDec <- "%1.1f"
@@ -72,9 +72,6 @@ if(length(chrName) == 5) {
   } else if(orderingFactor == "HORcount") {
     featureNamePlot <- paste0("Genome-wide", " ",
                               "HORcount quantiles")
-  } else if(orderingFactor == "HORavgSize") {
-    featureNamePlot <- paste0("Genome-wide", " ",
-                              "HOR size quantiles")
   }
   ranFeatNamePlot <- paste0("Genome-wide", " ",
                             "random quantiles")
@@ -94,9 +91,6 @@ if(length(chrName) == 5) {
   } else if(orderingFactor == "HORcount") {
     featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
                               "HORcount quantiles")
-  } else if(orderingFactor == "HORavgSize") {
-    featureNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
-                              "HOR size quantiles")
   }
   ranFeatNamePlot <- paste0(paste0(chrName, collapse = "_"), " ",
                             "random quantiles")
@@ -190,6 +184,10 @@ for(k in 1:quantiles) {
   ranFeatsDFk <- featuresDFtmp[featuresDFtmp$random == paste0("Random ", k),]
   ranFeatsDF <- rbind(ranFeatsDF, ranFeatsDFk)
 }
+
+featuresDF_avgHORlen <- (featuresDF$HORlengthsSum+1) / (featuresDF$HORcount+1)
+featuresDF[,colnames(featuresDF) == parName,] <- featuresDF[,colnames(featuresDF) == parName,] /
+                                                 featuresDF_avgHORlen 
 
 # Calculate means, SDs, SEMs and 95% CIs
 # and create dataframe of summary statistics for plotting
