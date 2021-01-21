@@ -13,6 +13,8 @@
 
 # /applications/R/R-4.0.0/bin/Rscript CEN180_CENAthila_CENgap_TEsuperfam_genes_5metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 11000 1000 2200 1000 1kb 10 200 10bp 10bp '0.02,0.40' 'WT_CENH3_Rep1_ChIP_SRR4430537,WT_REC8_HA_Rep2_ChIP,WT_ASY1_Rep1_ChIP,WT_H3K9me2_Rep1_ChIP,WT_H3K27me1_Rep1_ChIP' 'CENH3_seedlings_Maheshwari_Comai_2017_GenomeRes/snakemake_ChIPseq_T2T_Col,REC8_pooled/snakemake_ChIPseq_T2T_Col,20190722_cal66_Athaliana_ChIPseq_ASY1/fastq_pooled/snakemake_ChIPseq_T2T_Col,170101_Chris_H3K9me2_ChIP/WT/snakemake_ChIPseq_T2T_Col,170920_Chris_histone_ChIP/snakemake_ChIPseq_T2T_Col' 'CENH3,REC8-HA,ASY1,H3K9me2,H3K27me1' 'red,forestgreen,dodgerblue2,magenta,darkorange2' 'ChIP'
 
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENAthila_CENgap_TEsuperfam_genes_5metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 11000 1000 2200 1000 1kb 10 200 10bp 10bp '0.02,0.40' 'WT_CENH3_Rep1_ChIP_SRR4430537,WT_H3K9me2_Rep1_ChIP,WT_H3K27me1_Rep1_ChIP,H2AW6_ChIP_SRR5298545,H2AW7_ChIP_SRR5298546' 'CENH3_seedlings_Maheshwari_Comai_2017_GenomeRes/snakemake_ChIPseq_T2T_Col,170101_Chris_H3K9me2_ChIP/WT/snakemake_ChIPseq_T2T_Col,170920_Chris_histone_ChIP/snakemake_ChIPseq_T2T_Col,HTA6_HTA7_leaf_Lorkovic_Berger_2017_CurrBiol/snakemake_ChIPseq_T2T_Col,HTA6_HTA7_leaf_Lorkovic_Berger_2017_CurrBiol/snakemake_ChIPseq_T2T_Col' 'CENH3,H3K9me2,H3K27me1,H2A.W.6,H2A.W.7' 'red,magenta,darkorange2,navy,darkgreen' 'ChIP'
+
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
 #align <- "both"
