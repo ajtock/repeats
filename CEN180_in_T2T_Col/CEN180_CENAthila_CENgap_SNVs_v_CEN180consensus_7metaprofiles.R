@@ -9,12 +9,12 @@
 # for all CEN180 sequences and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENAthila_CENgap_SNVs_v_CEN180consensus_7metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 1000 1000 1kb 10 10 10bp 10bp '0.02,0.96'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENAthila_CENgap_SNVs_v_CEN180consensus_7metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 500 1000 1kb 10 10 10bp 10bp '0.02,0.96'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
 #bodyLength <- 180
-#Athila_bodyLength <- 1000
+#Athila_bodyLength <- 500
 #upstream <- 1000
 #downstream <- 1000
 #flankName <- "1kb"
@@ -115,7 +115,7 @@ ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_CEN180_consensus_variants_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = F, skip = 3))
+                         header = T))
   })
 }, mc.cores = length(ChIPNames))
 # If features from multiple chromosomes are to be analysed,
@@ -136,7 +136,7 @@ ChIP_ranLocMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_CEN180_consensus_variants_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_ranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = F, skip = 3))
+                         header = T))
   })
 }, mc.cores = length(ChIPNames))
 # If ranLocs from multiple chromosomes are to be analysed,
@@ -157,7 +157,7 @@ ChIP_gapMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_CEN180_consensus_variants_MappedOn_T2T_Col_around_CENgap_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = F, skip = 3))
+                         header = T))
   })
 }, mc.cores = length(ChIPNames))
 # If gaps from multiple chromosomes are to be analysed,
@@ -178,7 +178,7 @@ ChIP_AthilaMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_CEN180_consensus_variants_MappedOn_T2T_Col_around_CENAthila_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = F, skip = 3))
+                         header = T))
   })
 }, mc.cores = length(ChIPNames))
 # If Athilas from multiple chromosomes are to be analysed,
