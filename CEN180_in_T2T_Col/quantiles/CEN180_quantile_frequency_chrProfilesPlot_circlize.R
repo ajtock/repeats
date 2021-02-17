@@ -33,6 +33,7 @@ if(floor(log10(genomeBinSize)) + 1 < 4) {
 }
 
 options(stringsAsFactors = F)
+options(scipen=999)
 library(parallel)
 library(GenomicRanges)
 library(circlize)
@@ -133,6 +134,12 @@ CENH3 <- read.table(paste0("/home/ajt200/analysis/CENH3_seedlings_Maheshwari_Com
                            "WT_CENH3_Rep1_ChIP_SRR4430537_WT_REC8_Myc_Rep1_input_MappedOn_T2T_Col_lowXM_both_sort_norm_binSize",
                            genomeBinName, "_smoothed.tsv"),
                     header = T, sep = "\t")
+DNAmethPE <- read.table(paste0("/home/ajt200/analysis/BSseq_seedling_Yang_Zhu_2016_CellRes/",
+                               "snakemake_BSseq_T2T_Col/coverage/tsv/",
+                               "DNAmeth_Col0_BSseq_Rep1_MappedOn_T2T_Col_dedup_binSize",
+                               "200kb_smoothed.tsv"),
+                        header = T, sep = "\t")
+
 
 # Convert to BED-like format for use with circlize
 CENH3_in_bodies_CEN180_bed <- data.frame(chr = CENH3_in_bodies_CEN180$chr,
@@ -160,6 +167,12 @@ CENH3_bed <- data.frame(chr = CENH3$chr,
                         start = CENH3$window-1,
                         end = CENH3$window-1+genomeBinSize,
                         value1 = CENH3[,6])
+DNAmethPE_bed <- data.frame(chr = DNAmethPE$chr,
+                            start = DNAmethPE$window-1,
+                            end = DNAmethPE$window-1+200000,
+                            value1 = DNAmethPE[,4],
+                            value2 = DNAmethPE[,5],
+                            value3 = DNAmethPE[,6])
 
 # Redefine end coordinate of last window to match chrLens for each chromosome
 for(x in seq_along(chrs)) {
@@ -167,6 +180,7 @@ for(x in seq_along(chrs)) {
   HORlengthsSum_CEN180_bed[HORlengthsSum_CEN180_bed$chr == chrs[x],][dim(HORlengthsSum_CEN180_bed[HORlengthsSum_CEN180_bed$chr == chrs[x],])[1],]$end <- chrLens[x]
   wSNV_CEN180_bed[wSNV_CEN180_bed$chr == chrs[x],][dim(wSNV_CEN180_bed[wSNV_CEN180_bed$chr == chrs[x],])[1],]$end <- chrLens[x]
   CENH3_bed[CENH3_bed$chr == chrs[x],][dim(CENH3_bed[CENH3_bed$chr == chrs[x],])[1],]$end <- chrLens[x]
+  DNAmethPE_bed[DNAmethPE_bed$chr == chrs[x],][dim(DNAmethPE_bed[DNAmethPE_bed$chr == chrs[x],])[1],]$end <- chrLens[x]
 }
 
 
@@ -186,7 +200,7 @@ pdf(paste0(plotDir,
            "CEN180_frequency_per_", genomeBinName,
            "_", quantiles, "quantiles",
            "_of_CEN180_in_T2T_Col_",
-           paste0(chrName, collapse = "_"), "_circlize.pdf"))
+           paste0(chrName, collapse = "_"), "_circlize_", quantileDef, ".pdf"))
 circos.par(track.height = 0.1,
            canvas.xlim = c(-1.1, 1.1),
            canvas.ylim = c(-1.1, 1.1),
@@ -260,7 +274,37 @@ circos.genomicTrack(data = CENH3_bed,
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
                                           value,
-                                          col = "grey50",
+                                          col = "darkorange1",
+                                          area = TRUE,
+                                          baseline = 0,
+                                          border = NA,
+                                          ...)
+                    })
+circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 4, 
+                    panel.fun = function(region, value, ...) {
+                      circos.genomicLines(region,
+                                          value,
+                                          col = "dodgerblue4",
+                                          area = TRUE,
+                                          baseline = 0,
+                                          border = NA,
+                                          ...)
+                    })
+circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 5, 
+                    panel.fun = function(region, value, ...) {
+                      circos.genomicLines(region,
+                                          value,
+                                          col = "dodgerblue1",
+                                          area = TRUE,
+                                          baseline = 0,
+                                          border = NA,
+                                          ...)
+                    })
+circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 6, 
+                    panel.fun = function(region, value, ...) {
+                      circos.genomicLines(region,
+                                          value,
+                                          col = "cyan2",
                                           area = TRUE,
                                           baseline = 0,
                                           border = NA,
