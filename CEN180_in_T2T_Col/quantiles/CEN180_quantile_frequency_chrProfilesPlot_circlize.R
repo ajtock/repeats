@@ -195,50 +195,77 @@ df <- do.call(rbind, lapply(seq_along(chrs), function(x) {
              y = runif(n))
 }))
 
+genomeDF <- data.frame(chr = chrs,
+                       start = rep(0, length(chrs)),
+
+                       end = chrLens)
+#circos.initialize(sectors = df$sectors,
+#                  x = df$x)
+#circos.initialize(sectors = rep(chrs, 2),
+#                  x = c(c(rep(0, 5)), chrLens))
+
 # Initialize circular layout in PDF
 pdf(paste0(plotDir,
            "CEN180_frequency_per_", genomeBinName,
            "_", quantiles, "quantiles",
            "_of_CEN180_in_T2T_Col_",
-           paste0(chrName, collapse = "_"), "_circlize_", quantileDef, ".pdf"))
+           paste0(chrName, collapse = "_"), "_circlize_", quantileDef, "_test.pdf"))
 circos.par(track.height = 0.1,
            canvas.xlim = c(-1.1, 1.1),
            canvas.ylim = c(-1.1, 1.1),
            start.degree = 90)
-#circos.initialize(sectors = df$sectors,
-#                  x = df$x)
-circos.initialize(sectors = rep(chrs, 2),
-                  x = c(c(rep(0, 5)), chrLens))
-
-# Add graphics in track-by-track manner using circos.trackPlotRegion() or circos.track() for short
-# Similar to the "base R graphic engine, [where] you need [to] first call plot(),
-# then you can use functions such as points() and lines() to add graphics."
-circos.track(sectors = df$sectors,
-             y = df$y,
+circos.genomicInitialize(data = genomeDF,
+                         plotType = NULL,
+                         tickLabelsStartFromZero = TRUE)
+circos.track(ylim = c(0, 1),
+             bg.col = "grey80",
+             bg.border = NA,
+             track.height = 0.05,
              panel.fun = function(x, y) {
-               circos.text(x = CELL_META$xcenter,
-                           y = CELL_META$cell.ylim[2] + mm_y(8),
-                           labels = CELL_META$sector.index)
-               circos.axis(h = 1.3,
-                           labels.cex = 0.6,
-                           labels.niceFacing = FALSE)
+               circos.genomicAxis(h = "top",
+                                  labels.facing = "clockwise")
              })
-col = c("dodgerblue2", "orange2", "green2", "magenta2", "purple4")
-circos.trackPoints(sectors = df$sectors,
-                   x = df$x,
-                   y = df$y,
-                   col = col,
-                   pch = 16,
-                   cex = 0.5)
 sapply(seq_along(chrs), function(x) {
   circos.text(x = (CENstart[x]+CENend[x])/2,
               y = 0.5,
               labels = paste0("CEN", x),
               sector.index = chrs[x],
               track.index = 1,
-              col = "black",
+              cex = 0.8,
+              col = "white",
               font = 4)
 })
+
+# Add graphics in track-by-track manner using circos.trackPlotRegion() or circos.track() for short
+# Similar to the "base R graphic engine, [where] you need [to] first call plot(),
+# then you can use functions such as points() and lines() to add graphics."
+#circos.track(sectors = df$sectors,
+#             y = df$y,
+#             panel.fun = function(x, y) {
+#               circos.text(x = CELL_META$xcenter,
+#                           y = CELL_META$cell.ylim[2] + mm_y(8),
+#                           labels = CELL_META$sector.index)
+#               circos.axis(h = 1.3,
+#                           labels.cex = 0.6,
+#                           labels.niceFacing = FALSE)
+#             })
+#col = c("dodgerblue2", "orange2", "green2", "magenta2", "purple4")
+#circos.trackPoints(sectors = df$sectors,
+#                   x = df$x,
+#                   y = df$y,
+#                   col = col,
+#                   pch = 16,
+#                   cex = 0.5)
+#sapply(seq_along(chrs), function(x) {
+#  circos.text(x = (CENstart[x]+CENend[x])/2,
+#              y = 0.5,
+#              labels = paste0("CEN", x),
+#              sector.index = chrs[x],
+#              track.index = 1,
+#              col = "white",
+#              font = 4)
+#})
+
 # Plot windowed CEN180 frequency for each quantile
 circos.genomicTrack(data = CENH3_in_bodies_CEN180_bed,
                     panel.fun = function(region, value, ...) {
