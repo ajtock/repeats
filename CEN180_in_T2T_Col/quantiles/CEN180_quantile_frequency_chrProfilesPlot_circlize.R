@@ -269,7 +269,9 @@ sapply(seq_along(chrs), function(x) {
 
 # Plot windowed CEN180 frequency for each quantile
 circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
-  CENH3_in_bodies_CEN180_bed[CENH3_in_bodies_CEN180_bed$chr == chrs[x] & CENH3_in_bodies_CEN180_bed$start >= genomeDF$start[x] & CENH3_in_bodies_CEN180_bed$end <= genomeDF$end[x],] } )),
+  CENH3_in_bodies_CEN180_bed[CENH3_in_bodies_CEN180_bed$chr == chrs[x] &
+                             CENH3_in_bodies_CEN180_bed$start >= genomeDF$start[x] &
+                             CENH3_in_bodies_CEN180_bed$end <= genomeDF$end[x],] } )),
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
                                           value,
@@ -279,7 +281,10 @@ circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
                                           area = FALSE,
                                           ...)
                     }, bg.border = NA)
-circos.genomicTrack(data = HORlengthsSum_CEN180_bed,
+circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
+  HORlengthsSum_CEN180_bed[HORlengthsSum_CEN180_bed$chr == chrs[x] &
+                           HORlengthsSum_CEN180_bed$start >= genomeDF$start[x] &
+                           HORlengthsSum_CEN180_bed$end <= genomeDF$end[x],] } )),
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
                                           value,
@@ -289,7 +294,10 @@ circos.genomicTrack(data = HORlengthsSum_CEN180_bed,
                                           area = FALSE,
                                           ...)
                     }, bg.border = NA)
-circos.genomicTrack(data = wSNV_CEN180_bed,
+circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
+  wSNV_CEN180_bed[wSNV_CEN180_bed$chr == chrs[x] &
+                  wSNV_CEN180_bed$start >= genomeDF$start[x] &
+                  wSNV_CEN180_bed$end <= genomeDF$end[x],] } )),
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
                                           value,
@@ -299,7 +307,10 @@ circos.genomicTrack(data = wSNV_CEN180_bed,
                                           area = FALSE,
                                           ...)
                     }, bg.border = NA)
-circos.genomicTrack(data = CENH3_bed,
+circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
+  CENH3_bed[CENH3_bed$chr == chrs[x] &
+            CENH3_bed$start >= genomeDF$start[x] &
+            CENH3_bed$end <= genomeDF$end[x],] } )),
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
                                           value,
