@@ -346,7 +346,7 @@ circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
                                           baseline = 0,
                                           border = NA,
                                           ...)
-                    }, bg.border = NA)
+                    }, bg.border = NA, track.height = 0.05)
 circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
   DNAmethPE_bed[DNAmethPE_bed$chr == chrs[x] &
                 DNAmethPE_bed$start >= genomeDF$start[x] &
@@ -359,7 +359,7 @@ circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
                                           baseline = 0,
                                           border = NA,
                                           ...)
-                    }, bg.border = NA)
+                    }, bg.border = NA, track.height = 0.05)
 circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
   DNAmethPE_bed[DNAmethPE_bed$chr == chrs[x] &
                 DNAmethPE_bed$start >= genomeDF$start[x] &
@@ -372,7 +372,7 @@ circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
                                           baseline = 0,
                                           border = NA,
                                           ...)
-                    }, bg.border = NA)
+                    }, bg.border = NA, track.height = 0.05)
 circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
   DNAmethPE_bed[DNAmethPE_bed$chr == chrs[x] &
                 DNAmethPE_bed$start >= genomeDF$start[x] &
@@ -385,7 +385,7 @@ circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
                                           baseline = 0,
                                           border = NA,
                                           ...)
-                    }, bg.border = NA)
+                    }, bg.border = NA, track.height = 0.05)
 dev.off()
 # Reset graphic parameters and internal variables
 circos.clear()
@@ -514,7 +514,7 @@ circos.genomicTrack(data = CENH3_bed,
                                           baseline = 0,
                                           border = NA,
                                           ...)
-                    }, bg.border = NA)
+                    }, bg.border = NA, track.height = 0.05)
 circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 4, 
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
@@ -524,7 +524,7 @@ circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 4,
                                           baseline = 0,
                                           border = NA,
                                           ...)
-                    }, bg.border = NA)
+                    }, bg.border = NA, track.height = 0.05)
 circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 5, 
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
@@ -534,7 +534,7 @@ circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 5,
                                           baseline = 0,
                                           border = NA,
                                           ...)
-                    }, bg.border = NA)
+                    }, bg.border = NA, track.height = 0.05)
 circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 6, 
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
@@ -544,7 +544,7 @@ circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 6,
                                           baseline = 0,
                                           border = NA,
                                           ...)
-                    }, bg.border = NA)
+                    }, bg.border = NA, track.height = 0.05)
 dev.off()
 # Reset graphic parameters and internal variables
 circos.clear()
