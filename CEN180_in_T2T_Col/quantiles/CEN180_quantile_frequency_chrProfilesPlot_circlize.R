@@ -196,8 +196,155 @@ df <- do.call(rbind, lapply(seq_along(chrs), function(x) {
 }))
 
 genomeDF <- data.frame(chr = chrs,
-                       start = rep(0, length(chrs)),
+                       start = c(8e6, 0, 7e6, 0, 6e6),
+                       end = c(24e6, 10e6, 23e6, 11e6, 21e6))
+#circos.initialize(sectors = df$sectors,
+#                  x = df$x)
+#circos.initialize(sectors = rep(chrs, 2),
+#                  x = c(c(rep(0, 5)), chrLens))
 
+# Initialize circular layout in PDF
+pdf(paste0(plotDir,
+           "CEN180_frequency_per_", genomeBinName,
+           "_", quantileDef, "_", quantiles, "quantiles",
+           "_of_CEN180_in_T2T_Col_",
+           paste0(chrName, collapse = "_"), "_circlize_zoom.pdf"))
+circos.par(track.height = 0.1,
+           canvas.xlim = c(-1.1, 1.1),
+           canvas.ylim = c(-1.1, 1.1),
+           start.degree = 90)
+circos.genomicInitialize(data = genomeDF,
+                         plotType = NULL,
+                         tickLabelsStartFromZero = FALSE)
+circos.track(ylim = c(0, 1),
+             bg.col = "grey70",
+             bg.border = NA,
+             track.height = 0.05,
+             panel.fun = function(x, y) {
+               circos.genomicAxis(h = "top",
+                                  labels.facing = "clockwise",
+                                  tickLabelsStartFromZero = FALSE)
+             })
+sapply(seq_along(chrs), function(x) {
+  circos.text(x = (CENstart[x]+CENend[x])/2,
+              y = 0.5,
+              sector.index = chrs[x],
+              track.index = 1,
+              labels = paste0("CEN", x),
+              niceFacing = TRUE,
+              cex = 0.8,
+              col = "white",
+              font = 4)
+})
+
+# Add graphics in track-by-track manner using circos.trackPlotRegion() or circos.track() for short
+# Similar to the "base R graphic engine, [where] you need [to] first call plot(),
+# then you can use functions such as points() and lines() to add graphics."
+#circos.track(sectors = df$sectors,
+#             y = df$y,
+#             panel.fun = function(x, y) {
+#               circos.text(x = CELL_META$xcenter,
+#                           y = CELL_META$cell.ylim[2] + mm_y(8),
+#                           labels = CELL_META$sector.index)
+#               circos.axis(h = 1.3,
+#                           labels.cex = 0.6,
+#                           labels.niceFacing = FALSE)
+#             })
+#col = c("dodgerblue2", "orange2", "green2", "magenta2", "purple4")
+#circos.trackPoints(sectors = df$sectors,
+#                   x = df$x,
+#                   y = df$y,
+#                   col = col,
+#                   pch = 16,
+#                   cex = 0.5)
+#sapply(seq_along(chrs), function(x) {
+#  circos.text(x = (CENstart[x]+CENend[x])/2,
+#              y = 0.5,
+#              labels = paste0("CEN", x),
+#              sector.index = chrs[x],
+#              track.index = 1,
+#              col = "white",
+#              font = 4)
+#})
+
+# Plot windowed CEN180 frequency for each quantile
+circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
+  CENH3_in_bodies_CEN180_bed[CENH3_in_bodies_CEN180_bed$chr == chrs[x] & CENH3_in_bodies_CEN180_bed$start >= genomeDF$start[x] & CENH3_in_bodies_CEN180_bed$end <= genomeDF$end[x],] } )),
+                    panel.fun = function(region, value, ...) {
+                      circos.genomicLines(region,
+                                          value,
+                                          col = quantileColours,
+                                          lwd = 1,
+                                          lty = 1,
+                                          area = FALSE,
+                                          ...)
+                    }, bg.border = NA)
+circos.genomicTrack(data = HORlengthsSum_CEN180_bed,
+                    panel.fun = function(region, value, ...) {
+                      circos.genomicLines(region,
+                                          value,
+                                          col = quantileColours,
+                                          lwd = 1,
+                                          lty = 1,
+                                          area = FALSE,
+                                          ...)
+                    }, bg.border = NA)
+circos.genomicTrack(data = wSNV_CEN180_bed,
+                    panel.fun = function(region, value, ...) {
+                      circos.genomicLines(region,
+                                          value,
+                                          col = quantileColours,
+                                          lwd = 1,
+                                          lty = 1,
+                                          area = FALSE,
+                                          ...)
+                    }, bg.border = NA)
+circos.genomicTrack(data = CENH3_bed,
+                    panel.fun = function(region, value, ...) {
+                      circos.genomicLines(region,
+                                          value,
+                                          col = "darkorange1",
+                                          area = TRUE,
+                                          baseline = 0,
+                                          border = NA,
+                                          ...)
+                    }, bg.border = NA)
+circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 4, 
+                    panel.fun = function(region, value, ...) {
+                      circos.genomicLines(region,
+                                          value,
+                                          col = "dodgerblue4",
+                                          area = TRUE,
+                                          baseline = 0,
+                                          border = NA,
+                                          ...)
+                    }, bg.border = NA)
+circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 5, 
+                    panel.fun = function(region, value, ...) {
+                      circos.genomicLines(region,
+                                          value,
+                                          col = "dodgerblue1",
+                                          area = TRUE,
+                                          baseline = 0,
+                                          border = NA,
+                                          ...)
+                    }, bg.border = NA)
+circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 6, 
+                    panel.fun = function(region, value, ...) {
+                      circos.genomicLines(region,
+                                          value,
+                                          col = "cyan2",
+                                          area = TRUE,
+                                          baseline = 0,
+                                          border = NA,
+                                          ...)
+                    }, bg.border = NA)
+dev.off()
+# Reset graphic parameters and internal variables
+circos.clear()
+
+genomeDF <- data.frame(chr = chrs,
+                       start = rep(0, length(chrs)),
                        end = chrLens)
 #circos.initialize(sectors = df$sectors,
 #                  x = df$x)
@@ -207,9 +354,9 @@ genomeDF <- data.frame(chr = chrs,
 # Initialize circular layout in PDF
 pdf(paste0(plotDir,
            "CEN180_frequency_per_", genomeBinName,
-           "_", quantiles, "quantiles",
+           "_", quantileDef, "_", quantiles, "quantiles",
            "_of_CEN180_in_T2T_Col_",
-           paste0(chrName, collapse = "_"), "_circlize_", quantileDef, "_test.pdf"))
+           paste0(chrName, collapse = "_"), "_circlize_whole.pdf"))
 circos.par(track.height = 0.1,
            canvas.xlim = c(-1.1, 1.1),
            canvas.ylim = c(-1.1, 1.1),
@@ -218,19 +365,22 @@ circos.genomicInitialize(data = genomeDF,
                          plotType = NULL,
                          tickLabelsStartFromZero = TRUE)
 circos.track(ylim = c(0, 1),
-             bg.col = "grey80",
+             bg.col = "grey70",
              bg.border = NA,
              track.height = 0.05,
              panel.fun = function(x, y) {
                circos.genomicAxis(h = "top",
-                                  labels.facing = "clockwise")
+                                  labels.facing = "clockwise",
+                                  tickLabelsStartFromZero = TRUE)
+
              })
 sapply(seq_along(chrs), function(x) {
   circos.text(x = (CENstart[x]+CENend[x])/2,
               y = 0.5,
-              labels = paste0("CEN", x),
               sector.index = chrs[x],
               track.index = 1,
+              labels = paste0("CEN", x),
+              niceFacing = TRUE,
               cex = 0.8,
               col = "white",
               font = 4)
@@ -276,7 +426,7 @@ circos.genomicTrack(data = CENH3_in_bodies_CEN180_bed,
                                           lty = 1,
                                           area = FALSE,
                                           ...)
-                    })
+                    }, bg.border = NA)
 circos.genomicTrack(data = HORlengthsSum_CEN180_bed,
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
@@ -286,7 +436,7 @@ circos.genomicTrack(data = HORlengthsSum_CEN180_bed,
                                           lty = 1,
                                           area = FALSE,
                                           ...)
-                    })
+                    }, bg.border = NA)
 circos.genomicTrack(data = wSNV_CEN180_bed,
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
@@ -296,7 +446,7 @@ circos.genomicTrack(data = wSNV_CEN180_bed,
                                           lty = 1,
                                           area = FALSE,
                                           ...)
-                    })
+                    }, bg.border = NA)
 circos.genomicTrack(data = CENH3_bed,
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
@@ -306,7 +456,7 @@ circos.genomicTrack(data = CENH3_bed,
                                           baseline = 0,
                                           border = NA,
                                           ...)
-                    })
+                    }, bg.border = NA)
 circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 4, 
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
@@ -316,7 +466,7 @@ circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 4,
                                           baseline = 0,
                                           border = NA,
                                           ...)
-                    })
+                    }, bg.border = NA)
 circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 5, 
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
@@ -326,7 +476,7 @@ circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 5,
                                           baseline = 0,
                                           border = NA,
                                           ...)
-                    })
+                    }, bg.border = NA)
 circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 6, 
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
@@ -336,89 +486,7 @@ circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 6,
                                           baseline = 0,
                                           border = NA,
                                           ...)
-                    })
+                    }, bg.border = NA)
 dev.off()
 # Reset graphic parameters and internal variables
 circos.clear()
-
-
-
-# Get minimum and maximum levels across chrName
-min_wSNV_CEN180Chr <- min(unlist(mclapply(which(chrs %in% chrName),
-  function(x) {
-    min(c(wSNV_CEN180Chr[[x]][,3],
-          wSNV_CEN180Chr[[x]][,4],
-          wSNV_CEN180Chr[[x]][,5],
-          wSNV_CEN180Chr[[x]][,6]), na.rm = T)
-}, mc.cores = length(wSNV_CEN180Chr))))
-max_wSNV_CEN180Chr <- max(unlist(mclapply(which(chrs %in% chrName),
-  function(x) {
-    max(c(wSNV_CEN180Chr[[x]][,3],
-          wSNV_CEN180Chr[[x]][,4],
-          wSNV_CEN180Chr[[x]][,5],
-          wSNV_CEN180Chr[[x]][,6]), na.rm = T)
-}, mc.cores = length(wSNV_CEN180Chr))))
-
-min_CENH3Chr <- min(unlist(mclapply(which(chrs %in% chrName),
-  function(x) {
-    min(c(CENH3Chr[[x]][,6]), na.rm = T)
-}, mc.cores = length(CENH3Chr))))
-max_CENH3Chr <- max(unlist(mclapply(which(chrs %in% chrName),
-  function(x) {
-    max(c(CENH3Chr[[x]][,6]), na.rm = T)
-}, mc.cores = length(CENH3Chr))))
-
-pdf(paste0(plotDir,
-           "CEN180_frequency_per_", genomeBinName,
-           "_", quantiles, "quantiles_",
-           "_by_wSNV",
-           "_of_CEN180_in_T2T_Col_",
-           paste0(chrName, collapse = "_"), ".pdf"),
-           height = 4*length(chrName), width = 16)
-par(mfrow = c(length(chrName), 1))
-par(mar = c(5.0, 9.0, 4.0, 9.0))
-for(x in which(chrs %in% chrName)) {
-  par(mgp = c(3, 1, 0))
-  plot(x = CENH3Chr[[x]][,2],
-       y = CENH3Chr[[x]][,6],
-       col = "grey50",
-       type = "h", lwd = 1.0,
-       xlim = c(0, max(chrLens[chrs %in% chrName])),
-       ylim = c(-max((min_CENH3Chr*-1), max_CENH3Chr),
-                max((min_CENH3Chr*-1), max_CENH3Chr)),
-       xlab = "", ylab = "",
-       xaxt = "n", yaxt = "n",
-       main = bquote(.(featureNamePlot)), font.main = 1, cex.main = 3.0)
-  axis(side = 2, cex.axis = 2.0, lwd = 2.0, lwd.tick = 2.0, col = "black", col.axis = "black", line = 0.0)
-  mtext(side = 2, line = 3.0, cex = 2.0, text = bquote("Log"[2]*"(ChIP/input)"), col = "black")
-  par(mgp = c(3, 1.25, 0))
-  axis(side = 1, cex.axis = 2.0, lwd = 2.0, lwd.tick = 2.0,
-       labels = as.character(seq(0, round(max(chrLens[chrs %in% chrName])/1e+06), by = 5)),
-       at = seq(0, round(max(chrLens[chrs %in% chrName])/1e+06), by = 5)*1e+06)
-  mtext(side = 1, line = 3.5, cex = 2.0, text = paste0(chrs[x], " coordinates (Mb)"), col = "black")
-  par(new = T, mgp = c(3, 1.5, 0))
-  plot(x = wSNV_CEN180Chr[[x]][,2],
-       y = wSNV_CEN180Chr[[x]][,3],
-       col = quantileColours[1],
-       type = "l", lwd = 2,
-       xlim = c(0, max(chrLens[chrs %in% chrName])),
-       ylim = c(0-max_wSNV_CEN180Chr, max_wSNV_CEN180Chr),
-       xlab = "", ylab = "",
-       xaxt = "n", yaxt = "n")
-  axis(side = 4, cex.axis = 2.0, lwd = 2.0, lwd.tick = 2.0, col = "black", col.axis = "black", line = 0.0)
-  p <- par('usr')
-  text(p[2], mean(p[3:4]), cex = 3.0, adj = c(0.5, -2.0), labels = "CEN180 frequency", xpd = NA, srt = -90, col = "black")
-  lines(x = wSNV_CEN180Chr[[x]][,2], y = wSNV_CEN180Chr[[x]][,4], col = quantileColours[2], type = "l", lwd = 2.0)
-  lines(x = wSNV_CEN180Chr[[x]][,2], y = wSNV_CEN180Chr[[x]][,5], col = quantileColours[3], type = "l", lwd = 2.0)
-  lines(x = wSNV_CEN180Chr[[x]][,2], y = wSNV_CEN180Chr[[x]][,6], col = quantileColours[4], type = "l", lwd = 2.0)
-  legend("topright",
-         inset = c(0.15, 0.08),
-         legend = c(paste0("Quantile ", 1:quantiles), "CENH3"),
-         col = c("white"),
-         text.col = c(quantileColours, "grey50"),
-         text.font = c(1, 1),
-         ncol = 1, cex = 1.5, lwd = 1.5, bty = "n")
-   box(lwd = 2.0)
-}
-dev.off()
-
