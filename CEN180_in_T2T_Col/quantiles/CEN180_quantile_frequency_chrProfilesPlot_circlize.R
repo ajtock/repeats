@@ -184,6 +184,15 @@ for(x in seq_along(chrs)) {
 }
 
 
+CEN180_bed <- read.table(paste0("/home/ajt200/analysis/repeats/CEN180_in_T2T_Col/CEN180_in_T2T_Col_",
+                                paste0(chrName, collapse = "_"), ".bed"),
+                         header = F, colClasses = c(rep(NA, 3), rep("NULL", 5)))
+colnames(CEN180_bed) <- c("chr", "start", "end")
+CENAthila_bed <- read.table(paste0("/home/ajt200/analysis/repeats/CEN180_in_T2T_Col/CENAthila_in_T2T_Col_",
+                                   paste0(chrName, collapse = "_"), ".bed"),
+                            header = F, colClasses = c(rep(NA, 3), rep("NULL", 2)))
+colnames(CENAthila_bed) <- c("chr", "start", "end")
+
 ## circlize
 
 # Create df of randomly positioned centromeric loci with randomly generated values
@@ -236,6 +245,24 @@ sapply(seq_along(chrs), function(x) {
               col = "white",
               font = 4)
 })
+
+circos.genomicRainfall(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
+  CENAthila_bed[CENAthila_bed$chr == chrs[x] &
+                CENAthila_bed$start >= genomeDF$start[x] &
+                CENAthila_bed$end <= genomeDF$end[x],] } )),
+                       bg.border = NA,
+                       track.height = 0.05,
+                       pch = 16,
+                       cex = 0.4,
+                       col = c("#0000FF80"))
+circos.genomicDensity(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
+  CEN180_bed[CEN180_bed$chr == chrs[x] &
+             CEN180_bed$start >= genomeDF$start[x] &
+             CEN180_bed$end <= genomeDF$end[x],] } )),
+                      window.size = 1e5,
+                      bg.border = NA,
+                      track.height = 0.05,
+                      col = "#FF000080")
 
 # Add graphics in track-by-track manner using circos.trackPlotRegion() or circos.track() for short
 # Similar to the "base R graphic engine, [where] you need [to] first call plot(),
@@ -320,7 +347,10 @@ circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
                                           border = NA,
                                           ...)
                     }, bg.border = NA)
-circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 4, 
+circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
+  DNAmethPE_bed[DNAmethPE_bed$chr == chrs[x] &
+                DNAmethPE_bed$start >= genomeDF$start[x] &
+                DNAmethPE_bed$end <= genomeDF$end[x],] } )), numeric.column = 4,
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
                                           value,
@@ -330,7 +360,10 @@ circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 4,
                                           border = NA,
                                           ...)
                     }, bg.border = NA)
-circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 5, 
+circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
+  DNAmethPE_bed[DNAmethPE_bed$chr == chrs[x] &
+                DNAmethPE_bed$start >= genomeDF$start[x] &
+                DNAmethPE_bed$end <= genomeDF$end[x],] } )), numeric.column = 5,
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
                                           value,
@@ -340,7 +373,10 @@ circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 5,
                                           border = NA,
                                           ...)
                     }, bg.border = NA)
-circos.genomicTrack(data = DNAmethPE_bed, numeric.column = 6, 
+circos.genomicTrack(data = do.call(rbind, lapply(seq_along(chrs), function(x) {
+  DNAmethPE_bed[DNAmethPE_bed$chr == chrs[x] &
+                DNAmethPE_bed$start >= genomeDF$start[x] &
+                DNAmethPE_bed$end <= genomeDF$end[x],] } )), numeric.column = 6,
                     panel.fun = function(region, value, ...) {
                       circos.genomicLines(region,
                                           value,
@@ -383,7 +419,6 @@ circos.track(ylim = c(0, 1),
                circos.genomicAxis(h = "top",
                                   labels.facing = "clockwise",
                                   tickLabelsStartFromZero = TRUE)
-
              })
 sapply(seq_along(chrs), function(x) {
   circos.text(x = (CENstart[x]+CENend[x])/2,
@@ -396,6 +431,18 @@ sapply(seq_along(chrs), function(x) {
               col = "white",
               font = 4)
 })
+
+circos.genomicRainfall(data = CENAthila_bed,
+                       bg.border = NA,
+                       track.height = 0.05,
+                       pch = 16,
+                       cex = 0.4,
+                       col = c("#0000FF80"))
+circos.genomicDensity(data = CEN180_bed,
+                      window.size = 1e5,
+                      bg.border = NA,
+                      track.height = 0.05,
+                      col = "#FF000080")
 
 # Add graphics in track-by-track manner using circos.trackPlotRegion() or circos.track() for short
 # Similar to the "base R graphic engine, [where] you need [to] first call plot(),
