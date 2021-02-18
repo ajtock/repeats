@@ -211,7 +211,7 @@ Gypsy_col_fun <- colorRamp2(quantile(Gypsy_bed$value1,
                                      na.rm = T),
                             viridis_pal()(6))
 CEN180freq_col_fun <- colorRamp2(quantile(CEN180freq_bed$value1,
-                                          c(0.90, 1.0),
+                                          c(0.92, 1.0),
                                           na.rm = T),
                                  c("navy", "red"))
 # Define corresponding heatmap legends
@@ -444,15 +444,6 @@ circlize_plot <- function() {
                                             ...)
                       }, bg.border = NA, track.height = 0.05)
 
-  circos.track(track.index = get.current.track.index(),
-               panel.fun = function(x, y) {
-                 if(CELL_META$sector.numeric.index == chrs[length(chrs)]) {
-                   circos.text(x = rep(CELL_META$cell.xlim[2], 2) + convert_x(1, "mm"),
-                               y = 1:2 - 0.5,
-                               labels = letters[1:2],
-                               cex = 0.8, adj = c(0, 0.5), facing = "inside")
-                 }
-               }, bg.border = NA)
   # Reset graphic parameters and internal variables
   circos.clear()
 }
