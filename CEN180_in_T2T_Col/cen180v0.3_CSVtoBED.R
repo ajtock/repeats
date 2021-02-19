@@ -1,4 +1,4 @@
-#!/applications/R/R-3.5.0/bin/Rscript
+#!/applications/R/R-4.0.0/bin/Rscript
 
 # Convert CEN180 sequence coordinates identified in T2T_Col
 # from CSV (1-based start coordinates) into BED format (0-based start coordinates)
@@ -19,15 +19,15 @@ options(stringsAsFactors = F)
 library(GenomicRanges)
 
 # Genomic definitions
-fai <- read.table("T2T_Col.fa.fai", header = F)
-chrs <- fai$V1[1:5]
-chrLens <- fai$V2[1:5]
+fai <- read.table("/home/ajt200/analysis/nanopore/T2T_Col/T2T_Col.fa.fai", header = F)
+chrs <- fai$V1[which(fai$V1 %in% chrName)]
+chrLens <- fai$V2[which(fai$V1 %in% chrName)]
 regionGR <- GRanges(seqnames = chrs,
                     ranges = IRanges(start = 1,
                                      end = chrLens),
                     strand = "*")
-CENstart <- c(14840750, 3724530, 13597090, 4203495, 11783990)
-CENend <- c(17558182, 5946091, 15733029, 6977107, 14551874)
+CENstart <- c(14840750, 3724530, 13597090, 4203495, 11783990)[which(fai$V1 %in% chrName)]
+CENend <- c(17558182, 5946091, 15733029, 6977107, 14551874)[which(fai$V1 %in% chrName)]
 CENGR <- GRanges(seqnames = chrs,
                  ranges = IRanges(start = CENstart,
                                   end = CENend),
@@ -82,7 +82,6 @@ set.seed(76492749)
 
 # Apply ranLocStartSelect() on a per-chromosome basis so that
 # ranLocGR contains the same number of loci per chromosome as CEN180GR
-chrs <- chrs[chrs %in% chrName]
 ranLocGR <- GRanges()
 for(i in 1:length(chrs)) {
   CEN180ChrGR <- CEN180GR[seqnames(CEN180GR) == chrs[i]]
@@ -113,6 +112,43 @@ ranLoc_bed <- data.frame(chr = as.character(seqnames(ranLocGR)),
 write.table(ranLoc_bed,
             file = paste0("CEN180_in_T2T_Col_",
                           paste0(chrName, collapse = "_"), "_randomLoci.bed"),
+            quote = F, sep = "\t", row.names = F, col.names = F)
+
+# Define seed so that random selections are reproducible
+set.seed(76492749)
+
+# Apply ranLocStartSelect() on a per-chromosome basis so that
+# CENranLocGR contains the same number of loci per chromosome as CEN180GR
+CENranLocGR <- GRanges()
+for(i in 1:length(chrs)) {
+  CEN180ChrGR <- CEN180GR[seqnames(CEN180GR) == chrs[i]]
+  CENChrGR <- CENGR[seqnames(CENGR) == chrs[i]]
+  # Contract CENChrGR so that CENrandom loci and 2-kb flanking regions
+  # do not extend beyond chromosome ends
+  end(CENChrGR) <- end(CENChrGR)-max(width(CEN180ChrGR))-2000
+  start(CENChrGR) <- start(CENChrGR)+2000
+  CENranLocChrStart <- ranLocStartSelect(coordinates = unlist(lapply(seq_along(CENChrGR), function(x) {           
+                                                                start(CENChrGR[x]) : end(CENChrGR[x])          
+                                                              })),
+                                         n = length(CEN180ChrGR))
+  CENranLocChrGR <- GRanges(seqnames = chrs[i],
+                            ranges = IRanges(start = CENranLocChrStart,
+                                             width = width(CEN180ChrGR)),
+                            strand = strand(CEN180ChrGR))
+  CENranLocGR <- append(CENranLocGR, CENranLocChrGR)
+}
+stopifnot(identical(width(CENranLocGR), width(CEN180GR)))
+stopifnot(identical(as.character(seqnames(CENranLocGR)), as.character(seqnames(CEN180GR))))
+stopifnot(identical(strand(CENranLocGR), strand(CEN180GR)))
+CENranLoc_bed <- data.frame(chr = as.character(seqnames(CENranLocGR)),
+                            start = start(CENranLocGR)-1,
+                            end = end(CENranLocGR),
+                            name = 1:length(CENranLocGR),
+                            score = "NA",
+                            strand = strand(CENranLocGR))
+write.table(CENranLoc_bed,
+            file = paste0("CEN180_in_T2T_Col_",
+                          paste0(chrName, collapse = "_"), "_CENrandomLoci.bed"),
             quote = F, sep = "\t", row.names = F, col.names = F)
 
 # Define adjacent centromeric loci each with widths equal to the median width of
