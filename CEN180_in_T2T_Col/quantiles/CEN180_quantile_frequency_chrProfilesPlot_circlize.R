@@ -50,13 +50,13 @@ quantileColours <- c("red", "purple", "blue", "navy")
 # Genomic definitions
 fai <- read.table("/home/ajt200/analysis/nanopore/T2T_Col/T2T_Col.fa.fai", header = F)
 chrs <- fai$V1[which(fai$V1 %in% chrName)]
-chrLens <- fai$V2[1:5]
+chrLens <- fai$V2[which(fai$V1 %in% chrName)]
 regionGR <- GRanges(seqnames = chrs,
-                    ranges = IRanges(start = rep(1, length(chrs)),
+                    ranges = IRanges(start = 1,
                                      end = chrLens),
                     strand = "*")
-CENstart <- c(14840750, 3724530, 13597090, 4203495, 11783990)
-CENend <- c(17558182, 5946091, 15733029, 6977107, 14551874)
+CENstart <- c(14840750, 3724530, 13597090, 4203495, 11783990)[which(fai$V1 %in% chrName)]
+CENend <- c(17558182, 5946091, 15733029, 6977107, 14551874)[which(fai$V1 %in% chrName)]
 CENGR <- GRanges(seqnames = chrs,
                  ranges = IRanges(start = CENstart,
                                   end = CENend),
