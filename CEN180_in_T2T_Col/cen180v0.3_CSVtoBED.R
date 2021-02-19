@@ -77,9 +77,6 @@ ranLocStartSelect <- function(coordinates, n) {
 # Disable scientific notation (e.g., 59000000 rather than 5.9e+07)
 options(scipen = 100)
 
-# Define seed so that random selections are reproducible
-set.seed(76492749)
-
 # Apply ranLocStartSelect() on a per-chromosome basis so that
 # ranLocGR contains the same number of loci per chromosome as CEN180GR
 ranLocGR <- GRanges()
@@ -90,6 +87,8 @@ for(i in 1:length(chrs)) {
   # do not extend beyond chromosome ends
   end(regionChrGR) <- end(regionChrGR)-max(width(CEN180ChrGR))-2000
   start(regionChrGR) <- start(regionChrGR)+2000
+  # Define seed so that random selections are reproducible
+  set.seed(76492749)
   ranLocChrStart <- ranLocStartSelect(coordinates = unlist(lapply(seq_along(regionChrGR), function(x) {           
                                                              start(regionChrGR[x]) : end(regionChrGR[x])          
                                                            })),
@@ -114,9 +113,6 @@ write.table(ranLoc_bed,
                           paste0(chrName, collapse = "_"), "_randomLoci.bed"),
             quote = F, sep = "\t", row.names = F, col.names = F)
 
-# Define seed so that random selections are reproducible
-set.seed(76492749)
-
 # Apply ranLocStartSelect() on a per-chromosome basis so that
 # CENranLocGR contains the same number of loci per chromosome as CEN180GR
 CENranLocGR <- GRanges()
@@ -127,6 +123,8 @@ for(i in 1:length(chrs)) {
   # do not extend beyond chromosome ends
   end(CENChrGR) <- end(CENChrGR)-max(width(CEN180ChrGR))-2000
   start(CENChrGR) <- start(CENChrGR)+2000
+  # Define seed so that random selections are reproducible
+  set.seed(76492749)
   CENranLocChrStart <- ranLocStartSelect(coordinates = unlist(lapply(seq_along(CENChrGR), function(x) {           
                                                                 start(CENChrGR[x]) : end(CENChrGR[x])          
                                                               })),
@@ -184,6 +182,6 @@ CENgap_bed <- data.frame(chr = as.character(seqnames(CENgapGR)),
                          score = "NA",
                          strand = strand(CENgapGR))
 write.table(CENgap_bed,
-            file = paste0("CENgap_in_T2T_Col_",
+            file = paste0("CENgap_180_in_T2T_Col_",
                           paste0(chrName, collapse = "_"), ".bed"),
             quote = F, sep = "\t", row.names = F, col.names = F)
