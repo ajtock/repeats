@@ -744,7 +744,7 @@ geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
            linetype = "dashed",
            size = 1) +
 labs(x = "",
-     y = bquote(.(yLabPlot))) +
+     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
 annotation_custom(legendLabs[[1]]) +
 annotation_custom(legendLabs[[2]]) +
 theme_bw() +
@@ -989,7 +989,7 @@ ggsave(paste0(plotDir,
               "log2ChIPcontrol_",
               paste0(log2ChIPNames, collapse = "_"),
               "_avgProfiles_around",
-              "_CEN180_ranLoc_CENgap_CENAthila_nonCENGypsy_CENsoloLTRs_in_T2T_Col_",
+              "_CEN180_ranLoc_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_", align, ".pdf"),
        plot = ggObjGA_combined,
        height = 6.5, width = 7*6, limitsize = FALSE)
@@ -1197,7 +1197,7 @@ geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
            linetype = "dashed",
            size = 1) +
 labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+     y = bquote(.(yLabPlot))) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -1248,7 +1248,7 @@ geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
            linetype = "dashed",
            size = 1) +
 labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+     y = bquote(.(yLabPlot))) +
 annotation_custom(legendLabs[[1]]) +
 annotation_custom(legendLabs[[2]]) +
 theme_bw() +
@@ -1301,7 +1301,7 @@ geom_vline(xintercept = c((upstream/Athila_binSize)+1,
            linetype = "dashed",
            size = 1) +
 labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+     y = bquote(.(yLabPlot))) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -1352,7 +1352,7 @@ geom_vline(xintercept = c((upstream/Athila_binSize)+1,
            linetype = "dashed",
            size = 1) +
 labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+     y = bquote(.(yLabPlot))) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -1403,7 +1403,7 @@ geom_vline(xintercept = c((upstream/binSize)+1,
            linetype = "dashed",
            size = 1) +
 labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+     y = bquote(.(yLabPlot))) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -1454,7 +1454,7 @@ geom_vline(xintercept = c((upstream/Athila_binSize)+1,
            linetype = "dashed",
            size = 1) +
 labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+     y = bquote(.(yLabPlot))) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -1493,7 +1493,7 @@ ggsave(paste0(plotDir,
               "ChIP_",
               paste0(ChIPNames, collapse = "_"),
               "_avgProfiles_around",
-              "_CEN180_ranLoc_CENgap_CENAthila_nonCENGypsy_CENsoloLTRs_in_T2T_Col_",
+              "_CEN180_ranLoc_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_", align, ".pdf"),
        plot = ggObjGA_combined,
        height = 6.5, width = 7*6, limitsize = FALSE)
