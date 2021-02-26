@@ -599,18 +599,28 @@ for(x in seq_along(summaryDFfeature_control)) {
                                                levels = controlNamesPlot)
 }
 
+# Calculate windowed ratios of mean, sd, sem, CI_lower, CI_upper
+summaryDFfeature_ChIPcontrol <- summaryDFfeature_ChIP
+for(x in seq_along(summaryDFfeature_ChIPcontrol)) {
+  summaryDFfeature_ChIPcontrol[[x]]$mean <- (summaryDFfeature_ChIP[[x]]$mean + 1) / (summaryDFfeature_control[[x]]$mean + 1)
+  summaryDFfeature_ChIPcontrol[[x]]$sd <- (summaryDFfeature_ChIP[[x]]$sd + 1) / (summaryDFfeature_control[[x]]$sd + 1)
+  summaryDFfeature_ChIPcontrol[[x]]$sem <- (summaryDFfeature_ChIP[[x]]$sem + 1) / (summaryDFfeature_control[[x]]$sem + 1)
+  summaryDFfeature_ChIPcontrol[[x]]$CI_lower <- (summaryDFfeature_ChIP[[x]]$CI_lower + 1) / (summaryDFfeature_control[[x]]$CI_lower + 1)
+  summaryDFfeature_ChIPcontrol[[x]]$CI_upper <- (summaryDFfeature_ChIP[[x]]$CI_upper + 1) / (summaryDFfeature_control[[x]]$CI_upper + 1)
+}
+ 
 
 # Define y-axis limits
-ymin_ChIP <- min(c(summaryDFfeature_ChIP[[1]]$CI_lower,
-                   summaryDFfeature_ChIP[[2]]$CI_lower,
-                   summaryDFfeature_ChIP[[3]]$CI_lower,
-                   summaryDFfeature_ChIP[[4]]$CI_lower,
-                   summaryDFfeature_ChIP[[5]]$CI_lower))
-ymax_ChIP <- max(c(summaryDFfeature_ChIP[[1]]$CI_upper,
-                   summaryDFfeature_ChIP[[2]]$CI_upper,
-                   summaryDFfeature_ChIP[[3]]$CI_upper,
-                   summaryDFfeature_ChIP[[4]]$CI_upper,
-                   summaryDFfeature_ChIP[[5]]$CI_upper))
+ymin_ChIPcontrol <- min(c(summaryDFfeature_ChIPcontrol[[1]]$CI_lower,
+                   summaryDFfeature_ChIPcontrol[[2]]$CI_lower,
+                   summaryDFfeature_ChIPcontrol[[3]]$CI_lower,
+                   summaryDFfeature_ChIPcontrol[[4]]$CI_lower,
+                   summaryDFfeature_ChIPcontrol[[5]]$CI_lower))
+ymax_ChIPcontrol <- max(c(summaryDFfeature_ChIPcontrol[[1]]$CI_upper,
+                   summaryDFfeature_ChIPcontrol[[2]]$CI_upper,
+                   summaryDFfeature_ChIPcontrol[[3]]$CI_upper,
+                   summaryDFfeature_ChIPcontrol[[4]]$CI_upper,
+                   summaryDFfeature_ChIPcontrol[[5]]$CI_upper))
 
 # Define legend labels
 legendLabs <- lapply(seq_along(ChIPNamesPlot), function(x) {
@@ -621,8 +631,8 @@ legendLabs <- lapply(seq_along(ChIPNamesPlot), function(x) {
 
 # Plot average profiles with 95% CI ribbon
 ## feature
-summaryDFfeature <- summaryDFfeature_ChIP[[1]]
-ggObj1_combined_ChIP <- ggplot(data = summaryDFfeature,
+summaryDFfeature <- summaryDFfeature_ChIPcontrol[[1]]
+ggObj1_combined_ChIPcontrol <- ggplot(data = summaryDFfeature,
                                mapping = aes(x = winNo,
                                              y = mean,
                                              group = libName)
@@ -637,18 +647,18 @@ geom_ribbon(data = summaryDFfeature,
                           fill = libName),
             alpha = 0.4) +
 scale_fill_manual(values = ChIPColours) +
-scale_y_continuous(limits = c(ymin_ChIP, ymax_ChIP),
+scale_y_continuous(limits = c(ymin_ChIPcontrol, ymax_ChIPcontrol),
                    labels = function(x) sprintf("%6.3f", x)) +
 scale_x_discrete(breaks = c(1,
                             ((upstream-1000)/binSize)+1,
-                            (dim(summaryDFfeature_ChIP[[1]])[1]/length(ChIPNames))-((downstream-1000)/binSize),
-                            dim(summaryDFfeature_ChIP[[1]])[1]/length(ChIPNames)),
+                            (dim(summaryDFfeature_ChIPcontrol[[1]])[1]/length(ChIPNames))-((downstream-1000)/binSize),
+                            dim(summaryDFfeature_ChIPcontrol[[1]])[1]/length(ChIPNames)),
                  labels = c(paste0("-", "1kb"),
                             featureStartLab,
                             featureEndLab,
                             paste0("+", "1kb"))) +
 geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
-                          (dim(summaryDFfeature_ChIP[[1]])[1]/length(ChIPNames))-((downstream-1000)/binSize)),
+                          (dim(summaryDFfeature_ChIPcontrol[[1]])[1]/length(ChIPNames))-((downstream-1000)/binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -672,8 +682,8 @@ ggtitle(bquote(.(featureNamePlot) ~ "(" * italic("n") ~ "=" ~
                ")"))
 
 ## ranLoc
-summaryDFfeature <- summaryDFfeature_ChIP[[2]]
-ggObj2_combined_ChIP <- ggplot(data = summaryDFfeature,
+summaryDFfeature <- summaryDFfeature_ChIPcontrol[[2]]
+ggObj2_combined_ChIPcontrol <- ggplot(data = summaryDFfeature,
                                    mapping = aes(x = winNo,
                                                  y = mean,
                                                  group = libName)
@@ -688,18 +698,18 @@ geom_ribbon(data = summaryDFfeature,
                           fill = libName),
             alpha = 0.4) +
 scale_fill_manual(values = ChIPColours) +
-scale_y_continuous(limits = c(ymin_ChIP, ymax_ChIP),
+scale_y_continuous(limits = c(ymin_ChIPcontrol, ymax_ChIPcontrol),
                    labels = function(x) sprintf("%6.3f", x)) +
 scale_x_discrete(breaks = c(1,
                             ((upstream-1000)/binSize)+1,
-                            (dim(summaryDFfeature_ChIP[[2]])[1]/length(ChIPNames))-((downstream-1000)/binSize),
-                            dim(summaryDFfeature_ChIP[[2]])[1]/length(ChIPNames)),
+                            (dim(summaryDFfeature_ChIPcontrol[[2]])[1]/length(ChIPNames))-((downstream-1000)/binSize),
+                            dim(summaryDFfeature_ChIPcontrol[[2]])[1]/length(ChIPNames)),
                  labels = c(paste0("-", "1kb"),
                             featureStartLab,
                             featureEndLab,
                             paste0("+", "1kb"))) +
 geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
-                          (dim(summaryDFfeature_ChIP[[2]])[1]/length(ChIPNames))-((downstream-1000)/binSize)),
+                          (dim(summaryDFfeature_ChIPcontrol[[2]])[1]/length(ChIPNames))-((downstream-1000)/binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -730,8 +740,8 @@ ggtitle(bquote(.(ranLocNamePlot) ~ "(" * italic("n") ~ "=" ~
                ")"))
 
 ## gap
-summaryDFfeature <- summaryDFfeature_ChIP[[3]]
-ggObj3_combined_ChIP <- ggplot(data = summaryDFfeature,
+summaryDFfeature <- summaryDFfeature_ChIPcontrol[[3]]
+ggObj3_combined_ChIPcontrol <- ggplot(data = summaryDFfeature,
                                    mapping = aes(x = winNo,
                                                  y = mean,
                                                  group = libName)
@@ -746,18 +756,18 @@ geom_ribbon(data = summaryDFfeature,
                           fill = libName),
             alpha = 0.4) +
 scale_fill_manual(values = ChIPColours) +
-scale_y_continuous(limits = c(ymin_ChIP, ymax_ChIP),
+scale_y_continuous(limits = c(ymin_ChIPcontrol, ymax_ChIPcontrol),
                    labels = function(x) sprintf("%6.3f", x)) +
 scale_x_discrete(breaks = c(1,
                             (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_ChIP[[3]])[1]/length(ChIPNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_ChIP[[3]])[1]/length(ChIPNames)),
+                            (dim(summaryDFfeature_ChIPcontrol[[3]])[1]/length(ChIPNames))-(downstream/Athila_binSize),
+                            dim(summaryDFfeature_ChIPcontrol[[3]])[1]/length(ChIPNames)),
                  labels = c(paste0("-", flankName),
                             featureStartLab,
                             featureEndLab,
                             paste0("+", flankName))) +
 geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_ChIP[[3]])[1]/length(ChIPNames))-(downstream/Athila_binSize)),
+                          (dim(summaryDFfeature_ChIPcontrol[[3]])[1]/length(ChIPNames))-(downstream/Athila_binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -781,8 +791,8 @@ ggtitle(bquote(.(gapNamePlot) ~ "(" * italic("n") ~ "=" ~
                ")"))
 
 ## Athila
-summaryDFfeature <- summaryDFfeature_ChIP[[4]]
-ggObj4_combined_ChIP <- ggplot(data = summaryDFfeature,
+summaryDFfeature <- summaryDFfeature_ChIPcontrol[[4]]
+ggObj4_combined_ChIPcontrol <- ggplot(data = summaryDFfeature,
                                    mapping = aes(x = winNo,
                                                  y = mean,
                                                  group = libName)
@@ -797,18 +807,18 @@ geom_ribbon(data = summaryDFfeature,
                           fill = libName),
             alpha = 0.4) +
 scale_fill_manual(values = ChIPColours) +
-scale_y_continuous(limits = c(ymin_ChIP, ymax_ChIP),
+scale_y_continuous(limits = c(ymin_ChIPcontrol, ymax_ChIPcontrol),
                    labels = function(x) sprintf("%6.3f", x)) +
 scale_x_discrete(breaks = c(1,
                             (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_ChIP[[4]])[1]/length(ChIPNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_ChIP[[4]])[1]/length(ChIPNames)),
+                            (dim(summaryDFfeature_ChIPcontrol[[4]])[1]/length(ChIPNames))-(downstream/Athila_binSize),
+                            dim(summaryDFfeature_ChIPcontrol[[4]])[1]/length(ChIPNames)),
                  labels = c(paste0("-", flankName),
                             featureStartLab,
                             featureEndLab,
                             paste0("+", flankName))) +
 geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_ChIP[[4]])[1]/length(ChIPNames))-(downstream/Athila_binSize)),
+                          (dim(summaryDFfeature_ChIPcontrol[[4]])[1]/length(ChIPNames))-(downstream/Athila_binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -832,8 +842,8 @@ ggtitle(bquote(.(AthilaNamePlot) ~ "(" * italic("n") ~ "=" ~
                ")"))
 
 ## soloLTR
-summaryDFfeature <- summaryDFfeature_ChIP[[5]]
-ggObj5_combined_ChIP <- ggplot(data = summaryDFfeature,
+summaryDFfeature <- summaryDFfeature_ChIPcontrol[[5]]
+ggObj5_combined_ChIPcontrol <- ggplot(data = summaryDFfeature,
                                    mapping = aes(x = winNo,
                                                  y = mean,
                                                  group = libName)
@@ -848,18 +858,18 @@ geom_ribbon(data = summaryDFfeature,
                           fill = libName),
             alpha = 0.4) +
 scale_fill_manual(values = ChIPColours) +
-scale_y_continuous(limits = c(ymin_ChIP, ymax_ChIP),
+scale_y_continuous(limits = c(ymin_ChIPcontrol, ymax_ChIPcontrol),
                    labels = function(x) sprintf("%6.3f", x)) +
 scale_x_discrete(breaks = c(1,
                             (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_ChIP[[5]])[1]/length(ChIPNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_ChIP[[5]])[1]/length(ChIPNames)),
+                            (dim(summaryDFfeature_ChIPcontrol[[5]])[1]/length(ChIPNames))-(downstream/Athila_binSize),
+                            dim(summaryDFfeature_ChIPcontrol[[5]])[1]/length(ChIPNames)),
                  labels = c(paste0("-", flankName),
                             featureStartLab,
                             featureEndLab,
                             paste0("+", flankName))) +
 geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_ChIP[[5]])[1]/length(ChIPNames))-(downstream/Athila_binSize)),
+                          (dim(summaryDFfeature_ChIPcontrol[[5]])[1]/length(ChIPNames))-(downstream/Athila_binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -883,11 +893,11 @@ ggtitle(bquote(.(soloLTRNamePlot) ~ "(" * italic("n") ~ "=" ~
                ")"))
 
 ggObjGA_combined <- grid.arrange(grobs = list(
-                                              ggObj1_combined_ChIP,
-                                              ggObj2_combined_ChIP,
-                                              ggObj3_combined_ChIP,
-                                              ggObj4_combined_ChIP,
-                                              ggObj5_combined_ChIP
+                                              ggObj1_combined_ChIPcontrol,
+                                              ggObj2_combined_ChIPcontrol,
+                                              ggObj3_combined_ChIPcontrol,
+                                              ggObj4_combined_ChIPcontrol,
+                                              ggObj5_combined_ChIPcontrol
                                              ),
                                  layout_matrix = cbind(
                                                        1,
@@ -901,6 +911,6 @@ ggsave(paste0(plotDir,
 #              paste0(ChIPNames, collapse = "_"),
               "_avgProfiles_around",
               "_CEN180_CENranLoc_CENgap_CENAthila_CENsoloLTR_in_T2T_Col_",
-              paste0(chrName, collapse = "_"), "_ratios_all_features.pdf"),
+              paste0(chrName, collapse = "_"), "_pseudocount1_ratios_all_features.pdf"),
        plot = ggObjGA_combined,
        height = 6.5, width = 7*5, limitsize = FALSE)
