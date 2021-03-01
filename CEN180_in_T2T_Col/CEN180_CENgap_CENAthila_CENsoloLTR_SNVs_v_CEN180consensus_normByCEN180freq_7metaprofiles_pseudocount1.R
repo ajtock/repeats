@@ -328,23 +328,23 @@ control_soloLTRMats <- mclapply(seq_along(control_soloLTRMats), function(x) {
 # Calculate ChIP/control ratio for each matrix
 # feature
 ChIPcontrol_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
-  (ChIP_featureMats[[x]] + 1)/(control_featureMats[[1]] + 1)
+  (ChIP_featureMats[[x]] + 0)/(control_featureMats[[1]] + 1)
 }, mc.cores = length(ChIP_featureMats))
 # ranLoc
 ChIPcontrol_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
-  (ChIP_ranLocMats[[x]] + 1)/(control_ranLocMats[[1]] + 1)
+  (ChIP_ranLocMats[[x]] + 0)/(control_ranLocMats[[1]] + 1)
 }, mc.cores = length(ChIP_ranLocMats))
 # gap
 ChIPcontrol_gapMats <- mclapply(seq_along(ChIP_gapMats), function(x) {
-  (ChIP_gapMats[[x]] + 1)/(control_gapMats[[1]] + 1)
+  (ChIP_gapMats[[x]] + 0)/(control_gapMats[[1]] + 1)
 }, mc.cores = length(ChIP_gapMats))
 # Athila
 ChIPcontrol_AthilaMats <- mclapply(seq_along(ChIP_AthilaMats), function(x) {
-  (ChIP_AthilaMats[[x]] + 1)/(control_AthilaMats[[1]] + 1)
+  (ChIP_AthilaMats[[x]] + 0)/(control_AthilaMats[[1]] + 1)
 }, mc.cores = length(ChIP_AthilaMats))
 # soloLTR
 ChIPcontrol_soloLTRMats <- mclapply(seq_along(ChIP_soloLTRMats), function(x) {
-  (ChIP_soloLTRMats[[x]] + 1)/(control_soloLTRMats[[1]] + 1)
+  (ChIP_soloLTRMats[[x]] + 0)/(control_soloLTRMats[[1]] + 1)
 }, mc.cores = length(ChIP_soloLTRMats))
 
 
