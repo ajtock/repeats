@@ -336,17 +336,28 @@ ChIPcontrol_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
 }, mc.cores = length(ChIP_ranLocMats))
 # gap
 ChIPcontrol_gapMats <- mclapply(seq_along(ChIP_gapMats), function(x) {
-  ( ( ChIP_gapMats[[x]] * binSize ) + 1 ) / ( control_gapMats[[1]] + 1 )
+  cbind( ( ( ChIP_gapMats[[x]][,1:(upstream/binSize)] * binSize ) + 1 ) / ( control_gapMats[[1]][,1:(upstream/binSize)] + 1 ),
+         ChIP_gapMats[[x]][,((upstream/binSize)+1):((upstream/binSize)+(Athila_bodyLength/binSize))],
+         ( ( ChIP_gapMats[[x]][,((upstream/binSize)+(Athila_bodyLength/binSize)+1):((upstream/binSize)+(Athila_bodyLength/binSize)+(downstream/binSize))] * binSize ) + 1 ) /
+             ( control_gapMats[[1]][,((upstream/binSize)+(Athila_bodyLength/binSize)+1):((upstream/binSize)+(Athila_bodyLength/binSize)+(downstream/binSize))] + 1 )
+       )
 }, mc.cores = length(ChIP_gapMats))
 # Athila
 ChIPcontrol_AthilaMats <- mclapply(seq_along(ChIP_AthilaMats), function(x) {
-  ( ( ChIP_AthilaMats[[x]] * binSize ) + 1 ) / ( control_AthilaMats[[1]] + 1 )
+  cbind( ( ( ChIP_AthilaMats[[x]][,1:(upstream/binSize)] * binSize ) + 1 ) / ( control_AthilaMats[[1]][,1:(upstream/binSize)] + 1 ),
+         ChIP_AthilaMats[[x]][,((upstream/binSize)+1):((upstream/binSize)+(Athila_bodyLength/binSize))],
+         ( ( ChIP_AthilaMats[[x]][,((upstream/binSize)+(Athila_bodyLength/binSize)+1):((upstream/binSize)+(Athila_bodyLength/binSize)+(downstream/binSize))] * binSize ) + 1 ) /
+             ( control_AthilaMats[[1]][,((upstream/binSize)+(Athila_bodyLength/binSize)+1):((upstream/binSize)+(Athila_bodyLength/binSize)+(downstream/binSize))] + 1 )
+       )
 }, mc.cores = length(ChIP_AthilaMats))
 # soloLTR
 ChIPcontrol_soloLTRMats <- mclapply(seq_along(ChIP_soloLTRMats), function(x) {
-  ( ( ChIP_soloLTRMats[[x]] * binSize ) + 1 ) / ( control_soloLTRMats[[1]] + 1 )
+  cbind( ( ( ChIP_soloLTRMats[[x]][,1:(upstream/binSize)] * binSize ) + 1 ) / ( control_soloLTRMats[[1]][,1:(upstream/binSize)] + 1 ),
+         ChIP_soloLTRMats[[x]][,((upstream/binSize)+1):((upstream/binSize)+(Athila_bodyLength/binSize))],
+         ( ( ChIP_soloLTRMats[[x]][,((upstream/binSize)+(Athila_bodyLength/binSize)+1):((upstream/binSize)+(Athila_bodyLength/binSize)+(downstream/binSize))] * binSize ) + 1 ) /
+             ( control_soloLTRMats[[1]][,((upstream/binSize)+(Athila_bodyLength/binSize)+1):((upstream/binSize)+(Athila_bodyLength/binSize)+(downstream/binSize))] + 1 )
+       )
 }, mc.cores = length(ChIP_soloLTRMats))
-
 
 
 # ChIPcontrol

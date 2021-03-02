@@ -467,20 +467,20 @@ for(x in seq_along(summaryDFfeature_ChIP)) {
 # Add column names
 for(x in seq_along(control_featureMats)) {
   colnames(control_featureMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                       paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                       paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+                                          paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+                                          paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
   colnames(control_ranLocMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                      paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                      paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+                                         paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+                                         paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
   colnames(control_gapMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                   paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                   paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-  colnames(control_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
                                       paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
                                       paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+  colnames(control_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+                                        paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                        paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
   colnames(control_soloLTRMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                       paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                       paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+                                          paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                          paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
 }
 
 # Create list of lists in which each element in the enclosing list corresponds to a library
@@ -602,11 +602,24 @@ for(x in seq_along(summaryDFfeature_control)) {
 # Calculate windowed ratios of mean, sd, sem, CI_lower, CI_upper
 summaryDFfeature_ChIPcontrol <- summaryDFfeature_ChIP
 for(x in seq_along(summaryDFfeature_ChIPcontrol)) {
-  summaryDFfeature_ChIPcontrol[[x]]$mean <- ( ( summaryDFfeature_ChIP[[x]]$mean * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$mean + 1 )
-  summaryDFfeature_ChIPcontrol[[x]]$sd <- ( ( summaryDFfeature_ChIP[[x]]$sd * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$sd + 1 )
-  summaryDFfeature_ChIPcontrol[[x]]$sem <- ( ( summaryDFfeature_ChIP[[x]]$sem * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$sem + 1 )
-  summaryDFfeature_ChIPcontrol[[x]]$CI_lower <- ( ( summaryDFfeature_ChIP[[x]]$CI_lower * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$CI_lower + 1 )
-  summaryDFfeature_ChIPcontrol[[x]]$CI_upper <- ( ( summaryDFfeature_ChIP[[x]]$CI_upper * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$CI_upper + 1 )
+  if(x < 3) {
+    summaryDFfeature_ChIPcontrol[[x]]$mean <- ( ( summaryDFfeature_ChIP[[x]]$mean * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$mean + 1 )
+    summaryDFfeature_ChIPcontrol[[x]]$sd <- ( ( summaryDFfeature_ChIP[[x]]$sd * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$sd + 1 )
+    summaryDFfeature_ChIPcontrol[[x]]$sem <- ( ( summaryDFfeature_ChIP[[x]]$sem * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$sem + 1 )
+    summaryDFfeature_ChIPcontrol[[x]]$CI_lower <- ( ( summaryDFfeature_ChIP[[x]]$CI_lower * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$CI_lower + 1 )
+    summaryDFfeature_ChIPcontrol[[x]]$CI_upper <- ( ( summaryDFfeature_ChIP[[x]]$CI_upper * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$CI_upper + 1 )
+  } else {
+    summaryDFfeature_ChIPcontrol[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$mean <- ( ( summaryDFfeature_ChIP[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$mean * binSize ) + 1 ) /
+                                                                                                            ( summaryDFfeature_control[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$mean + 1 ) 
+    summaryDFfeature_ChIPcontrol[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$sd <- ( ( summaryDFfeature_ChIP[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$sd * binSize ) + 1 ) /
+                                                                                                          ( summaryDFfeature_control[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$sd + 1 ) 
+    summaryDFfeature_ChIPcontrol[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$sem <- ( ( summaryDFfeature_ChIP[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$sem * binSize ) + 1 ) /
+                                                                                                           ( summaryDFfeature_control[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$sem + 1 ) 
+    summaryDFfeature_ChIPcontrol[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$CI_lower <- ( ( summaryDFfeature_ChIP[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$CI_lower * binSize ) + 1 ) /
+                                                                                                                ( summaryDFfeature_control[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$CI_lower + 1 ) 
+    summaryDFfeature_ChIPcontrol[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$CI_upper <- ( ( summaryDFfeature_ChIP[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$CI_upper * binSize ) + 1 ) /
+                                                                                                                ( summaryDFfeature_control[[x]][!(grepl("t", summaryDFfeature_ChIPcontrol[[x]]$window)),]$CI_upper + 1 ) 
+  }
 }
  
 
@@ -615,12 +628,12 @@ ymin_ChIPcontrol <- min(c(summaryDFfeature_ChIPcontrol[[1]]$CI_lower,
                           summaryDFfeature_ChIPcontrol[[2]]$CI_lower,
                           summaryDFfeature_ChIPcontrol[[3]]$CI_lower,
                           summaryDFfeature_ChIPcontrol[[4]]$CI_lower,
-                          summaryDFfeature_ChIPcontrol[[5]]$CI_lower))
+                          summaryDFfeature_ChIPcontrol[[5]]$CI_lower), na.rm = T)
 ymax_ChIPcontrol <- max(c(summaryDFfeature_ChIPcontrol[[1]]$CI_upper,
                           summaryDFfeature_ChIPcontrol[[2]]$CI_upper,
                           summaryDFfeature_ChIPcontrol[[3]]$CI_upper,
                           summaryDFfeature_ChIPcontrol[[4]]$CI_upper,
-                          summaryDFfeature_ChIPcontrol[[5]]$CI_upper))
+                          summaryDFfeature_ChIPcontrol[[5]]$CI_upper), na.rm = T)
 
 # Define legend labels
 legendLabs <- lapply(seq_along(ChIPNamesPlot), function(x) {
