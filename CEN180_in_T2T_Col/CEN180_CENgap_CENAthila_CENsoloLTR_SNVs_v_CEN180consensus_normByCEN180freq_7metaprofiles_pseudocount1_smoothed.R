@@ -9,7 +9,7 @@
 # for all CEN180 sequences and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_CENsoloLTR_SNVs_v_CEN180consensus_metaprofilesNormByCEN180freq_7metaprofiles_pseudocount1.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_CENsoloLTR_SNVs_v_CEN180consensus_normByCEN180freq_7metaprofiles_pseudocount1_smoothed.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -57,7 +57,7 @@ ChIPNames <- c("all",
                "deletion",
                "transition",
                "transversion")
-ChIPDirs <- rep("/home/ajt200/analysis/nanopore/T2T_Col/SNVs_v_CEN180consensus/CEN180profiles/matrices_unsmoothed/",
+ChIPDirs <- rep("/home/ajt200/analysis/nanopore/T2T_Col/SNVs_v_CEN180consensus/CEN180profiles/matrices_smoothed/",
                 length(ChIPNames))
 ChIPNamesPlot <- c("All",
                    "SNVs",
@@ -74,7 +74,7 @@ ChIPColours <- c("navy",
                  "deeppink",
                  "darkorange2")
 controlNames <- c("CEN180freq")
-controlDirs <- rep("/home/ajt200/analysis/nanopore/T2T_Col/SNVs_v_CEN180consensus/CEN180profiles/matrices_unsmoothed/",
+controlDirs <- rep("/home/ajt200/analysis/nanopore/T2T_Col/SNVs_v_CEN180consensus/CEN180profiles/matrices_smoothed/",
                    length(controlNames))
 controlNamesPlot <- c("Features")
 controlColours <- c("red")
@@ -122,7 +122,7 @@ ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_CEN180_consensus_variants_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = T))[,101:318]
+                         header = T, colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(ChIPNames))
 # If features from multiple chromosomes are to be analysed,
@@ -143,7 +143,7 @@ ChIP_ranLocMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_CEN180_consensus_variants_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_CENranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = T))[,101:318]
+                         header = T, colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(ChIPNames))
 # If ranLocs from multiple chromosomes are to be analysed,
@@ -228,7 +228,7 @@ control_featureMats <- mclapply(seq_along(controlNames), function(x) {
                                 controlNames[x],
                                 "_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = T))[,101:318]
+                         header = T, colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(controlNames))
 # If features from multiple chromosomes are to be analysed,
@@ -249,7 +249,7 @@ control_ranLocMats <- mclapply(seq_along(controlNames), function(x) {
                                 controlNames[x],
                                 "_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_CENranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = T))[,101:318]
+                         header = T, colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(controlNames))
 # If ranLocs from multiple chromosomes are to be analysed,
@@ -325,69 +325,92 @@ control_soloLTRMats <- mclapply(seq_along(control_soloLTRMats), function(x) {
   }
 }, mc.cores = length(control_soloLTRMats))
 
+# Calculate ChIP/control ratio for each matrix
+# feature
+ChIPcontrol_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
+  ( ( ChIP_featureMats[[x]] * binSize ) + 1 ) / ( control_featureMats[[1]] + 1 )
+}, mc.cores = length(ChIP_featureMats))
+# ranLoc
+ChIPcontrol_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
+  ( ( ChIP_ranLocMats[[x]] * binSize ) + 1 ) / ( control_ranLocMats[[1]] + 1 )
+}, mc.cores = length(ChIP_ranLocMats))
+# gap
+ChIPcontrol_gapMats <- mclapply(seq_along(ChIP_gapMats), function(x) {
+  ( ( ChIP_gapMats[[x]] * binSize ) + 1 ) / ( control_gapMats[[1]] + 1 )
+}, mc.cores = length(ChIP_gapMats))
+# Athila
+ChIPcontrol_AthilaMats <- mclapply(seq_along(ChIP_AthilaMats), function(x) {
+  ( ( ChIP_AthilaMats[[x]] * binSize ) + 1 ) / ( control_AthilaMats[[1]] + 1 )
+}, mc.cores = length(ChIP_AthilaMats))
+# soloLTR
+ChIPcontrol_soloLTRMats <- mclapply(seq_along(ChIP_soloLTRMats), function(x) {
+  ( ( ChIP_soloLTRMats[[x]] * binSize ) + 1 ) / ( control_soloLTRMats[[1]] + 1 )
+}, mc.cores = length(ChIP_soloLTRMats))
 
-# ChIP
+
+
+# ChIPcontrol
 # Add column names
-for(x in seq_along(ChIP_featureMats)) {
-  colnames(ChIP_featureMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                       paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                       paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
-  colnames(ChIP_ranLocMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                      paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                      paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
-  colnames(ChIP_gapMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                   paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                   paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-  colnames(ChIP_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-  colnames(ChIP_soloLTRMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                       paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                       paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+for(x in seq_along(ChIPcontrol_featureMats)) {
+  colnames(ChIPcontrol_featureMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
+                                              paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+                                              paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+  colnames(ChIPcontrol_ranLocMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
+                                             paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+                                             paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+  colnames(ChIPcontrol_gapMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+                                          paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                          paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+  colnames(ChIPcontrol_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+                                             paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                             paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+  colnames(ChIPcontrol_soloLTRMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+                                              paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                              paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
 }
 
 # Create list of lists in which each element in the enclosing list corresponds to a library
 # and the two elements in the nested list correspond to coverage matrices for features and random loci 
-ChIP_mats <- mclapply(seq_along(ChIP_featureMats), function(x) {
+ChIPcontrol_mats <- mclapply(seq_along(ChIPcontrol_featureMats), function(x) {
   list(
        # features
-       ChIP_featureMats[[x]],
+       ChIPcontrol_featureMats[[x]],
        # ranLocs
-       ChIP_ranLocMats[[x]],
+       ChIPcontrol_ranLocMats[[x]],
        # gaps
-       ChIP_gapMats[[x]],
+       ChIPcontrol_gapMats[[x]],
        # Athilas
-       ChIP_AthilaMats[[x]],
+       ChIPcontrol_AthilaMats[[x]],
        # soloLTRs
-       ChIP_soloLTRMats[[x]]
+       ChIPcontrol_soloLTRMats[[x]]
       ) 
-}, mc.cores = length(ChIP_featureMats))
+}, mc.cores = length(ChIPcontrol_featureMats))
 
 # Transpose matrix and convert into dataframe
 # in which first column is window name
-wideDFfeature_list_ChIP <- mclapply(seq_along(ChIP_mats), function(x) {
-  lapply(seq_along(ChIP_mats[[x]]), function(y) {
-    data.frame(window = colnames(ChIP_mats[[x]][[y]]),
-               t(ChIP_mats[[x]][[y]]))
+wideDFfeature_list_ChIPcontrol <- mclapply(seq_along(ChIPcontrol_mats), function(x) {
+  lapply(seq_along(ChIPcontrol_mats[[x]]), function(y) {
+    data.frame(window = colnames(ChIPcontrol_mats[[x]][[y]]),
+               t(ChIPcontrol_mats[[x]][[y]]))
   })
-}, mc.cores = length(ChIP_mats))
+}, mc.cores = length(ChIPcontrol_mats))
 
 # Convert into tidy data.frame (long format)
-tidyDFfeature_list_ChIP  <- mclapply(seq_along(wideDFfeature_list_ChIP), function(x) {
-  lapply(seq_along(ChIP_mats[[x]]), function(y) {
-    gather(data  = wideDFfeature_list_ChIP[[x]][[y]],
+tidyDFfeature_list_ChIPcontrol  <- mclapply(seq_along(wideDFfeature_list_ChIPcontrol), function(x) {
+  lapply(seq_along(ChIPcontrol_mats[[x]]), function(y) {
+    gather(data  = wideDFfeature_list_ChIPcontrol[[x]][[y]],
            key   = feature,
            value = coverage,
            -window)
   }) 
-}, mc.cores = length(wideDFfeature_list_ChIP))
+}, mc.cores = length(wideDFfeature_list_ChIPcontrol))
 
 # Order levels of factor "window" so that sequential levels
 # correspond to sequential windows
-for(x in seq_along(tidyDFfeature_list_ChIP)) {
-  for(y in seq_along(ChIP_mats[[x]])) {
-    tidyDFfeature_list_ChIP[[x]][[y]]$window <- factor(tidyDFfeature_list_ChIP[[x]][[y]]$window,
-                                                       levels = as.character(wideDFfeature_list_ChIP[[x]][[y]]$window))
+for(x in seq_along(tidyDFfeature_list_ChIPcontrol)) {
+  for(y in seq_along(ChIPcontrol_mats[[x]])) {
+    tidyDFfeature_list_ChIPcontrol[[x]][[y]]$window <- factor(tidyDFfeature_list_ChIPcontrol[[x]][[y]]$window,
+                                                       levels = as.character(wideDFfeature_list_ChIPcontrol[[x]][[y]]$window))
   }
 }
 
@@ -398,217 +421,69 @@ for(x in seq_along(tidyDFfeature_list_ChIP)) {
 # Column5 is the standard error of the mean of coverage values per window,
 # Column6 is the lower bound of the 95% confidence interval, and
 # Column7 is the upper bound of the 95% confidence interval
-summaryDFfeature_list_ChIP  <- mclapply(seq_along(tidyDFfeature_list_ChIP), function(x) {
-  lapply(seq_along(ChIP_mats[[x]]), function(y) {
-    data.frame(window = as.character(wideDFfeature_list_ChIP[[x]][[y]]$window),
-               n      = tapply(X     = tidyDFfeature_list_ChIP[[x]][[y]]$coverage,
-                               INDEX = tidyDFfeature_list_ChIP[[x]][[y]]$window,
+summaryDFfeature_list_ChIPcontrol  <- mclapply(seq_along(tidyDFfeature_list_ChIPcontrol), function(x) {
+  lapply(seq_along(ChIPcontrol_mats[[x]]), function(y) {
+    data.frame(window = as.character(wideDFfeature_list_ChIPcontrol[[x]][[y]]$window),
+               n      = tapply(X     = tidyDFfeature_list_ChIPcontrol[[x]][[y]]$coverage,
+                               INDEX = tidyDFfeature_list_ChIPcontrol[[x]][[y]]$window,
                                FUN   = length),
-               mean   = tapply(X     = tidyDFfeature_list_ChIP[[x]][[y]]$coverage,
-                               INDEX = tidyDFfeature_list_ChIP[[x]][[y]]$window,
+               mean   = tapply(X     = tidyDFfeature_list_ChIPcontrol[[x]][[y]]$coverage,
+                               INDEX = tidyDFfeature_list_ChIPcontrol[[x]][[y]]$window,
                                FUN   = mean,
                                na.rm = TRUE),
-               sd     = tapply(X     = tidyDFfeature_list_ChIP[[x]][[y]]$coverage,
-                               INDEX = tidyDFfeature_list_ChIP[[x]][[y]]$window,
+               sd     = tapply(X     = tidyDFfeature_list_ChIPcontrol[[x]][[y]]$coverage,
+                               INDEX = tidyDFfeature_list_ChIPcontrol[[x]][[y]]$window,
                                FUN   = sd,
                                na.rm = TRUE))
   })
-}, mc.cores = length(tidyDFfeature_list_ChIP))
+}, mc.cores = length(tidyDFfeature_list_ChIPcontrol))
 
-for(x in seq_along(summaryDFfeature_list_ChIP)) {
-  for(y in seq_along(ChIP_mats[[x]])) {
-    summaryDFfeature_list_ChIP[[x]][[y]]$window <- factor(summaryDFfeature_list_ChIP[[x]][[y]]$window,
-                                                          levels = as.character(wideDFfeature_list_ChIP[[x]][[y]]$window))
-    summaryDFfeature_list_ChIP[[x]][[y]]$winNo <- factor(1:dim(summaryDFfeature_list_ChIP[[x]][[y]])[1])
-    summaryDFfeature_list_ChIP[[x]][[y]]$sem <- summaryDFfeature_list_ChIP[[x]][[y]]$sd/sqrt(summaryDFfeature_list_ChIP[[x]][[y]]$n-1)
-    summaryDFfeature_list_ChIP[[x]][[y]]$CI_lower <- summaryDFfeature_list_ChIP[[x]][[y]]$mean -
-      qt(0.975, df = summaryDFfeature_list_ChIP[[x]][[y]]$n-1)*summaryDFfeature_list_ChIP[[x]][[y]]$sem
-    summaryDFfeature_list_ChIP[[x]][[y]]$CI_upper <- summaryDFfeature_list_ChIP[[x]][[y]]$mean +
-      qt(0.975, df = summaryDFfeature_list_ChIP[[x]][[y]]$n-1)*summaryDFfeature_list_ChIP[[x]][[y]]$sem
+for(x in seq_along(summaryDFfeature_list_ChIPcontrol)) {
+  for(y in seq_along(ChIPcontrol_mats[[x]])) {
+    summaryDFfeature_list_ChIPcontrol[[x]][[y]]$window <- factor(summaryDFfeature_list_ChIPcontrol[[x]][[y]]$window,
+                                                          levels = as.character(wideDFfeature_list_ChIPcontrol[[x]][[y]]$window))
+    summaryDFfeature_list_ChIPcontrol[[x]][[y]]$winNo <- factor(1:dim(summaryDFfeature_list_ChIPcontrol[[x]][[y]])[1])
+    summaryDFfeature_list_ChIPcontrol[[x]][[y]]$sem <- summaryDFfeature_list_ChIPcontrol[[x]][[y]]$sd/sqrt(summaryDFfeature_list_ChIPcontrol[[x]][[y]]$n-1)
+    summaryDFfeature_list_ChIPcontrol[[x]][[y]]$CI_lower <- summaryDFfeature_list_ChIPcontrol[[x]][[y]]$mean -
+      qt(0.975, df = summaryDFfeature_list_ChIPcontrol[[x]][[y]]$n-1)*summaryDFfeature_list_ChIPcontrol[[x]][[y]]$sem
+    summaryDFfeature_list_ChIPcontrol[[x]][[y]]$CI_upper <- summaryDFfeature_list_ChIPcontrol[[x]][[y]]$mean +
+      qt(0.975, df = summaryDFfeature_list_ChIPcontrol[[x]][[y]]$n-1)*summaryDFfeature_list_ChIPcontrol[[x]][[y]]$sem
   }
 }
 
-# Convert list of lists summaryDFfeature_list_ChIP into
+# Convert list of lists summaryDFfeature_list_ChIPcontrol into
 # a list of single data.frames containing all meta-profiles for plotting
-featureTmp <- lapply(seq_along(summaryDFfeature_list_ChIP), function(x) {
-  summaryDFfeature_list_ChIP[[x]][[1]]
+featureTmp <- lapply(seq_along(summaryDFfeature_list_ChIPcontrol), function(x) {
+  summaryDFfeature_list_ChIPcontrol[[x]][[1]]
 })
-ranLocTmp <- lapply(seq_along(summaryDFfeature_list_ChIP), function(x) {
-  summaryDFfeature_list_ChIP[[x]][[2]]
+ranLocTmp <- lapply(seq_along(summaryDFfeature_list_ChIPcontrol), function(x) {
+  summaryDFfeature_list_ChIPcontrol[[x]][[2]]
 })
-gapTmp <- lapply(seq_along(summaryDFfeature_list_ChIP), function(x) {
-  summaryDFfeature_list_ChIP[[x]][[3]]
+gapTmp <- lapply(seq_along(summaryDFfeature_list_ChIPcontrol), function(x) {
+  summaryDFfeature_list_ChIPcontrol[[x]][[3]]
 })
-AthilaTmp <- lapply(seq_along(summaryDFfeature_list_ChIP), function(x) {
-  summaryDFfeature_list_ChIP[[x]][[4]]
+AthilaTmp <- lapply(seq_along(summaryDFfeature_list_ChIPcontrol), function(x) {
+  summaryDFfeature_list_ChIPcontrol[[x]][[4]]
 })
-soloLTRTmp <- lapply(seq_along(summaryDFfeature_list_ChIP), function(x) {
-  summaryDFfeature_list_ChIP[[x]][[5]]
+soloLTRTmp <- lapply(seq_along(summaryDFfeature_list_ChIPcontrol), function(x) {
+  summaryDFfeature_list_ChIPcontrol[[x]][[5]]
 })
 names(featureTmp) <- ChIPNamesPlot
 names(ranLocTmp) <- ChIPNamesPlot
 names(gapTmp) <- ChIPNamesPlot
 names(AthilaTmp) <- ChIPNamesPlot
 names(soloLTRTmp) <- ChIPNamesPlot
-summaryDFfeature_ChIP <- list(
+summaryDFfeature_ChIPcontrol <- list(
   bind_rows(featureTmp, .id = "libName"),
   bind_rows(ranLocTmp, .id = "libName"),
   bind_rows(gapTmp, .id = "libName"),
   bind_rows(AthilaTmp, .id = "libName"),
   bind_rows(soloLTRTmp, .id = "libName")
 )  
-for(x in seq_along(summaryDFfeature_ChIP)) {
-  summaryDFfeature_ChIP[[x]]$libName <- factor(summaryDFfeature_ChIP[[x]]$libName,
+for(x in seq_along(summaryDFfeature_ChIPcontrol)) {
+  summaryDFfeature_ChIPcontrol[[x]]$libName <- factor(summaryDFfeature_ChIPcontrol[[x]]$libName,
                                                levels = ChIPNamesPlot)
 }
-
-
-# control
-# Add column names
-for(x in seq_along(control_featureMats)) {
-  colnames(control_featureMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                       paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                       paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
-  colnames(control_ranLocMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                      paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                      paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
-  colnames(control_gapMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                   paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                   paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-  colnames(control_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-  colnames(control_soloLTRMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                       paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                       paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-}
-
-# Create list of lists in which each element in the enclosing list corresponds to a library
-# and the two elements in the nested list correspond to coverage matrices for features and random loci 
-control_mats <- mclapply(seq_along(control_featureMats), function(x) {
-  list(
-       # features
-       control_featureMats[[x]],
-       # ranLocs
-       control_ranLocMats[[x]],
-       # gaps
-       control_gapMats[[x]],
-       # Athilas
-       control_AthilaMats[[x]],
-       # soloLTRs
-       control_soloLTRMats[[x]]
-      ) 
-}, mc.cores = length(control_featureMats))
-
-# Transpose matrix and convert into dataframe
-# in which first column is window name
-wideDFfeature_list_control <- mclapply(seq_along(control_mats), function(x) {
-  lapply(seq_along(control_mats[[x]]), function(y) {
-    data.frame(window = colnames(control_mats[[x]][[y]]),
-               t(control_mats[[x]][[y]]))
-  })
-}, mc.cores = length(control_mats))
-
-# Convert into tidy data.frame (long format)
-tidyDFfeature_list_control  <- mclapply(seq_along(wideDFfeature_list_control), function(x) {
-  lapply(seq_along(control_mats[[x]]), function(y) {
-    gather(data  = wideDFfeature_list_control[[x]][[y]],
-           key   = feature,
-           value = coverage,
-           -window)
-  }) 
-}, mc.cores = length(wideDFfeature_list_control))
-
-# Order levels of factor "window" so that sequential levels
-# correspond to sequential windows
-for(x in seq_along(tidyDFfeature_list_control)) {
-  for(y in seq_along(control_mats[[x]])) {
-    tidyDFfeature_list_control[[x]][[y]]$window <- factor(tidyDFfeature_list_control[[x]][[y]]$window,
-                                                       levels = as.character(wideDFfeature_list_control[[x]][[y]]$window))
-  }
-}
-
-# Create summary data.frame in which each row corresponds to a window (Column 1),
-# Column2 is the number of coverage values (features) per window,
-# Column3 is the mean of coverage values per window,
-# Column4 is the standard deviation of coverage values per window,
-# Column5 is the standard error of the mean of coverage values per window,
-# Column6 is the lower bound of the 95% confidence interval, and
-# Column7 is the upper bound of the 95% confidence interval
-summaryDFfeature_list_control  <- mclapply(seq_along(tidyDFfeature_list_control), function(x) {
-  lapply(seq_along(control_mats[[x]]), function(y) {
-    data.frame(window = as.character(wideDFfeature_list_control[[x]][[y]]$window),
-               n      = tapply(X     = tidyDFfeature_list_control[[x]][[y]]$coverage,
-                               INDEX = tidyDFfeature_list_control[[x]][[y]]$window,
-                               FUN   = length),
-               mean   = tapply(X     = tidyDFfeature_list_control[[x]][[y]]$coverage,
-                               INDEX = tidyDFfeature_list_control[[x]][[y]]$window,
-                               FUN   = mean,
-                               na.rm = TRUE),
-               sd     = tapply(X     = tidyDFfeature_list_control[[x]][[y]]$coverage,
-                               INDEX = tidyDFfeature_list_control[[x]][[y]]$window,
-                               FUN   = sd,
-                               na.rm = TRUE))
-  })
-}, mc.cores = length(tidyDFfeature_list_control))
-
-for(x in seq_along(summaryDFfeature_list_control)) {
-  for(y in seq_along(control_mats[[x]])) {
-    summaryDFfeature_list_control[[x]][[y]]$window <- factor(summaryDFfeature_list_control[[x]][[y]]$window,
-                                                          levels = as.character(wideDFfeature_list_control[[x]][[y]]$window))
-    summaryDFfeature_list_control[[x]][[y]]$winNo <- factor(1:dim(summaryDFfeature_list_control[[x]][[y]])[1])
-    summaryDFfeature_list_control[[x]][[y]]$sem <- summaryDFfeature_list_control[[x]][[y]]$sd/sqrt(summaryDFfeature_list_control[[x]][[y]]$n-1)
-    summaryDFfeature_list_control[[x]][[y]]$CI_lower <- summaryDFfeature_list_control[[x]][[y]]$mean -
-      qt(0.975, df = summaryDFfeature_list_control[[x]][[y]]$n-1)*summaryDFfeature_list_control[[x]][[y]]$sem
-    summaryDFfeature_list_control[[x]][[y]]$CI_upper <- summaryDFfeature_list_control[[x]][[y]]$mean +
-      qt(0.975, df = summaryDFfeature_list_control[[x]][[y]]$n-1)*summaryDFfeature_list_control[[x]][[y]]$sem
-  }
-}
-
-# Convert list of lists summaryDFfeature_list_control into
-# a list of single data.frames containing all meta-profiles for plotting
-featureTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
-  summaryDFfeature_list_control[[x]][[1]]
-})
-ranLocTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
-  summaryDFfeature_list_control[[x]][[2]]
-})
-gapTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
-  summaryDFfeature_list_control[[x]][[3]]
-})
-AthilaTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
-  summaryDFfeature_list_control[[x]][[4]]
-})
-soloLTRTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
-  summaryDFfeature_list_control[[x]][[5]]
-})
-names(featureTmp) <- controlNamesPlot
-names(ranLocTmp) <- controlNamesPlot
-names(gapTmp) <- controlNamesPlot
-names(AthilaTmp) <- controlNamesPlot
-names(soloLTRTmp) <- controlNamesPlot
-summaryDFfeature_control <- list(
-  bind_rows(featureTmp, .id = "libName"),
-  bind_rows(ranLocTmp, .id = "libName"),
-  bind_rows(gapTmp, .id = "libName"),
-  bind_rows(AthilaTmp, .id = "libName"),
-  bind_rows(soloLTRTmp, .id = "libName")
-)  
-for(x in seq_along(summaryDFfeature_control)) {
-  summaryDFfeature_control[[x]]$libName <- factor(summaryDFfeature_control[[x]]$libName,
-                                                  levels = controlNamesPlot)
-}
-
-# Calculate windowed ratios of mean, sd, sem, CI_lower, CI_upper
-summaryDFfeature_ChIPcontrol <- summaryDFfeature_ChIP
-for(x in seq_along(summaryDFfeature_ChIPcontrol)) {
-  summaryDFfeature_ChIPcontrol[[x]]$mean <- ( ( summaryDFfeature_ChIP[[x]]$mean * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$mean + 1 )
-  summaryDFfeature_ChIPcontrol[[x]]$sd <- ( ( summaryDFfeature_ChIP[[x]]$sd * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$sd + 1 )
-  summaryDFfeature_ChIPcontrol[[x]]$sem <- ( ( summaryDFfeature_ChIP[[x]]$sem * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$sem + 1 )
-  summaryDFfeature_ChIPcontrol[[x]]$CI_lower <- ( ( summaryDFfeature_ChIP[[x]]$CI_lower * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$CI_lower + 1 )
-  summaryDFfeature_ChIPcontrol[[x]]$CI_upper <- ( ( summaryDFfeature_ChIP[[x]]$CI_upper * binSize ) + 1 ) / ( summaryDFfeature_control[[x]]$CI_upper + 1 )
-}
- 
 
 # Define y-axis limits
 ymin_ChIPcontrol <- min(c(summaryDFfeature_ChIPcontrol[[1]]$CI_lower,
@@ -911,6 +786,6 @@ ggsave(paste0(plotDir,
 #              paste0(ChIPNames, collapse = "_"),
               "_avgProfiles_around",
               "_CEN180_CENranLoc_CENgap_CENAthila_CENsoloLTR_in_T2T_Col_",
-              paste0(chrName, collapse = "_"), "_pseudocount1_ratios_all_features_unsmoothed.pdf"),
+              paste0(chrName, collapse = "_"), "_pseudocount1_ratios_per_feature_smoothed.pdf"),
        plot = ggObjGA_combined,
        height = 6.5, width = 7*5, limitsize = FALSE)

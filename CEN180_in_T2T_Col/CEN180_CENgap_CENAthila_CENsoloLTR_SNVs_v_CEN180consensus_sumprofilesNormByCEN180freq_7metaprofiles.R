@@ -9,7 +9,7 @@
 # for all CEN180 sequences and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_CENsoloLTR_SNVs_v_CEN180consensus_sumprofilesNormByCEN180freq_7metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_CENsoloLTR_SNVs_v_CEN180consensus_sumprofilesNormByCEN180freq_7metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 2000 2000 2kb 1 1 1bp 1bp '0.02,0.96'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -18,10 +18,10 @@
 #upstream <- 2000
 #downstream <- 2000
 #flankName <- "2kb"
-#binSize <- 10
-#Athila_binSize <- 10
-#binName <- "10bp"
-#Athila_binName <- "10bp"
+#binSize <- 1
+#Athila_binSize <- 1
+#binName <- "1bp"
+#Athila_binName <- "1bp"
 ## top left
 #legendPos <- as.numeric(unlist(strsplit("0.02,0.96",
 #                                        split = ",")))
@@ -122,7 +122,7 @@ ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_CEN180_consensus_variants_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = T))[,101:318]
+                         header = T, colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(ChIPNames))
 # If features from multiple chromosomes are to be analysed,
@@ -143,7 +143,7 @@ ChIP_ranLocMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_CEN180_consensus_variants_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_CENranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = T))[,101:318]
+                         header = T, colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(ChIPNames))
 # If ranLocs from multiple chromosomes are to be analysed,
@@ -228,7 +228,7 @@ control_featureMats <- mclapply(seq_along(controlNames), function(x) {
                                 controlNames[x],
                                 "_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = T))[,101:318]
+                         header = T, colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(controlNames))
 # If features from multiple chromosomes are to be analysed,
@@ -249,7 +249,7 @@ control_ranLocMats <- mclapply(seq_along(controlNames), function(x) {
                                 controlNames[x],
                                 "_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_CENranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = T))[,101:318]
+                         header = T, colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(controlNames))
 # If ranLocs from multiple chromosomes are to be analysed,

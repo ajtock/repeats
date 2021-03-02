@@ -9,7 +9,7 @@
 # for all CEN180 sequences and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_CENsoloLTR_SNVs_v_CEN180consensus_metaprofilesNormByCEN180freq_7metaprofiles_pseudocount1.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_CENsoloLTR_SNVs_v_CEN180consensus_metaprofilesNormByCEN180freq_7metaprofiles_pseudocount1_smoothed.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -57,7 +57,7 @@ ChIPNames <- c("all",
                "deletion",
                "transition",
                "transversion")
-ChIPDirs <- rep("/home/ajt200/analysis/nanopore/T2T_Col/SNVs_v_CEN180consensus/CEN180profiles/matrices_unsmoothed/",
+ChIPDirs <- rep("/home/ajt200/analysis/nanopore/T2T_Col/SNVs_v_CEN180consensus/CEN180profiles/matrices_smoothed/",
                 length(ChIPNames))
 ChIPNamesPlot <- c("All",
                    "SNVs",
@@ -74,7 +74,7 @@ ChIPColours <- c("navy",
                  "deeppink",
                  "darkorange2")
 controlNames <- c("CEN180freq")
-controlDirs <- rep("/home/ajt200/analysis/nanopore/T2T_Col/SNVs_v_CEN180consensus/CEN180profiles/matrices_unsmoothed/",
+controlDirs <- rep("/home/ajt200/analysis/nanopore/T2T_Col/SNVs_v_CEN180consensus/CEN180profiles/matrices_smoothed/",
                    length(controlNames))
 controlNamesPlot <- c("Features")
 controlColours <- c("red")
@@ -911,6 +911,6 @@ ggsave(paste0(plotDir,
 #              paste0(ChIPNames, collapse = "_"),
               "_avgProfiles_around",
               "_CEN180_CENranLoc_CENgap_CENAthila_CENsoloLTR_in_T2T_Col_",
-              paste0(chrName, collapse = "_"), "_pseudocount1_ratios_all_features_unsmoothed.pdf"),
+              paste0(chrName, collapse = "_"), "_pseudocount1_ratios_all_features_smoothed.pdf"),
        plot = ggObjGA_combined,
        height = 6.5, width = 7*5, limitsize = FALSE)

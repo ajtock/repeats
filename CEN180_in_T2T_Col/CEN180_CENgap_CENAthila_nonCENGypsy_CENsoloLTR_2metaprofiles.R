@@ -1497,3 +1497,506 @@ ggsave(paste0(plotDir,
               paste0(chrName, collapse = "_"), "_", align, ".pdf"),
        plot = ggObjGA_combined,
        height = 6.5, width = 7*6, limitsize = FALSE)
+
+
+# control
+# Add column names
+for(x in seq_along(control_featureMats)) {
+  colnames(control_featureMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
+                                       paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+                                       paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+  colnames(control_ranLocMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
+                                      paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+                                      paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+  colnames(control_gapMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+                                   paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                   paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+  colnames(control_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+  colnames(control_TEsfMats[[x]]) <- c(paste0("u", 1:(upstream/binSize)),
+                                    paste0("t", ((upstream/binSize)+1):((upstream+TEsf_bodyLength)/binSize)),
+                                    paste0("d", (((upstream+TEsf_bodyLength)/binSize)+1):(((upstream+TEsf_bodyLength)/binSize)+(downstream/binSize))))
+  colnames(control_soloLTRMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+                                    paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                    paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+}
+
+# Create list of lists in which each element in the enclosing list corresponds to a library
+# and the two elements in the nested list correspond to coverage matrices for features and random loci
+control_mats <- mclapply(seq_along(control_featureMats), function(x) {
+  list(
+       # features
+       control_featureMats[[x]],
+       # ranLocs
+       control_ranLocMats[[x]],
+       # gaps
+       control_gapMats[[x]],
+       # Athilas
+       control_AthilaMats[[x]],
+       # TEsfs
+       control_TEsfMats[[x]],
+       # soloLTRs
+       control_soloLTRMats[[x]]
+      )
+}, mc.cores = length(control_featureMats))
+
+# Transpose matrix and convert into dataframe
+# in which first column is window name
+wideDFfeature_list_control <- mclapply(seq_along(control_mats), function(x) {
+  lapply(seq_along(control_mats[[x]]), function(y) {
+    data.frame(window = colnames(control_mats[[x]][[y]]),
+               t(control_mats[[x]][[y]]))
+  })
+}, mc.cores = length(control_mats))
+
+# Convert into tidy data.frame (long format)
+tidyDFfeature_list_control  <- mclapply(seq_along(wideDFfeature_list_control), function(x) {
+  lapply(seq_along(control_mats[[x]]), function(y) {
+    gather(data  = wideDFfeature_list_control[[x]][[y]],
+           key   = feature,
+           value = coverage,
+           -window)
+  }) 
+}, mc.cores = length(wideDFfeature_list_control))
+
+# Order levels of factor "window" so that sequential levels
+# correspond to sequential windows
+for(x in seq_along(tidyDFfeature_list_control)) {
+  for(y in seq_along(control_mats[[x]])) {
+    tidyDFfeature_list_control[[x]][[y]]$window <- factor(tidyDFfeature_list_control[[x]][[y]]$window,
+                                                           levels = as.character(wideDFfeature_list_control[[x]][[y]]$window))
+  }
+}
+
+# Create summary data.frame in which each row corresponds to a window (Column 1),
+# Column2 is the number of coverage values (features) per window,
+# Column3 is the mean of coverage values per window,
+# Column4 is the standard deviation of coverage values per window,
+# Column5 is the standard error of the mean of coverage values per window,
+# Column6 is the lower bound of the 95% confidence interval, and
+# Column7 is the upper bound of the 95% confidence interval
+summaryDFfeature_list_control  <- mclapply(seq_along(tidyDFfeature_list_control), function(x) {
+  lapply(seq_along(control_mats[[x]]), function(y) {
+    data.frame(window = as.character(wideDFfeature_list_control[[x]][[y]]$window),
+               n      = tapply(X     = tidyDFfeature_list_control[[x]][[y]]$coverage,
+                               INDEX = tidyDFfeature_list_control[[x]][[y]]$window,
+                               FUN   = length),
+               mean   = tapply(X     = tidyDFfeature_list_control[[x]][[y]]$coverage,
+                               INDEX = tidyDFfeature_list_control[[x]][[y]]$window,
+                               FUN   = mean,
+                               na.rm = TRUE),
+               sd     = tapply(X     = tidyDFfeature_list_control[[x]][[y]]$coverage,
+                               INDEX = tidyDFfeature_list_control[[x]][[y]]$window,
+                               FUN   = sd,
+                               na.rm = TRUE))
+  })
+}, mc.cores = length(tidyDFfeature_list_control))
+
+for(x in seq_along(summaryDFfeature_list_control)) {
+  for(y in seq_along(control_mats[[x]])) {
+    summaryDFfeature_list_control[[x]][[y]]$window <- factor(summaryDFfeature_list_control[[x]][[y]]$window,
+                                                              levels = as.character(wideDFfeature_list_control[[x]][[y]]$window))
+    summaryDFfeature_list_control[[x]][[y]]$winNo <- factor(1:dim(summaryDFfeature_list_control[[x]][[y]])[1])
+    summaryDFfeature_list_control[[x]][[y]]$sem <- summaryDFfeature_list_control[[x]][[y]]$sd/sqrt(summaryDFfeature_list_control[[x]][[y]]$n-1)
+    summaryDFfeature_list_control[[x]][[y]]$CI_lower <- summaryDFfeature_list_control[[x]][[y]]$mean -
+      qt(0.975, df = summaryDFfeature_list_control[[x]][[y]]$n-1)*summaryDFfeature_list_control[[x]][[y]]$sem
+    summaryDFfeature_list_control[[x]][[y]]$CI_upper <- summaryDFfeature_list_control[[x]][[y]]$mean +
+      qt(0.975, df = summaryDFfeature_list_control[[x]][[y]]$n-1)*summaryDFfeature_list_control[[x]][[y]]$sem
+  }
+}
+
+# Convert list of lists summaryDFfeature_list_control into
+# a list of single data.frames containing all meta-profiles for plotting
+featureTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+  summaryDFfeature_list_control[[x]][[1]]
+})
+ranLocTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+  summaryDFfeature_list_control[[x]][[2]]
+})
+gapTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+  summaryDFfeature_list_control[[x]][[3]]
+})
+AthilaTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+  summaryDFfeature_list_control[[x]][[4]]
+})
+TEsfTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+  summaryDFfeature_list_control[[x]][[5]]
+})
+soloLTRTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+  summaryDFfeature_list_control[[x]][[6]]
+})
+names(featureTmp) <- controlNamesPlot
+names(ranLocTmp) <- controlNamesPlot
+names(gapTmp) <- controlNamesPlot
+names(AthilaTmp) <- controlNamesPlot
+names(TEsfTmp) <- controlNamesPlot
+names(soloLTRTmp) <- controlNamesPlot
+summaryDFfeature_control <- list(
+  bind_rows(featureTmp, .id = "libName"),
+  bind_rows(ranLocTmp, .id = "libName"),
+  bind_rows(gapTmp, .id = "libName"),
+  bind_rows(AthilaTmp, .id = "libName"),
+  bind_rows(TEsfTmp, .id = "libName"),
+  bind_rows(soloLTRTmp, .id = "libName")
+)
+for(x in seq_along(summaryDFfeature_control)) {
+  summaryDFfeature_control[[x]]$libName <- factor(summaryDFfeature_control[[x]]$libName,
+                                                   levels = controlNamesPlot)
+}
+
+# Define y-axis limits
+ymin_control <- min(c(summaryDFfeature_control[[1]]$CI_lower,
+                       summaryDFfeature_control[[2]]$CI_lower,
+                       summaryDFfeature_control[[3]]$CI_lower,
+                       summaryDFfeature_control[[4]]$CI_lower,
+                       summaryDFfeature_control[[5]]$CI_lower,
+                       summaryDFfeature_control[[6]]$CI_lower),
+                 na.rm = T)
+ymax_control <- max(c(summaryDFfeature_control[[1]]$CI_upper,
+                       summaryDFfeature_control[[2]]$CI_upper,
+                       summaryDFfeature_control[[3]]$CI_upper,
+                       summaryDFfeature_control[[4]]$CI_upper,
+                       summaryDFfeature_control[[5]]$CI_upper,
+                       summaryDFfeature_control[[6]]$CI_upper),
+                 na.rm = T)
+
+# Define legend labels
+legendLabs <- lapply(seq_along(controlNamesPlot), function(x) {
+  grobTree(textGrob(bquote(.(controlNamesPlot[x])),
+                    x = legendPos[1], y = legendPos[2]-((x-1)*0.06), just = "left",
+                    gp = gpar(col = controlColours[x], fontsize = 18)))
+})
+
+# Plot average profiles with 95% CI ribbon
+## feature
+summaryDFfeature <- summaryDFfeature_control[[1]]
+ggObj1_combined_control <- ggplot(data = summaryDFfeature,
+                                   mapping = aes(x = winNo,
+                                                 y = mean,
+                                                 group = libName)
+                                  ) +
+geom_line(data = summaryDFfeature,
+          mapping = aes(colour = libName),
+          size = 1) +
+scale_colour_manual(values = controlColours) +
+geom_ribbon(data = summaryDFfeature,
+            mapping = aes(ymin = CI_lower,
+                          ymax = CI_upper,
+                          fill = libName),
+            alpha = 0.4) +
+scale_fill_manual(values = controlColours) +
+scale_y_continuous(limits = c(ymin_control, ymax_control),
+                   labels = function(x) sprintf("%6.3f", x)) +
+scale_x_discrete(breaks = c(1,
+                            ((upstream-1000)/binSize)+1,
+                            (dim(summaryDFfeature_control[[1]])[1]/length(controlNames))-((downstream-1000)/binSize),
+                            dim(summaryDFfeature_control[[1]])[1]/length(controlNames)),
+                 labels = c(paste0("-", "1kb"),
+                            featureStartLab,
+                            featureEndLab,
+                            paste0("+", "1kb"))) +
+geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
+                          (dim(summaryDFfeature_control[[1]])[1]/length(controlNames))-((downstream-1000)/binSize)),
+           linetype = "dashed",
+           size = 1) +
+labs(x = "",
+     y = bquote("Norm. coverage")) +
+theme_bw() +
+theme(
+      axis.ticks = element_line(size = 1.0, colour = "black"),
+      axis.ticks.length = unit(0.25, "cm"),
+      axis.text.x = element_text(size = 22, colour = "black"),
+      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+      axis.title = element_text(size = 30, colour = "black"),
+      legend.position = "none",
+      panel.grid = element_blank(),
+      panel.border = element_rect(size = 3.5, colour = "black"),
+      panel.background = element_blank(),
+      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+      plot.title = element_text(hjust = 0.5, size = 30)) +
+ggtitle(bquote(.(featureNamePlot) ~ "(" * italic("n") ~ "=" ~
+               .(prettyNum(summaryDFfeature$n[1],
+                           big.mark = ",", trim = T)) *
+               ")"))
+
+## ranLoc
+summaryDFfeature <- summaryDFfeature_control[[2]]
+ggObj2_combined_control <- ggplot(data = summaryDFfeature,
+                                   mapping = aes(x = winNo,
+                                                 y = mean,
+                                                 group = libName)
+                                  ) +
+geom_line(data = summaryDFfeature,
+          mapping = aes(colour = libName),
+          size = 1) +
+scale_colour_manual(values = controlColours) +
+geom_ribbon(data = summaryDFfeature,
+            mapping = aes(ymin = CI_lower,
+                          ymax = CI_upper,
+                          fill = libName),
+            alpha = 0.4) +
+scale_fill_manual(values = controlColours) +
+scale_y_continuous(limits = c(ymin_control, ymax_control),
+                   labels = function(x) sprintf("%6.3f", x)) +
+scale_x_discrete(breaks = c(1,
+                            ((upstream-1000)/binSize)+1,
+                            (dim(summaryDFfeature_control[[2]])[1]/length(controlNames))-((downstream-1000)/binSize),
+                            dim(summaryDFfeature_control[[2]])[1]/length(controlNames)),
+                 labels = c(paste0("-", "1kb"),
+                            featureStartLab,
+                            featureEndLab,
+                            paste0("+", "1kb"))) +
+geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
+                          (dim(summaryDFfeature_control[[2]])[1]/length(controlNames))-((downstream-1000)/binSize)),
+           linetype = "dashed",
+           size = 1) +
+labs(x = "",
+     y = bquote("Norm. coverage")) +
+annotation_custom(legendLabs[[1]]) +
+theme_bw() +
+theme(
+      axis.ticks = element_line(size = 1.0, colour = "black"),
+      axis.ticks.length = unit(0.25, "cm"),
+      axis.text.x = element_text(size = 22, colour = "black"),
+      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+      axis.title = element_text(size = 30, colour = "black"),
+      legend.position = "none",
+      panel.grid = element_blank(),
+      panel.border = element_rect(size = 3.5, colour = "black"),
+      panel.background = element_blank(),
+      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+      plot.title = element_text(hjust = 0.5, size = 30)) +
+ggtitle(bquote(.(ranLocNamePlot) ~ "(" * italic("n") ~ "=" ~
+               .(prettyNum(summaryDFfeature$n[1],
+                           big.mark = ",", trim = T)) *
+               ")"))
+
+## gap
+summaryDFfeature <- summaryDFfeature_control[[3]]
+ggObj3_combined_control <- ggplot(data = summaryDFfeature,
+                                   mapping = aes(x = winNo,
+                                                 y = mean,
+                                                 group = libName)
+                                  ) +
+geom_line(data = summaryDFfeature,
+          mapping = aes(colour = libName),
+          size = 1) +
+scale_colour_manual(values = controlColours) +
+geom_ribbon(data = summaryDFfeature,
+            mapping = aes(ymin = CI_lower,
+                          ymax = CI_upper,
+                          fill = libName),
+            alpha = 0.4) +
+scale_fill_manual(values = controlColours) +
+scale_y_continuous(limits = c(ymin_control, ymax_control),
+                   labels = function(x) sprintf("%6.3f", x)) +
+scale_x_discrete(breaks = c(1,
+                            (upstream/Athila_binSize)+1,
+                            (dim(summaryDFfeature_control[[3]])[1]/length(controlNames))-(downstream/Athila_binSize),
+                            dim(summaryDFfeature_control[[3]])[1]/length(controlNames)),
+                 labels = c(paste0("-", flankName),
+                            featureStartLab,
+                            featureEndLab,
+                            paste0("+", flankName))) +
+geom_vline(xintercept = c((upstream/Athila_binSize)+1,
+                          (dim(summaryDFfeature_control[[3]])[1]/length(controlNames))-(downstream/Athila_binSize)),
+           linetype = "dashed",
+           size = 1) +
+labs(x = "",
+     y = bquote("Norm. coverage")) +
+theme_bw() +
+theme(
+      axis.ticks = element_line(size = 1.0, colour = "black"),
+      axis.ticks.length = unit(0.25, "cm"),
+      axis.text.x = element_text(size = 22, colour = "black"),
+      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+      axis.title = element_text(size = 30, colour = "black"),
+      legend.position = "none",
+      panel.grid = element_blank(),
+      panel.border = element_rect(size = 3.5, colour = "black"),
+      panel.background = element_blank(),
+      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+      plot.title = element_text(hjust = 0.5, size = 30)) +
+ggtitle(bquote(.(gapNamePlot) ~ "(" * italic("n") ~ "=" ~
+               .(prettyNum(summaryDFfeature$n[1],
+                           big.mark = ",", trim = T)) *
+               ")"))
+
+## Athila
+summaryDFfeature <- summaryDFfeature_control[[4]]
+ggObj4_combined_control <- ggplot(data = summaryDFfeature,
+                                   mapping = aes(x = winNo,
+                                                 y = mean,
+                                                 group = libName)
+                                  ) +
+geom_line(data = summaryDFfeature,
+          mapping = aes(colour = libName),
+          size = 1) +
+scale_colour_manual(values = controlColours) +
+geom_ribbon(data = summaryDFfeature,
+            mapping = aes(ymin = CI_lower,
+                          ymax = CI_upper,
+                          fill = libName),
+            alpha = 0.4) +
+scale_fill_manual(values = controlColours) +
+scale_y_continuous(limits = c(ymin_control, ymax_control),
+                   labels = function(x) sprintf("%6.3f", x)) +
+scale_x_discrete(breaks = c(1,
+                            (upstream/Athila_binSize)+1,
+                            (dim(summaryDFfeature_control[[4]])[1]/length(controlNames))-(downstream/Athila_binSize),
+                            dim(summaryDFfeature_control[[4]])[1]/length(controlNames)),
+                 labels = c(paste0("-", flankName),
+                            featureStartLab,
+                            featureEndLab,
+                            paste0("+", flankName))) +
+geom_vline(xintercept = c((upstream/Athila_binSize)+1,
+                          (dim(summaryDFfeature_control[[4]])[1]/length(controlNames))-(downstream/Athila_binSize)),
+           linetype = "dashed",
+           size = 1) +
+labs(x = "",
+     y = bquote("Norm. coverage")) +
+theme_bw() +
+theme(
+      axis.ticks = element_line(size = 1.0, colour = "black"),
+      axis.ticks.length = unit(0.25, "cm"),
+      axis.text.x = element_text(size = 22, colour = "black"),
+      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+      axis.title = element_text(size = 30, colour = "black"),
+      legend.position = "none",
+      panel.grid = element_blank(),
+      panel.border = element_rect(size = 3.5, colour = "black"),
+      panel.background = element_blank(),
+      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+      plot.title = element_text(hjust = 0.5, size = 30)) +
+ggtitle(bquote(.(AthilaNamePlot) ~ "(" * italic("n") ~ "=" ~
+               .(prettyNum(summaryDFfeature$n[1],
+                           big.mark = ",", trim = T)) *
+               ")"))
+
+## TEsf
+summaryDFfeature <- summaryDFfeature_control[[5]]
+ggObj5_combined_control <- ggplot(data = summaryDFfeature,
+                                   mapping = aes(x = winNo,
+                                                 y = mean,
+                                                 group = libName)
+                                  ) +
+geom_line(data = summaryDFfeature,
+          mapping = aes(colour = libName),
+          size = 1) +
+scale_colour_manual(values = controlColours) +
+geom_ribbon(data = summaryDFfeature,
+            mapping = aes(ymin = CI_lower,
+                          ymax = CI_upper,
+                          fill = libName),
+            alpha = 0.4) +
+scale_fill_manual(values = controlColours) +
+scale_y_continuous(limits = c(ymin_control, ymax_control),
+                   labels = function(x) sprintf("%6.3f", x)) +
+scale_x_discrete(breaks = c(1,
+                            (upstream/binSize)+1,
+                            (dim(summaryDFfeature_control[[5]])[1]/length(controlNames))-(downstream/binSize),
+                            dim(summaryDFfeature_control[[5]])[1]/length(controlNames)),
+                 labels = c(paste0("-", flankName),
+                            featureStartLab,
+                            featureEndLab,
+                            paste0("+", flankName))) +
+geom_vline(xintercept = c((upstream/binSize)+1,
+                          (dim(summaryDFfeature_control[[5]])[1]/length(controlNames))-(downstream/binSize)),
+           linetype = "dashed",
+           size = 1) +
+labs(x = "",
+     y = bquote("Norm. coverage")) +
+theme_bw() +
+theme(
+      axis.ticks = element_line(size = 1.0, colour = "black"),
+      axis.ticks.length = unit(0.25, "cm"),
+      axis.text.x = element_text(size = 22, colour = "black"),
+      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+      axis.title = element_text(size = 30, colour = "black"),
+      legend.position = "none",
+      panel.grid = element_blank(),
+      panel.border = element_rect(size = 3.5, colour = "black"),
+      panel.background = element_blank(),
+      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+      plot.title = element_text(hjust = 0.5, size = 30)) +
+ggtitle(bquote(.(TEsfNamePlot) ~ "(" * italic("n") ~ "=" ~
+               .(prettyNum(summaryDFfeature$n[1],
+                           big.mark = ",", trim = T)) *
+               ")"))
+
+## soloLTR
+summaryDFfeature <- summaryDFfeature_control[[6]]
+ggObj6_combined_control <- ggplot(data = summaryDFfeature,
+                                   mapping = aes(x = winNo,
+                                                 y = mean,
+                                                 group = libName)
+                                  ) +
+geom_line(data = summaryDFfeature,
+          mapping = aes(colour = libName),
+          size = 1) +
+scale_colour_manual(values = controlColours) +
+geom_ribbon(data = summaryDFfeature,
+            mapping = aes(ymin = CI_lower,
+                          ymax = CI_upper,
+                          fill = libName),
+            alpha = 0.4) +
+scale_fill_manual(values = controlColours) +
+scale_y_continuous(limits = c(ymin_control, ymax_control),
+                   labels = function(x) sprintf("%6.3f", x)) +
+scale_x_discrete(breaks = c(1,
+                            (upstream/Athila_binSize)+1,
+                            (dim(summaryDFfeature_control[[6]])[1]/length(controlNames))-(downstream/Athila_binSize),
+                            dim(summaryDFfeature_control[[6]])[1]/length(controlNames)),
+                 labels = c(paste0("-", flankName),
+                            featureStartLab,
+                            featureEndLab,
+                            paste0("+", flankName))) +
+geom_vline(xintercept = c((upstream/Athila_binSize)+1,
+                          (dim(summaryDFfeature_control[[6]])[1]/length(controlNames))-(downstream/Athila_binSize)),
+           linetype = "dashed",
+           size = 1) +
+labs(x = "",
+     y = bquote("Norm. coverage")) +
+theme_bw() +
+theme(
+      axis.ticks = element_line(size = 1.0, colour = "black"),
+      axis.ticks.length = unit(0.25, "cm"),
+      axis.text.x = element_text(size = 22, colour = "black"),
+      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+      axis.title = element_text(size = 30, colour = "black"),
+      legend.position = "none",
+      panel.grid = element_blank(),
+      panel.border = element_rect(size = 3.5, colour = "black"),
+      panel.background = element_blank(),
+      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+      plot.title = element_text(hjust = 0.5, size = 30)) +
+ggtitle(bquote(.(soloLTRNamePlot) ~ "(" * italic("n") ~ "=" ~
+               .(prettyNum(summaryDFfeature$n[1],
+                           big.mark = ",", trim = T)) *
+               ")"))
+
+ggObjGA_combined <- grid.arrange(grobs = list(
+                                              ggObj1_combined_control,
+                                              ggObj2_combined_control,
+                                              ggObj3_combined_control,
+                                              ggObj4_combined_control,
+                                              ggObj5_combined_control,
+                                              ggObj6_combined_control
+                                             ),
+                                 layout_matrix = cbind(
+                                                       1,
+                                                       2,
+                                                       3,
+                                                       4,
+                                                       5,
+                                                       6
+                                                      ))
+ggsave(paste0(plotDir,
+              "control_",
+              paste0(controlNames, collapse = "_"),
+              "_avgProfiles_around",
+              "_CEN180_ranLoc_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
+              paste0(chrName, collapse = "_"), "_", align, ".pdf"),
+       plot = ggObjGA_combined,
+       height = 6.5, width = 7*6, limitsize = FALSE)

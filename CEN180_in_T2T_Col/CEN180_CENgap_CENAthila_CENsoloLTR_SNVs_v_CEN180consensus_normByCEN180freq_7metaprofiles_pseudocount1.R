@@ -57,7 +57,7 @@ ChIPNames <- c("all",
                "deletion",
                "transition",
                "transversion")
-ChIPDirs <- rep("/home/ajt200/analysis/nanopore/T2T_Col/SNVs_v_CEN180consensus/CEN180profiles/matrices/",
+ChIPDirs <- rep("/home/ajt200/analysis/nanopore/T2T_Col/SNVs_v_CEN180consensus/CEN180profiles/matrices_unsmoothed/",
                 length(ChIPNames))
 ChIPNamesPlot <- c("All",
                    "SNVs",
@@ -74,7 +74,7 @@ ChIPColours <- c("navy",
                  "deeppink",
                  "darkorange2")
 controlNames <- c("CEN180freq")
-controlDirs <- rep("/home/ajt200/analysis/nanopore/T2T_Col/SNVs_v_CEN180consensus/CEN180profiles/matrices/",
+controlDirs <- rep("/home/ajt200/analysis/nanopore/T2T_Col/SNVs_v_CEN180consensus/CEN180profiles/matrices_unsmoothed/",
                    length(controlNames))
 controlNamesPlot <- c("Features")
 controlColours <- c("red")
@@ -122,7 +122,7 @@ ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_CEN180_consensus_variants_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = T))[,101:318]
+                         header = T, colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(ChIPNames))
 # If features from multiple chromosomes are to be analysed,
@@ -143,7 +143,7 @@ ChIP_ranLocMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_CEN180_consensus_variants_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_CENranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = T))[,101:318]
+                         header = T, colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(ChIPNames))
 # If ranLocs from multiple chromosomes are to be analysed,
@@ -228,7 +228,7 @@ control_featureMats <- mclapply(seq_along(controlNames), function(x) {
                                 controlNames[x],
                                 "_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = T))[,101:318]
+                         header = T, colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(controlNames))
 # If features from multiple chromosomes are to be analysed,
@@ -249,7 +249,7 @@ control_ranLocMats <- mclapply(seq_along(controlNames), function(x) {
                                 controlNames[x],
                                 "_MappedOn_T2T_Col_around_CEN180_in_",
                                 chrName[y], "_CENranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = T))[,101:318]
+                         header = T, colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(controlNames))
 # If ranLocs from multiple chromosomes are to be analysed,
@@ -328,23 +328,23 @@ control_soloLTRMats <- mclapply(seq_along(control_soloLTRMats), function(x) {
 # Calculate ChIP/control ratio for each matrix
 # feature
 ChIPcontrol_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
-  (ChIP_featureMats[[x]] + 0)/(control_featureMats[[1]] + 1)
+  ( ( ChIP_featureMats[[x]] * binSize ) + 1 ) / ( control_featureMats[[1]] + 1 )
 }, mc.cores = length(ChIP_featureMats))
 # ranLoc
 ChIPcontrol_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
-  (ChIP_ranLocMats[[x]] + 0)/(control_ranLocMats[[1]] + 1)
+  ( ( ChIP_ranLocMats[[x]] * binSize ) + 1 ) / ( control_ranLocMats[[1]] + 1 )
 }, mc.cores = length(ChIP_ranLocMats))
 # gap
 ChIPcontrol_gapMats <- mclapply(seq_along(ChIP_gapMats), function(x) {
-  (ChIP_gapMats[[x]] + 0)/(control_gapMats[[1]] + 1)
+  ( ( ChIP_gapMats[[x]] * binSize ) + 1 ) / ( control_gapMats[[1]] + 1 )
 }, mc.cores = length(ChIP_gapMats))
 # Athila
 ChIPcontrol_AthilaMats <- mclapply(seq_along(ChIP_AthilaMats), function(x) {
-  (ChIP_AthilaMats[[x]] + 0)/(control_AthilaMats[[1]] + 1)
+  ( ( ChIP_AthilaMats[[x]] * binSize ) + 1 ) / ( control_AthilaMats[[1]] + 1 )
 }, mc.cores = length(ChIP_AthilaMats))
 # soloLTR
 ChIPcontrol_soloLTRMats <- mclapply(seq_along(ChIP_soloLTRMats), function(x) {
-  (ChIP_soloLTRMats[[x]] + 0)/(control_soloLTRMats[[1]] + 1)
+  ( ( ChIP_soloLTRMats[[x]] * binSize ) + 1 ) / ( control_soloLTRMats[[1]] + 1 )
 }, mc.cores = length(ChIP_soloLTRMats))
 
 
@@ -353,20 +353,20 @@ ChIPcontrol_soloLTRMats <- mclapply(seq_along(ChIP_soloLTRMats), function(x) {
 # Add column names
 for(x in seq_along(ChIPcontrol_featureMats)) {
   colnames(ChIPcontrol_featureMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                       paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                       paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+                                              paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+                                              paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
   colnames(ChIPcontrol_ranLocMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                      paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                      paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+                                             paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+                                             paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
   colnames(ChIPcontrol_gapMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                   paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                   paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+                                          paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                          paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
   colnames(ChIPcontrol_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+                                             paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                             paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
   colnames(ChIPcontrol_soloLTRMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                       paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                       paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+                                              paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                              paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
 }
 
 # Create list of lists in which each element in the enclosing list corresponds to a library
@@ -487,15 +487,15 @@ for(x in seq_along(summaryDFfeature_ChIPcontrol)) {
 
 # Define y-axis limits
 ymin_ChIPcontrol <- min(c(summaryDFfeature_ChIPcontrol[[1]]$CI_lower,
-                   summaryDFfeature_ChIPcontrol[[2]]$CI_lower,
-                   summaryDFfeature_ChIPcontrol[[3]]$CI_lower,
-                   summaryDFfeature_ChIPcontrol[[4]]$CI_lower,
-                   summaryDFfeature_ChIPcontrol[[5]]$CI_lower))
+                          summaryDFfeature_ChIPcontrol[[2]]$CI_lower,
+                          summaryDFfeature_ChIPcontrol[[3]]$CI_lower,
+                          summaryDFfeature_ChIPcontrol[[4]]$CI_lower,
+                          summaryDFfeature_ChIPcontrol[[5]]$CI_lower))
 ymax_ChIPcontrol <- max(c(summaryDFfeature_ChIPcontrol[[1]]$CI_upper,
-                   summaryDFfeature_ChIPcontrol[[2]]$CI_upper,
-                   summaryDFfeature_ChIPcontrol[[3]]$CI_upper,
-                   summaryDFfeature_ChIPcontrol[[4]]$CI_upper,
-                   summaryDFfeature_ChIPcontrol[[5]]$CI_upper))
+                          summaryDFfeature_ChIPcontrol[[2]]$CI_upper,
+                          summaryDFfeature_ChIPcontrol[[3]]$CI_upper,
+                          summaryDFfeature_ChIPcontrol[[4]]$CI_upper,
+                          summaryDFfeature_ChIPcontrol[[5]]$CI_upper))
 
 # Define legend labels
 legendLabs <- lapply(seq_along(ChIPNamesPlot), function(x) {
@@ -786,6 +786,6 @@ ggsave(paste0(plotDir,
 #              paste0(ChIPNames, collapse = "_"),
               "_avgProfiles_around",
               "_CEN180_CENranLoc_CENgap_CENAthila_CENsoloLTR_in_T2T_Col_",
-              paste0(chrName, collapse = "_"), "_pseudocount1_ratios_per_feature.pdf"),
+              paste0(chrName, collapse = "_"), "_pseudocount1_ratios_per_feature_unsmoothed.pdf"),
        plot = ggObjGA_combined,
        height = 6.5, width = 7*5, limitsize = FALSE)
