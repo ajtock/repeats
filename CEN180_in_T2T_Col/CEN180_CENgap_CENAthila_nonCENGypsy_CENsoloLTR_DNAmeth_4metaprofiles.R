@@ -2,27 +2,26 @@
 
 # author: Andy Tock
 # contact: ajt200@cam.ac.uk
-# date: 18.11.2020
+# date: 03.03.2021
 
-# Calculate and plot metaprofiles of ChIP-seq, MNase-seq, etc.
-# (CEN180 windowed means and 95% confidence intervals, CIs)
-# for all CEN180 sequences and randomly positioned loci
+# Calculate and plot metaprofiles of DNA methylation
+# (feature windowed means and 95% confidence intervals, CIs)
+# for all CEN180 sequences, CENgap, CENAthila, nonCENGypsy, CENsoloLTR and randomly positioned loci
 
 # Usage:
 
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENAthila_CENgap_TEsuperfam_genes_DNAmeth_5metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 11000 1000 2200 1000 1kb 10 200 10bp 10bp '0.02,0.96' 'WT_BSseq_Rep1_2014,WT_BSseq_Rep2_2013,WT_BSseq_Rep3_2013,met1_BSseq_Rep1,ddm1_BSseq_Rep1' 'BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_T2T_Col,BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_T2T_Col,BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_T2T_Col,BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_T2T_Col,BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_T2T_Col' 'wt Rep1,wt Rep2,wt Rep3,met1,ddm1' 'grey0,grey20,grey40,purple4,magenta' 'CHG'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_DNAmeth_4metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 2000 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96' 'Col0_BSseq_Rep1,Col0_BSseq_Rep2,met1_BSseq_Rep1,met1_BSseq_Rep2' 'BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col,BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col,BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col,BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col' 'wt Rep1,wt Rep2,met1 Rep1,met1 Rep2' 'grey20,grey40,magenta,purple4' 'CpG'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
 #bodyLength <- 180
-#Athila_bodyLength <- 11000
-#TEsf_bodyLength <- 1000
-#gene_bodyLength <- 2200
-#upstream <- 1000
-#downstream <- 1000
-#flankName <- "1kb"
+#Athila_bodyLength <- 2000
+#TEsf_bodyLength <- 2000
+#upstream <- 2000
+#downstream <- 2000
+#flankName <- "2kb"
 #binSize <- 10
-#Athila_binSize <- 200
+#Athila_binSize <- 10
 #binName <- "10bp"
 #Athila_binName <- "10bp"
 ## top left
@@ -37,15 +36,15 @@
 ## bottom left
 #legendPos <- as.numeric(unlist(strsplit("0.02,0.40",
 #                                        split = ",")))
-#ChIPNames <- unlist(strsplit("WT_BSseq_Rep2_2013,WT_BSseq_Rep3_2013,met1_BSseq_Rep1,ddm1_BSseq_Rep1",
+#ChIPNames <- unlist(strsplit("Col0_BSseq_Rep1,Col0_BSseq_Rep2,met1_BSseq_Rep1,met1_BSseq_Rep2",
 #                             split = ","))
-#ChIPNamesDir <- unlist(strsplit("BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_T2T_Col,BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_T2T_Col,BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_T2T_Col,BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_T2T_Col,BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_T2T_Col",
+#ChIPNamesDir <- unlist(strsplit("BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col,BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col,BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col,BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col",
 #                                split = ","))
-#ChIPNamesPlot <- unlist(strsplit("wt Rep1,wt Rep2,wt Rep3,met1,ddm1",
+#ChIPNamesPlot <- unlist(strsplit("wt Rep1,wt Rep2,met1 Rep1,met1 Rep2",
 #                                 split = ","))
-#ChIPColours <- unlist(strsplit("green3,grey0,grey20,grey40,purple4,magenta",
+#ChIPColours <- unlist(strsplit("grey20,grey40,magenta,purple4",
 #                               split = ","))
-#context <- "CHG"
+#context <- "CpG"
 
 args <- commandArgs(trailingOnly = T)
 chrName <- unlist(strsplit(args[1],
@@ -53,25 +52,24 @@ chrName <- unlist(strsplit(args[1],
 bodyLength <- as.numeric(args[2])
 Athila_bodyLength <- as.numeric(args[3])
 TEsf_bodyLength <- as.numeric(args[4])
-gene_bodyLength <- as.numeric(args[5])
-upstream <- as.numeric(args[6])
-downstream <- as.numeric(args[6])
-flankName <- args[7]
-binSize <- as.numeric(args[8])
-Athila_binSize <- as.numeric(args[9])
-binName <- args[10]
-Athila_binName <- args[11]
-legendPos <- as.numeric(unlist(strsplit(args[12],
+upstream <- as.numeric(args[5])
+downstream <- as.numeric(args[5])
+flankName <- args[6]
+binSize <- as.numeric(args[7])
+Athila_binSize <- as.numeric(args[8])
+binName <- args[9]
+Athila_binName <- args[10]
+legendPos <- as.numeric(unlist(strsplit(args[11],
                                         split = ",")))
-ChIPNames <- unlist(strsplit(args[13],
+ChIPNames <- unlist(strsplit(args[12],
                              split = ","))
-ChIPNamesDir <- unlist(strsplit(args[14],
+ChIPNamesDir <- unlist(strsplit(args[13],
                                 split = ","))
-ChIPNamesPlot <- unlist(strsplit(args[15],
+ChIPNamesPlot <- unlist(strsplit(args[14],
                                  split = ","))
-ChIPColours <- unlist(strsplit(args[16],
+ChIPColours <- unlist(strsplit(args[15],
                                split = ","))
-context <- args[17]
+context <- args[16]
 
 options(stringsAsFactors = F)
 library(parallel)
@@ -94,15 +92,15 @@ if(length(chrName) == 5) {
   ranLocNamePlot <- "All ranLoc"
   gapNamePlot <- "All CENgap"
   AthilaNamePlot <- "All CENAthila"
-  TEsfNamePlot <- "All Gypsy LTRs"
-  geneNamePlot <- "All genes"
+  TEsfNamePlot <- "All nonCENGypsy"
+  soloLTRNamePlot <- "All CENsoloLTR"
 } else {
   featureNamePlot <- paste0(paste0(chrName, collapse = ","), " CEN180")
   ranLocNamePlot <- paste0(paste0(chrName, collapse = ","), " ranLoc")
   gapNamePlot <- paste0(paste0(chrName, collapse = ","), " CENgap")
   AthilaNamePlot <- paste0(paste0(chrName, collapse = ","), " CENAthila")
-  TEsfNamePlot <- paste0(paste0(chrName, collapse = ","), " Gypsy LTRs")
-  geneNamePlot <- paste0(paste0(chrName, collapse = ","), " genes")
+  TEsfNamePlot <- paste0(paste0(chrName, collapse = ","), " nonCENGypsy")
+  soloLTRNamePlot <- paste0(paste0(chrName, collapse = ","), " CENsoloLTR")
 }
 
 # Define feature start and end labels for plotting
@@ -132,7 +130,8 @@ ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_MappedOn_T2T_Col_", context, "_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = F, skip = 3))
+                         header = F, skip = 3,
+                         colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(ChIPNames))
 # If features from multiple chromosomes are to be analysed,
@@ -153,7 +152,8 @@ ChIP_ranLocMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_MappedOn_T2T_Col_", context, "_CEN180_in_",
                                 chrName[y], "_ranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = F, skip = 3))
+                         header = F, skip = 3,
+                         colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(ChIPNames))
 # If ranLocs from multiple chromosomes are to be analysed,
@@ -214,7 +214,7 @@ ChIP_TEsfMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(ChIPDirs[x], "TEprofiles/matrices/",
                                 ChIPNames[x],
-                                "_MappedOn_T2T_Col_", context, "_TEs_Gypsy_LTR_in_",
+                                "_MappedOn_T2T_Col_", context, "_nonCEN_TEs_Gypsy_LTR_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
@@ -230,47 +230,47 @@ ChIP_TEsfMats <- mclapply(seq_along(ChIP_TEsfMats), function(x) {
 }, mc.cores = length(ChIP_TEsfMats))
 
 ## ChIP
-# gene
-ChIP_geneMats <- mclapply(seq_along(ChIPNames), function(x) {
-  lapply(seq_along(chrName), function(y) {
-    as.matrix(read.table(paste0(ChIPDirs[x], "geneProfiles/matrices/",
+# soloLTR
+ChIP_soloLTRMats <- mclapply(seq_along(ChIPNames), function(x) {
+  lapply(which(chrName %in% c("Chr1", "Chr4", "Chr5")), function(y) {
+    as.matrix(read.table(paste0(ChIPDirs[x], "CENsoloLTRprofiles/matrices/",
                                 ChIPNames[x],
-                                "_MappedOn_T2T_Col_", context, "_genes_in_",
+                                "_MappedOn_T2T_Col_", context, "_CENsoloLTR_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
 }, mc.cores = length(ChIPNames))
-# If genes from multiple chromosomes are to be analysed,
-# concatenate the corresponding gene coverage matrices
-ChIP_geneMats <- mclapply(seq_along(ChIP_geneMats), function(x) {
+# If soloLTRs from multiple chromosomes are to be analysed,
+# concatenate the corresponding soloLTR coverage matrices
+ChIP_soloLTRMats <- mclapply(seq_along(ChIP_soloLTRMats), function(x) {
   if(length(chrName) > 1) {
-    do.call(rbind, ChIP_geneMats[[x]])
+    do.call(rbind, ChIP_soloLTRMats[[x]])
   } else {
-    ChIP_geneMats[[x]][[1]]
+    ChIP_soloLTRMats[[x]][[1]]
   }
-}, mc.cores = length(ChIP_geneMats))
+}, mc.cores = length(ChIP_soloLTRMats))
 
 # ChIP
 # Add column names
 for(x in seq_along(ChIP_featureMats)) {
-  colnames(ChIP_featureMats[[x]]) <- c(paste0("u", 1:(upstream/binSize)),
-                                           paste0("t", ((upstream/binSize)+1):((upstream+bodyLength)/binSize)),
-                                           paste0("d", (((upstream+bodyLength)/binSize)+1):(((upstream+bodyLength)/binSize)+(downstream/binSize))))
-  colnames(ChIP_ranLocMats[[x]]) <- c(paste0("u", 1:(upstream/binSize)),
-                                          paste0("t", ((upstream/binSize)+1):((upstream+bodyLength)/binSize)),
-                                          paste0("d", (((upstream+bodyLength)/binSize)+1):(((upstream+bodyLength)/binSize)+(downstream/binSize))))
-  colnames(ChIP_gapMats[[x]]) <- c(paste0("u", 1:(upstream/binSize)),
-                                       paste0("t", ((upstream/binSize)+1):((upstream+bodyLength)/binSize)),
-                                       paste0("d", (((upstream+bodyLength)/binSize)+1):(((upstream+bodyLength)/binSize)+(downstream/binSize))))
+  colnames(ChIP_featureMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
+                                       paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+                                       paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+  colnames(ChIP_ranLocMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
+                                      paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+                                      paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+  colnames(ChIP_gapMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+                                   paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                   paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
   colnames(ChIP_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                           paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                           paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
   colnames(ChIP_TEsfMats[[x]]) <- c(paste0("u", 1:(upstream/binSize)),
                                     paste0("t", ((upstream/binSize)+1):((upstream+TEsf_bodyLength)/binSize)),
                                     paste0("d", (((upstream+TEsf_bodyLength)/binSize)+1):(((upstream+TEsf_bodyLength)/binSize)+(downstream/binSize))))
-  colnames(ChIP_geneMats[[x]]) <- c(paste0("u", 1:(upstream/binSize)),
-                                    paste0("t", ((upstream/binSize)+1):((upstream+gene_bodyLength)/binSize)),
-                                    paste0("d", (((upstream+gene_bodyLength)/binSize)+1):(((upstream+gene_bodyLength)/binSize)+(downstream/binSize))))
+  colnames(ChIP_soloLTRMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+                                    paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                    paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
 }
 
 # Create list of lists in which each element in the enclosing list corresponds to a library
@@ -287,8 +287,8 @@ ChIP_mats <- mclapply(seq_along(ChIP_featureMats), function(x) {
        ChIP_AthilaMats[[x]],
        # TEsfs
        ChIP_TEsfMats[[x]],
-       # genes
-       ChIP_geneMats[[x]]
+       # soloLTRs
+       ChIP_soloLTRMats[[x]]
       )
 }, mc.cores = length(ChIP_featureMats))
 
@@ -376,7 +376,7 @@ AthilaTmp <- lapply(seq_along(summaryDFfeature_list_ChIP), function(x) {
 TEsfTmp <- lapply(seq_along(summaryDFfeature_list_ChIP), function(x) {
   summaryDFfeature_list_ChIP[[x]][[5]]
 })
-geneTmp <- lapply(seq_along(summaryDFfeature_list_ChIP), function(x) {
+soloLTRTmp <- lapply(seq_along(summaryDFfeature_list_ChIP), function(x) {
   summaryDFfeature_list_ChIP[[x]][[6]]
 })
 names(featureTmp) <- ChIPNamesPlot
@@ -384,18 +384,18 @@ names(ranLocTmp) <- ChIPNamesPlot
 names(gapTmp) <- ChIPNamesPlot
 names(AthilaTmp) <- ChIPNamesPlot
 names(TEsfTmp) <- ChIPNamesPlot
-names(geneTmp) <- ChIPNamesPlot
+names(soloLTRTmp) <- ChIPNamesPlot
 summaryDFfeature_ChIP <- list(
   bind_rows(featureTmp, .id = "libName"),
   bind_rows(ranLocTmp, .id = "libName"),
   bind_rows(gapTmp, .id = "libName"),
   bind_rows(AthilaTmp, .id = "libName"),
   bind_rows(TEsfTmp, .id = "libName"),
-  bind_rows(geneTmp, .id = "libName")
+  bind_rows(soloLTRTmp, .id = "libName")
 )
 for(x in seq_along(summaryDFfeature_ChIP)) {
   summaryDFfeature_ChIP[[x]]$libName <- factor(summaryDFfeature_ChIP[[x]]$libName,
-                                                   levels = ChIPNamesPlot)
+                                               levels = ChIPNamesPlot)
 }
 
 # Define y-axis limits
@@ -442,15 +442,15 @@ scale_fill_manual(values = ChIPColours) +
 scale_y_continuous(limits = c(ymin_ChIP, ymax_ChIP),
                    labels = function(x) sprintf("%6.3f", x)) +
 scale_x_discrete(breaks = c(1,
-                            (upstream/binSize)+1,
-                            (dim(summaryDFfeature_ChIP[[1]])[1]/length(ChIPNames))-(downstream/binSize),
+                            ((upstream-1000)/binSize)+1,
+                            (dim(summaryDFfeature_ChIP[[1]])[1]/length(ChIPNames))-((downstream-1000)/binSize),
                             dim(summaryDFfeature_ChIP[[1]])[1]/length(ChIPNames)),
-                 labels = c(paste0("-", flankName),
+                 labels = c(paste0("-", "1kb"),
                             featureStartLab,
                             featureEndLab,
-                            paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/binSize)+1,
-                          (dim(summaryDFfeature_ChIP[[1]])[1]/length(ChIPNames))-(downstream/binSize)),
+                            paste0("+", "1kb"))) +
+geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
+                          (dim(summaryDFfeature_ChIP[[1]])[1]/length(ChIPNames))-((downstream-1000)/binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -493,15 +493,15 @@ scale_fill_manual(values = ChIPColours) +
 scale_y_continuous(limits = c(ymin_ChIP, ymax_ChIP),
                    labels = function(x) sprintf("%6.3f", x)) +
 scale_x_discrete(breaks = c(1,
-                            (upstream/binSize)+1,
-                            (dim(summaryDFfeature_ChIP[[2]])[1]/length(ChIPNames))-(downstream/binSize),
+                            ((upstream-1000)/binSize)+1,
+                            (dim(summaryDFfeature_ChIP[[2]])[1]/length(ChIPNames))-((downstream-1000)/binSize),
                             dim(summaryDFfeature_ChIP[[2]])[1]/length(ChIPNames)),
-                 labels = c(paste0("-", flankName),
+                 labels = c(paste0("-", "1kb"),
                             featureStartLab,
                             featureEndLab,
-                            paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/binSize)+1,
-                          (dim(summaryDFfeature_ChIP[[2]])[1]/length(ChIPNames))-(downstream/binSize)),
+                            paste0("+", "1kb"))) +
+geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
+                          (dim(summaryDFfeature_ChIP[[2]])[1]/length(ChIPNames))-((downstream-1000)/binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -510,7 +510,6 @@ annotation_custom(legendLabs[[1]]) +
 annotation_custom(legendLabs[[2]]) +
 annotation_custom(legendLabs[[3]]) +
 annotation_custom(legendLabs[[4]]) +
-annotation_custom(legendLabs[[5]]) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -682,7 +681,7 @@ ggtitle(bquote(.(TEsfNamePlot) ~ "(" * italic("n") ~ "=" ~
                            big.mark = ",", trim = T)) *
                ")"))
 
-## gene
+## soloLTR
 summaryDFfeature <- summaryDFfeature_ChIP[[6]]
 ggObj6_combined_ChIP <- ggplot(data = summaryDFfeature,
                                mapping = aes(x = winNo,
@@ -706,8 +705,8 @@ scale_x_discrete(breaks = c(1,
                             (dim(summaryDFfeature_ChIP[[6]])[1]/length(ChIPNames))-(downstream/binSize),
                             dim(summaryDFfeature_ChIP[[6]])[1]/length(ChIPNames)),
                  labels = c(paste0("-", flankName),
-                            geneStartLab,
-                            geneEndLab,
+                            featureStartLab,
+                            featureEndLab,
                             paste0("+", flankName))) +
 geom_vline(xintercept = c((upstream/binSize)+1,
                           (dim(summaryDFfeature_ChIP[[6]])[1]/length(ChIPNames))-(downstream/binSize)),
@@ -728,7 +727,7 @@ theme(
       panel.background = element_blank(),
       plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
       plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(geneNamePlot) ~ "(" * italic("n") ~ "=" ~
+ggtitle(bquote(.(soloLTRNamePlot) ~ "(" * italic("n") ~ "=" ~
                .(prettyNum(summaryDFfeature$n[1],
                            big.mark = ",", trim = T)) *
                ")"))
@@ -753,7 +752,7 @@ ggsave(paste0(plotDir,
               context, "_DNAmeth_",
               paste0(ChIPNames, collapse = "_"),
               "_avgProfiles_around",
-              "_CEN180_ranLoc_CENgap_CENAthila_Gypsy_LTR_genes_in_T2T_Col_",
+              "_CEN180_ranLoc_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
               paste0(chrName, collapse = "_"), ".pdf"),
        plot = ggObjGA_combined,
        height = 6.5, width = 7*6, limitsize = FALSE)
