@@ -2,14 +2,14 @@
 
 # author: Andy Tock
 # contact: ajt200@cam.ac.uk
-# date: 24.02.2021
+# date: 04.03.2021
 
 # Calculate and plot metaprofiles of ChIP-seq
 # (feature windowed means and 95% confidence intervals, CIs)
 # for all CEN180 sequences, CENgap, CENAthila, nonCENGypsy, CENsoloLTR and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_2metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.40' 'WT_CENH3_Rep1_ChIP_SRR4430537,WT_H3K9me2_Rep1_ChIP' 'CENH3_seedlings_Maheshwari_Comai_2017_GenomeRes/snakemake_ChIPseq_T2T_Col,170101_Chris_H3K9me2_ChIP/WT/snakemake_ChIPseq_T2T_Col' 'CENH3,H3K9me2' 'darkorange1,dodgerblue1' 'ChIP'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_6metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.40' 'WT_SPO11oligos_Rep1,WT_SPO11oligos_Rep2,WT_SPO11oligos_Rep3,met1_SPO11oligos_Rep1,met1_SPO11oligos_Rep2,met1_SPO11oligos_Rep3' '160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col' 'wt Rep1,wt Rep2,wt Rep3,met1 Rep1,met1 Rep2,met1 Rep3' 'springgreen2,forestgreen,darkgreen,magenta,purple,purple4' 'SPO11-1-oligos'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -36,15 +36,15 @@
 ## bottom left
 #legendPos <- as.numeric(unlist(strsplit("0.02,0.40",
 #                                        split = ",")))
-#ChIPNames <- unlist(strsplit("WT_CENH3_Rep1_ChIP_SRR4430537,WT_H3K9me2_Rep1_ChIP",
+#ChIPNames <- unlist(strsplit("WT_SPO11oligos_Rep1,WT_SPO11oligos_Rep2,WT_SPO11oligos_Rep3,met1_SPO11oligos_Rep1,met1_SPO11oligos_Rep2,met1_SPO11oligos_Rep3",
 #                             split = ","))
-#ChIPNamesDir <- unlist(strsplit("CENH3_seedlings_Maheshwari_Comai_2017_GenomeRes/snakemake_ChIPseq_T2T_Col,170101_Chris_H3K9me2_ChIP/WT/snakemake_ChIPseq_T2T_Col",
+#ChIPNamesDir <- unlist(strsplit("160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col",
 #                                split = ","))
-#log2ChIPNamesPlot <- unlist(strsplit("CENH3,H3K9me2",
-#                                     split = ","))
-#log2ChIPColours <- unlist(strsplit("darkorange1,dodgerblue1",
-#                                   split = ","))
-#yLabPlot <- "ChIP"
+#ChIPNamesPlot <- unlist(strsplit("wt Rep1,wt Rep2,wt Rep3,met1 Rep1,met1 Rep2,met1 Rep3",
+#                                 split = ","))
+#ChIPColours <- unlist(strsplit("springgreen2,forestgreen,darkgreen,magenta,purple,purple4",
+#                               split = ","))
+#yLabPlot <- "SPO11-1-oligos"
 
 args <- commandArgs(trailingOnly = T)
 chrName <- unlist(strsplit(args[1],
@@ -122,19 +122,20 @@ ChIPDirs <- sapply(seq_along(ChIPNames), function(x) {
 })
 
 controlNames <- c(
-                  "WT_REC8_Myc_Rep1_input"
-#                  "WT_gDNA_Rep1_R1"
+                  "WT_REC8_Myc_Rep1_input",
+                  "WT_gDNA_Rep1_R1"
                  )
 controlNamesDir <- c(
-                     "REC8_pooled/snakemake_ChIPseq_T2T_Col"
-#                     "150701_Natasha_gDNA/WT/R1/snakemake_SPO11oligos_T2T_Col"
+                     "REC8_pooled/snakemake_ChIPseq_T2T_Col",
+                     "150701_Natasha_gDNA/WT/R1/snakemake_SPO11oligos_T2T_Col"
                     )
 controlNamesPlot <- c(
-                      "PE input"
-#                      "SE gDNA"
+                      "PE input",
+                      "SE gDNA"
                      )
 controlColours <- c(
-                    rep("red", length(controlNamesPlot))
+                    "grey20",
+                    "grey40"
                    )
 controlDirs <- sapply(seq_along(controlNames), function(x) {
   paste0("/home/ajt200/analysis/",
@@ -747,6 +748,10 @@ labs(x = "",
      y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
 annotation_custom(legendLabs[[1]]) +
 annotation_custom(legendLabs[[2]]) +
+annotation_custom(legendLabs[[3]]) +
+annotation_custom(legendLabs[[4]]) +
+annotation_custom(legendLabs[[5]]) +
+annotation_custom(legendLabs[[6]]) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -987,7 +992,7 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                                       ))
 ggsave(paste0(plotDir,
               "log2ChIPcontrol_",
-              paste0(log2ChIPNames, collapse = "_"),
+              paste0(log2ChIPNames[c(1, 4)], collapse = "_"),
               "_avgProfiles_around",
               "_CEN180_ranLoc_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_", align, ".pdf"),
@@ -1251,6 +1256,10 @@ labs(x = "",
      y = bquote(.(yLabPlot))) +
 annotation_custom(legendLabs[[1]]) +
 annotation_custom(legendLabs[[2]]) +
+annotation_custom(legendLabs[[3]]) +
+annotation_custom(legendLabs[[4]]) +
+annotation_custom(legendLabs[[5]]) +
+annotation_custom(legendLabs[[6]]) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -1491,7 +1500,7 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                                       ))
 ggsave(paste0(plotDir,
               "ChIP_",
-              paste0(ChIPNames, collapse = "_"),
+              paste0(ChIPNames[c(1, 4)], collapse = "_"),
               "_avgProfiles_around",
               "_CEN180_ranLoc_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_", align, ".pdf"),
@@ -1754,6 +1763,7 @@ geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
 labs(x = "",
      y = bquote("Norm. coverage")) +
 annotation_custom(legendLabs[[1]]) +
+annotation_custom(legendLabs[[2]]) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
