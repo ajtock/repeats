@@ -151,7 +151,8 @@ ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = F, skip = 3))[,101:318]
+                         header = F, skip = 3,
+                         colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(ChIPNames))
 # If features from multiple chromosomes are to be analysed,
@@ -172,7 +173,8 @@ control_featureMats <- mclapply(seq_along(controlNames), function(x) {
                                 controlNames[x],
                                 "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = F, skip = 3))[,101:318]
+                         header = F, skip = 3,
+                         colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(controlNames))
 # If features from multiple chromosomes are to be analysed,
@@ -193,7 +195,8 @@ ChIP_ranLocMats <- mclapply(seq_along(ChIPNames), function(x) {
                                 ChIPNames[x],
                                 "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_CEN180_in_",
                                 chrName[y], "_ranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = F, skip = 3))[,101:318]
+                         header = F, skip = 3,
+                         colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(ChIPNames))
 # If ranLocs from multiple chromosomes are to be analysed,
@@ -214,7 +217,8 @@ control_ranLocMats <- mclapply(seq_along(controlNames), function(x) {
                                 controlNames[x],
                                 "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_CEN180_in_",
                                 chrName[y], "_ranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
-                         header = F, skip = 3))[,101:318]
+                         header = F, skip = 3,
+                         colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(controlNames))
 # If ranLocs from multiple chromosomes are to be analysed,
