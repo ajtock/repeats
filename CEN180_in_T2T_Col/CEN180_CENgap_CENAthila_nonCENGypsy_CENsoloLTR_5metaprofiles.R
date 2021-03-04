@@ -995,7 +995,7 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                                       ))
 ggsave(paste0(plotDir,
               "log2ChIPcontrol_",
-              paste0(log2ChIPNames[c(1, 4)], collapse = "_"),
+              paste0(log2ChIPNames[c(1, 3)], collapse = "_"),
               "_avgProfiles_around",
               "_CEN180_ranLoc_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_", align, ".pdf"),
@@ -1502,7 +1502,7 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                                       ))
 ggsave(paste0(plotDir,
               "ChIP_",
-              paste0(ChIPNames[c(1, 4)], collapse = "_"),
+              paste0(ChIPNames[c(1, 3)], collapse = "_"),
               "_avgProfiles_around",
               "_CEN180_ranLoc_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_", align, ".pdf"),

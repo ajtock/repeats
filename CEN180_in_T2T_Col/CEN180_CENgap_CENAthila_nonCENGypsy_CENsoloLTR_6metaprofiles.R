@@ -11,6 +11,8 @@
 # Usage:
 # /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_6metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.40' 'WT_SPO11oligos_Rep1,WT_SPO11oligos_Rep2,WT_SPO11oligos_Rep3,met1_SPO11oligos_Rep1,met1_SPO11oligos_Rep2,met1_SPO11oligos_Rep3' '160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col' 'wt Rep1,wt Rep2,wt Rep3,met1 Rep1,met1 Rep2,met1 Rep3' 'springgreen2,forestgreen,darkgreen,magenta,purple,purple4' 'SPO11-1-oligos'
 
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_5metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.40' 'WT_H3K4me3_ChIP12,WT_H3K4me3_ChIP14,WT_H3K4me3_ChIP15,met1_H3K4me3_ChIP2,met1_H3K4me3_ChIP4,met1_H3K4me3_ChIP19' '160601_Kyuha_H3K4me3_ChIP/WT/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/WT/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/WT/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/met1/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/met1/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/met1/snakemake_ChIPseq_T2T_Col' 'wt Rep1,wt Rep2,wt Rep3,met1 Rep1,met1 Rep2,met1 Rep3' 'springgreen2,forestgreen,darkgreen,magenta,purple,purple4' 'H3K4me3'
+
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
 #align <- "both"
