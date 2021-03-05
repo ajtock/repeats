@@ -10,6 +10,8 @@
 
 # Usage:
 
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_DNAmeth_4metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 2000 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96' 'Col_0_BSseq_Rep1_ERR965674,Col_0_BSseq_Rep2_ERR965675,met1_3_BSseq_Rep1_ERR965676,met1_3_BSseq_Rep2_ERR965677' 'BSseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_BSseq_T2T_Col,BSseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_BSseq_T2T_Col,BSseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_BSseq_T2T_Col,BSseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_BSseq_T2T_Col' 'wt Rep1,wt Rep2,met1 Rep1,met1 Rep2' 'springgreen2,forestgreen,magenta,purple4' 'CpG'
+
 # /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_DNAmeth_4metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 2000 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96' 'Col0_BSseq_Rep1,Col0_BSseq_Rep2,met1_BSseq_Rep1,met1_BSseq_Rep2' 'BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col,BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col,BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col,BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col' 'wt Rep1,wt Rep2,met1 Rep1,met1 Rep2' 'springgreen2,forestgreen,magenta,purple4' 'CpG'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
@@ -36,9 +38,9 @@
 ## bottom left
 #legendPos <- as.numeric(unlist(strsplit("0.02,0.40",
 #                                        split = ",")))
-#ChIPNames <- unlist(strsplit("Col0_BSseq_Rep1,Col0_BSseq_Rep2,met1_BSseq_Rep1,met1_BSseq_Rep2",
+#ChIPNames <- unlist(strsplit("Col_0_BSseq_Rep1_ERR965674,Col_0_BSseq_Rep2_ERR965675,met1_3_BSseq_Rep1_ERR965676,met1_3_BSseq_Rep2_ERR965677",
 #                             split = ","))
-#ChIPNamesDir <- unlist(strsplit("BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col,BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col,BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col,BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_T2T_Col",
+#ChIPNamesDir <- unlist(strsplit("BSseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_BSseq_T2T_Col,BSseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_BSseq_T2T_Col,BSseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_BSseq_T2T_Col,BSseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_BSseq_T2T_Col",
 #                                split = ","))
 #ChIPNamesPlot <- unlist(strsplit("wt Rep1,wt Rep2,met1 Rep1,met1 Rep2",
 #                                 split = ","))
