@@ -9,9 +9,7 @@
 # for all CEN180 sequences, CENgap, CENAthila, nonCENGypsy, CENsoloLTR and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_6metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.40' 'WT_SPO11oligos_Rep1,WT_SPO11oligos_Rep2,WT_SPO11oligos_Rep3,met1_SPO11oligos_Rep1,met1_SPO11oligos_Rep2,met1_SPO11oligos_Rep3' '160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col' 'wt Rep1,wt Rep2,wt Rep3,met1 Rep1,met1 Rep2,met1 Rep3' 'springgreen2,forestgreen,darkgreen,magenta,purple,purple4' 'SPO11-1-oligos'
-
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_6metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.40' 'WT_H3K4me3_ChIP12,WT_H3K4me3_ChIP14,WT_H3K4me3_ChIP15,met1_H3K4me3_ChIP2,met1_H3K4me3_ChIP4,met1_H3K4me3_ChIP19' '160601_Kyuha_H3K4me3_ChIP/WT/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/WT/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/WT/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/met1/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/met1/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/met1/snakemake_ChIPseq_T2T_Col' 'wt Rep1,wt Rep2,wt Rep3,met1 Rep1,met1 Rep2,met1 Rep3' 'springgreen2,forestgreen,darkgreen,magenta,purple,purple4' 'H3K4me3'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_4metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.40' 'WT_H3K4me3_ChIP14,WT_H3K4me3_ChIP15,met1_H3K4me3_ChIP4,met1_H3K4me3_ChIP19' '160601_Kyuha_H3K4me3_ChIP/WT/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/WT/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/met1/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/met1/snakemake_ChIPseq_T2T_Col' 'wt Rep1,wt Rep2,met1 Rep1,met1 Rep2' 'springgreen2,forestgreen,magenta,purple' 'H3K4me3'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -38,13 +36,13 @@
 ## bottom left
 #legendPos <- as.numeric(unlist(strsplit("0.02,0.40",
 #                                        split = ",")))
-#ChIPNames <- unlist(strsplit("WT_SPO11oligos_Rep1,WT_SPO11oligos_Rep2,WT_SPO11oligos_Rep3,met1_SPO11oligos_Rep1,met1_SPO11oligos_Rep2,met1_SPO11oligos_Rep3",
+#ChIPNames <- unlist(strsplit("WT_H3K4me3_ChIP14,WT_H3K4me3_ChIP15,met1_H3K4me3_ChIP2,met1_H3K4me3_ChIP4,met1_H3K4me3_ChIP19",
 #                             split = ","))
-#ChIPNamesDir <- unlist(strsplit("160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col",
+#ChIPNamesDir <- unlist(strsplit("160601_Kyuha_H3K4me3_ChIP/WT/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/WT/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/met1/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/met1/snakemake_ChIPseq_T2T_Col,160601_Kyuha_H3K4me3_ChIP/met1/snakemake_ChIPseq_T2T_Col",
 #                                split = ","))
-#ChIPNamesPlot <- unlist(strsplit("wt Rep1,wt Rep2,wt Rep3,met1 Rep1,met1 Rep2,met1 Rep3",
+#ChIPNamesPlot <- unlist(strsplit("wt Rep1,wt Rep2,met1 Rep1,met1 Rep2,met1 Rep3",
 #                                 split = ","))
-#ChIPColours <- unlist(strsplit("springgreen2,forestgreen,darkgreen,magenta,purple,purple4",
+#ChIPColours <- unlist(strsplit("springgreen2,forestgreen,magenta,purple,purple4",
 #                               split = ","))
 #yLabPlot <- "SPO11-1-oligos"
 
@@ -756,8 +754,6 @@ annotation_custom(legendLabs[[1]]) +
 annotation_custom(legendLabs[[2]]) +
 annotation_custom(legendLabs[[3]]) +
 annotation_custom(legendLabs[[4]]) +
-annotation_custom(legendLabs[[5]]) +
-annotation_custom(legendLabs[[6]]) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -998,7 +994,7 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                                       ))
 ggsave(paste0(plotDir,
               "log2ChIPcontrol_",
-              paste0(log2ChIPNames[c(1, 4)], collapse = "_"),
+              paste0(log2ChIPNames[c(1, 3)], collapse = "_"),
               "_avgProfiles_around",
               "_CEN180_ranLoc_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_", align, ".pdf"),
@@ -1264,8 +1260,6 @@ annotation_custom(legendLabs[[1]]) +
 annotation_custom(legendLabs[[2]]) +
 annotation_custom(legendLabs[[3]]) +
 annotation_custom(legendLabs[[4]]) +
-annotation_custom(legendLabs[[5]]) +
-annotation_custom(legendLabs[[6]]) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -1506,7 +1500,7 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                                       ))
 ggsave(paste0(plotDir,
               "ChIP_",
-              paste0(ChIPNames[c(1, 4)], collapse = "_"),
+              paste0(ChIPNames[c(1, 3)], collapse = "_"),
               "_avgProfiles_around",
               "_CEN180_ranLoc_CENgap_CENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_", align, ".pdf"),
