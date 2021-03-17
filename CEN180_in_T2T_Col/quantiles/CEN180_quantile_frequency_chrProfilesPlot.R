@@ -1,4 +1,4 @@
-#!/applications/R/R-3.5.0/bin/Rscript
+#!/applications/R/R-4.0.0/bin/Rscript
 
 # author: Andy Tock
 # contact: ajt200@cam.ac.uk
@@ -7,7 +7,7 @@
 # Plot windowed CEN180 frequencies for CEN180 sequences within orderingFactor quantiles
 
 # Usage:
-# /applications/R/R-3.5.0/bin/Rscript CEN180_quantile_frequency_chrProfilesPlot.R 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 10000
+# /applications/R/R-4.0.0/bin/Rscript CEN180_quantile_frequency_chrProfilesPlot.R 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 10000
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
