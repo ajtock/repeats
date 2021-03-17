@@ -601,7 +601,11 @@ ranLoc <- data.frame(ranLoc,
                      map_K300_E4_in_bodies = control_ranLocMats_bodiesRowMeans[[8]])
 
 # Define set of ordering factors to be used for grouping genes into quantiles
-orderingFactor <- colnames(CEN180)[c(5, 7:11, 14:15, 18:19, 22, 24:length(colnames(CEN180)))]
+if(sum(c("Chr1", "Chr2") %in% chrName) > 0) {
+  orderingFactor <- colnames(CEN180)[c(5, 7, 8, 9, 10, 11, 14:15, 18:19, 22, 24:length(colnames(CEN180)))]
+} else {
+  orderingFactor <- colnames(CEN180)[c(5, 7, 8, 10, 11, 14:15, 18:19, 22, 24:length(colnames(CEN180)))]
+}
 outDir <- paste0("quantiles_by_", orderingFactor, "/",
                  paste0(chrName, collapse = "_"), "/")
 plotDir <- paste0(outDir, "/plots/")
