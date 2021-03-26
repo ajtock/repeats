@@ -209,12 +209,24 @@ tab <- read.table(paste0("/home/ajt200/analysis/nanopore/T2T_Col/annotation/TEs/
 colnames(tab)[1] <- "chr"
 tab$chr <- gsub(pattern = "^", replacement = "Chr",
                 x = tab$chr)
-tab_extend <- data.frame(tab,
-                         RNA_AthilaMats_bodiesRowMeans_mat,
-                         sRNA_AthilaMats_bodiesRowMeans_mat,
-                         DNAmeth_AthilaMats_bodiesRowMeans_mat)
-#                         RNA_AthilaMats_bodiesRowSums_mat, 
-#                         sRNA_AthilaMats_bodiesRowSums_mat) 
+# Redefine Athila6A and Athila6B assignments based on Alex's analysis;
+# Alex: "Note that you need to include in 6B some elements that currently are in 6A.
+#        In the file that I gave you these are the Athila6v2 elements
+#        (6 in total of which the original 6B belongs to)."
+tab$class_v260321 <- tab$class2
+tab$class_v260321[grep("_v2", tab$class_v260321)] <- "Athila6B"
+tab$class_v260321[grep("6A", tab$class_v260321)] <- "Athila6A"
+# Remove data for elements rejected by Alex;
+# Alex: "I have rejected 4 elements that are a mosaic of stuff or non-TE sequence that just add noise.
+#        These elements do not have coordinates for LTRs/internal domain (search for 'na').
+#        They are ATGP2, 4_8 (Athila1), and 5_37 and 5_42 (both Athila 6a)."
+reject_rowIndices <- which(is.na(tab$genome_5LTR_start))
+tab_extend <- data.frame(tab[-reject_rowIndices,],
+                         RNA_AthilaMats_bodiesRowMeans_mat[-reject_rowIndices,],
+                         sRNA_AthilaMats_bodiesRowMeans_mat[-reject_rowIndices,],
+                         DNAmeth_AthilaMats_bodiesRowMeans_mat[-reject_rowIndices,])
+#                         RNA_AthilaMats_bodiesRowSums_mat[-reject_rowIndices,], 
+#                         sRNA_AthilaMats_bodiesRowSums_mat[-reject_rowIndices,]) 
 
 
 # Define heatmap colours
@@ -253,8 +265,8 @@ featureHeatmap <- function(mat,
           heatmap_height = unit(4, "npc"),
           column_gap = unit(0, "mm"),
           row_gap = unit(1.0, "mm"),
-          row_split = factor(tab_extend$class1,
-                             levels = unique(as.character(tab_extend$class1))),
+          row_split = factor(tab_extend$class_v260321,
+                             levels = unique(as.character(tab_extend$class_v260321))),
           row_title = NULL,
           show_row_names = FALSE,
           border = FALSE,
@@ -272,32 +284,61 @@ CpG_mat <- as.matrix(tab_extend[,which(grepl("_CpG_", colnames(tab_extend)))])
 CHG_mat <- as.matrix(tab_extend[,which(grepl("_CHG_", colnames(tab_extend)))])
 CHH_mat <- as.matrix(tab_extend[,which(grepl("_CHH_", colnames(tab_extend)))])
 
+#RNA_colFun <- colorRamp2(quantile(RNA_mat,
+#                                  c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+#                                  na.rm = T),
+#                         heat.colors(6))
+#sRNA_21nt_colFun <- colorRamp2(quantile(sRNA_21nt_mat,
+#                                        c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+#                                        na.rm = T),
+#                               plasma(6))
+#sRNA_22nt_colFun <- colorRamp2(quantile(sRNA_22nt_mat,
+#                                        c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+#                                        na.rm = T),
+#                               plasma(6))
+#sRNA_24nt_colFun <- colorRamp2(quantile(sRNA_24nt_mat,
+#                                        c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+#                                        na.rm = T),
+#                               plasma(6))
+#CpG_colFun <- colorRamp2(quantile(CpG_mat,
+#                                  c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+#                                  na.rm = T),
+#                         viridis(6))
+#CHG_colFun <- colorRamp2(quantile(CHG_mat,
+#                                  c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+#                                  na.rm = T),
+#                         viridis(6))
+#CHH_colFun <- colorRamp2(quantile(CHH_mat,
+#                                  c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+#                                  na.rm = T),
+#                         viridis(6))
+
 RNA_colFun <- colorRamp2(quantile(RNA_mat,
-                                  c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+                                  c(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
                                   na.rm = T),
                          heat.colors(6))
 sRNA_21nt_colFun <- colorRamp2(quantile(sRNA_21nt_mat,
-                                        c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+                                        c(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
                                         na.rm = T),
                                plasma(6))
 sRNA_22nt_colFun <- colorRamp2(quantile(sRNA_22nt_mat,
-                                        c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+                                        c(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
                                         na.rm = T),
                                plasma(6))
 sRNA_24nt_colFun <- colorRamp2(quantile(sRNA_24nt_mat,
-                                        c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+                                        c(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
                                         na.rm = T),
                                plasma(6))
 CpG_colFun <- colorRamp2(quantile(CpG_mat,
-                                  c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+                                  c(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
                                   na.rm = T),
                          viridis(6))
 CHG_colFun <- colorRamp2(quantile(CHG_mat,
-                                  c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+                                  c(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
                                   na.rm = T),
                          viridis(6))
 CHH_colFun <- colorRamp2(quantile(CHH_mat,
-                                  c(0.5, 0.6, 0.7, 0.8, 0.9, 0.95),
+                                  c(0.0, 0.2, 0.4, 0.6, 0.8, 1.0),
                                   na.rm = T),
                          viridis(6))
 
@@ -330,10 +371,10 @@ CHH_htmp <- featureHeatmap(mat = CHH_mat,
                            datName = "CHH (%)",
                            rowOrder = c(1:nrow(CHH_mat)))
 
-fam_htmp <- Heatmap(mat = matrix(tab_extend$class1),
-                    col = c("Athila" = rich6()(6)[6], "Athila2" = rich6()(6)[5], "Athila5" = rich6()(6)[4],
-                            "Athila6A" = rich6()(6)[3], "Athila6B" = rich6()(6)[2], "ATGP2_AT2TE00075" = rich6()(6)[1]),
-                    row_order = c(1:nrow(matrix(tab_extend$class1))),
+fam_htmp <- Heatmap(mat = matrix(tab_extend$class_v260321),
+                    col = c("Athila1" = rich6()(6)[6], "Athila2" = rich6()(6)[5], "Athila5" = rich6()(6)[4],
+                            "Athila6A" = rich6()(6)[3], "Athila6B" = rich6()(6)[2]),
+                    row_order = c(1:nrow(matrix(tab_extend$class_v260321))),
                     column_title = "Family",
                     column_title_rot = 0,
                     column_title_gp = gpar(fontsize = 13),
@@ -350,8 +391,8 @@ fam_htmp <- Heatmap(mat = matrix(tab_extend$class1),
                     heatmap_height = unit(4, "npc"),
                     column_gap = unit(0, "mm"),
                     row_gap = unit(1.0, "mm"),
-                    row_split = factor(tab_extend$class1,
-                                       levels = unique(as.character(tab_extend$class1))),
+                    row_split = factor(tab_extend$class_v260321,
+                                       levels = unique(as.character(tab_extend$class_v260321))),
                     row_title_side = "right",
                     row_title_rot = 0,
                     border = FALSE,
@@ -364,7 +405,7 @@ htmps <- RNA_htmp + sRNA_21nt_htmp + sRNA_22nt_htmp + sRNA_24nt_htmp + CpG_htmp 
 
 pdf(paste0(plotDir,
            "CENAthila_in_T2T_Col_",
-           paste0(chrName, collapse = "_"), "_mean_RNAseq_sRNAseq_DNAmeth_heatmap.pdf"),
+           paste0(chrName, collapse = "_"), "_mean_RNAseq_sRNAseq_DNAmeth_heatmap_colourQuantiles0.0to1.0.pdf"),
     width = 1.5*length(htmps), height = 8)
 draw(htmps,
      heatmap_legend_side = "bottom",
@@ -373,5 +414,5 @@ dev.off()
 
 write.table(tab_extend,
             file = paste0("/home/ajt200/analysis/nanopore/T2T_Col/annotation/TEs/",
-                          "t2t_Athila_master.txt_coord.corrected_50Athila_strand_with_mean_RNA_sRNA_DNAmeth.bed.clean.matrix"),
+                          "t2t_Athila_master.txt_coord.corrected_46Athila_strand_with_mean_RNA_sRNA_DNAmeth.bed.clean.matrix"),
             quote = F, sep = "\t", row.names = F, col.names = T)
