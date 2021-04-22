@@ -2,14 +2,14 @@
 
 # author: Andy Tock
 # contact: ajt200@cam.ac.uk
-# date: 24.02.2021
+# date: 08.03.2021
 
-# Calculate and plot metaprofiles of ChIP-seq
-# (feature windowed means and 95% confidence intervals, CIs)
-# for all CEN180 sequences, CENgap, CENAthila, nonCENAthila, nonCENGypsy, CENsoloLTR and randomly positioned loci
+# Calculate and plot metaprofiles of ChIP-seq, MNase-seq, etc.
+# (CEN180 windowed means and 95% confidence intervals, CIs)
+# for all CEN180 sequences and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_RNAseq_2metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.96' 'WT_RNAseq_Rep1,met1_RNAseq_Rep1' '160601_Kyuha_RNAseq/snakemake_RNAseq_STAR_T2T_Col,160601_Kyuha_RNAseq/snakemake_RNAseq_STAR_T2T_Col' 'wt,met1' 'springgreen2,magenta'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_3sRNAsizes_6metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96' 'Col_0_sRNA_ERR966148,met1_3_sRNA_ERR966149' 'sRNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_sRNAseq_T2T_Col,sRNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_sRNAseq_T2T_Col' 'wt,met1' 'springgreen2,magenta,forestgreen,purple,darkgreen,purple4' '21,22,24'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -36,14 +36,16 @@
 ## bottom left
 #legendPos <- as.numeric(unlist(strsplit("0.02,0.40",
 #                                        split = ",")))
-#ChIPNames <- unlist(strsplit("WT_RNAseq_Rep1,met1_RNAseq_Rep1",
+#ChIPNames <- unlist(strsplit("Col_0_sRNA_ERR966148,met1_3_sRNA_ERR966149",
 #                             split = ","))
-#ChIPNamesDir <- unlist(strsplit("160601_Kyuha_RNAseq/snakemake_RNAseq_STAR_T2T_Col,160601_Kyuha_RNAseq/snakemake_RNAseq_STAR_T2T_Col",
+#ChIPNamesDir <- unlist(strsplit("sRNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_sRNAseq_T2T_Col,sRNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_sRNAseq_T2T_Col",
 #                                split = ","))
 #ChIPNamesPlot <- unlist(strsplit("wt,met1",
 #                                 split = ","))
-#ChIPColours <- unlist(strsplit("springgreen2,magenta",
+#ChIPColours <- unlist(strsplit("springgreen2,magenta,forestgreen,purple,darkgreen,purple4",
 #                               split = ","))
+#sRNAsize <- unlist(strsplit("21,22,24",
+#                            split = ","))
 
 args <- commandArgs(trailingOnly = T)
 chrName <- unlist(strsplit(args[1],
@@ -69,10 +71,17 @@ ChIPNamesPlot <- unlist(strsplit(args[15],
                                  split = ","))
 ChIPColours <- unlist(strsplit(args[16],
                                split = ","))
+sRNAsize <- unlist(strsplit(args[17],
+                            split = ","))
+
+ChIPNames <- rep(ChIPNames, 3)
+ChIPNamesDir <- rep(ChIPNamesDir, 3)
+sRNAsize <- as.character(sapply(sRNAsize, function(x) rep(x, 2)))
+ChIPNamesPlot <- paste0(rep(ChIPNamesPlot, 3), " ", sRNAsize, "-nt")
+yLabPlot <- "sRNAs (TPM)"
 log2ChIPNames <- ChIPNames
 log2ChIPNamesPlot <- ChIPNamesPlot
 log2ChIPColours <- ChIPColours
-yLabPlot <- "RNA-seq (TPM)"
 
 options(stringsAsFactors = F)
 library(parallel)
@@ -114,7 +123,7 @@ featureEndLab <- "End"
 geneStartLab <- "TSS"
 geneEndLab <- "TTS"
 
-# Load feature matrices for each data set
+# Load feature matrices for each chromatin dataset, calculate log2(ChIP/control),
 ChIPDirs <- sapply(seq_along(ChIPNames), function(x) {
   paste0("/home/ajt200/analysis/",
          ChIPNamesDir[x],
@@ -127,7 +136,7 @@ ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(ChIPDirs[x], "CEN180profiles/matrices/",
                                 ChIPNames[x],
-                                "_MappedOn_T2T_Col_", align, "_sort_norm_CEN180_in_",
+                                "_MappedOn_T2T_Col_", align, "_", sRNAsize[x], "nt_sort_norm_CEN180_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3,
                          colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
@@ -149,7 +158,7 @@ ChIP_ranLocMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(ChIPDirs[x], "CEN180profiles/matrices/",
                                 ChIPNames[x],
-                                "_MappedOn_T2T_Col_", align, "_sort_norm_CEN180_in_",
+                                "_MappedOn_T2T_Col_", align, "_", sRNAsize[x], "nt_sort_norm_CEN180_in_",
                                 chrName[y], "_ranLoc_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3,
                          colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
@@ -171,7 +180,7 @@ ChIP_gapMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(ChIPDirs[x], "CEN180profiles/matrices/",
                                 ChIPNames[x],
-                                "_MappedOn_T2T_Col_", align, "_sort_norm_CENgap_in_",
+                                "_MappedOn_T2T_Col_", align, "_", sRNAsize[x], "nt_sort_norm_CENgap_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
@@ -192,7 +201,7 @@ ChIP_AthilaMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(ChIPDirs[x], "CEN180profiles/matrices/",
                                 ChIPNames[x],
-                                "_MappedOn_T2T_Col_", align, "_sort_norm_CENAthila_in_",
+                                "_MappedOn_T2T_Col_", align, "_", sRNAsize[x], "nt_sort_norm_CENAthila_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
@@ -213,7 +222,7 @@ ChIP_nonCENAthilaMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(ChIPDirs[x], "CEN180profiles/matrices/",
                                 ChIPNames[x],
-                                "_MappedOn_T2T_Col_", align, "_sort_norm_nonCENAthila_in_",
+                                "_MappedOn_T2T_Col_", align, "_", sRNAsize[x], "nt_sort_norm_nonCENAthila_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
@@ -234,7 +243,7 @@ ChIP_TEsfMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(ChIPDirs[x], "TEprofiles/matrices/",
                                 ChIPNames[x],
-                                "_MappedOn_T2T_Col_", align, "_sort_norm_nonCEN_TEs_Gypsy_LTR_in_",
+                                "_MappedOn_T2T_Col_", align, "_", sRNAsize[x], "nt_sort_norm_nonCEN_TEs_Gypsy_LTR_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
@@ -255,7 +264,7 @@ ChIP_soloLTRMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(which(chrName %in% c("Chr1", "Chr4", "Chr5")), function(y) {
     as.matrix(read.table(paste0(ChIPDirs[x], "CENsoloLTRprofiles/matrices/",
                                 ChIPNames[x],
-                                "_MappedOn_T2T_Col_", align, "_sort_norm_CENsoloLTR_in_",
+                                "_MappedOn_T2T_Col_", align, "_", sRNAsize[x], "nt_sort_norm_CENsoloLTR_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
@@ -269,7 +278,6 @@ ChIP_soloLTRMats <- mclapply(seq_along(ChIP_soloLTRMats), function(x) {
     ChIP_soloLTRMats[[x]][[1]]
   }
 }, mc.cores = length(ChIP_soloLTRMats))
-
 
 # ChIP
 # Add column names
@@ -298,7 +306,7 @@ for(x in seq_along(ChIP_featureMats)) {
 }
 
 # Create list of lists in which each element in the enclosing list corresponds to a library
-# and the two elements in the nested list correspond to coverage matrices for features and random loci
+# and the two elements in the nested list correspond to coverage matrices for features and random loci 
 ChIP_mats <- mclapply(seq_along(ChIP_featureMats), function(x) {
   list(
        # features
@@ -315,7 +323,7 @@ ChIP_mats <- mclapply(seq_along(ChIP_featureMats), function(x) {
        ChIP_TEsfMats[[x]],
        # soloLTRs
        ChIP_soloLTRMats[[x]]
-      )
+      ) 
 }, mc.cores = length(ChIP_featureMats))
 
 # Transpose matrix and convert into dataframe
@@ -421,10 +429,10 @@ summaryDFfeature_ChIP <- list(
   bind_rows(nonCENAthilaTmp, .id = "libName"),
   bind_rows(TEsfTmp, .id = "libName"),
   bind_rows(soloLTRTmp, .id = "libName")
-)
+)  
 for(x in seq_along(summaryDFfeature_ChIP)) {
   summaryDFfeature_ChIP[[x]]$libName <- factor(summaryDFfeature_ChIP[[x]]$libName,
-                                               levels = ChIPNamesPlot)
+                                                   levels = ChIPNamesPlot)
 }
 
 # Define y-axis limits
@@ -433,16 +441,14 @@ ymin_ChIP <- min(c(summaryDFfeature_ChIP[[1]]$CI_lower,
                    summaryDFfeature_ChIP[[3]]$CI_lower,
                    summaryDFfeature_ChIP[[4]]$CI_lower,
                    summaryDFfeature_ChIP[[5]]$CI_lower,
-                   summaryDFfeature_ChIP[[6]]$CI_lower,
-                   summaryDFfeature_ChIP[[7]]$CI_lower),
+                   summaryDFfeature_ChIP[[6]]$CI_lower),
                  na.rm = T)
 ymax_ChIP <- max(c(summaryDFfeature_ChIP[[1]]$CI_upper,
                    summaryDFfeature_ChIP[[2]]$CI_upper,
                    summaryDFfeature_ChIP[[3]]$CI_upper,
                    summaryDFfeature_ChIP[[4]]$CI_upper,
                    summaryDFfeature_ChIP[[5]]$CI_upper,
-                   summaryDFfeature_ChIP[[6]]$CI_upper,
-                   summaryDFfeature_ChIP[[7]]$CI_upper),
+                   summaryDFfeature_ChIP[[6]]$CI_upper),
                  na.rm = T)
 
 # Define legend labels
@@ -539,6 +545,10 @@ labs(x = "",
      y = bquote(.(yLabPlot))) +
 annotation_custom(legendLabs[[1]]) +
 annotation_custom(legendLabs[[2]]) +
+annotation_custom(legendLabs[[3]]) +
+annotation_custom(legendLabs[[4]]) +
+annotation_custom(legendLabs[[5]]) +
+annotation_custom(legendLabs[[6]]) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -577,15 +587,15 @@ scale_fill_manual(values = ChIPColours) +
 scale_y_continuous(limits = c(ymin_ChIP, ymax_ChIP),
                    labels = function(x) sprintf("%6.3f", x)) +
 scale_x_discrete(breaks = c(1,
-                            (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_ChIP[[3]])[1]/length(ChIPNames))-(downstream/Athila_binSize),
+                            (upstream/binSize)+1,
+                            (dim(summaryDFfeature_ChIP[[3]])[1]/length(ChIPNames))-(downstream/binSize),
                             dim(summaryDFfeature_ChIP[[3]])[1]/length(ChIPNames)),
                  labels = c(paste0("-", flankName),
                             featureStartLab,
                             featureEndLab,
                             paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_ChIP[[3]])[1]/length(ChIPNames))-(downstream/Athila_binSize)),
+geom_vline(xintercept = c((upstream/binSize)+1,
+                          (dim(summaryDFfeature_ChIP[[3]])[1]/length(ChIPNames))-(downstream/binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -681,13 +691,13 @@ scale_y_continuous(limits = c(ymin_ChIP, ymax_ChIP),
 scale_x_discrete(breaks = c(1,
                             (upstream/Athila_binSize)+1,
                             (dim(summaryDFfeature_ChIP[[5]])[1]/length(ChIPNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_ChIP[[4]])[1]/length(ChIPNames)),
+                            dim(summaryDFfeature_ChIP[[5]])[1]/length(ChIPNames)),
                  labels = c(paste0("-", flankName),
                             featureStartLab,
                             featureEndLab,
                             paste0("+", flankName))) +
 geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_ChIP[[4]])[1]/length(ChIPNames))-(downstream/Athila_binSize)),
+                          (dim(summaryDFfeature_ChIP[[5]])[1]/length(ChIPNames))-(downstream/Athila_binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -781,15 +791,15 @@ scale_fill_manual(values = ChIPColours) +
 scale_y_continuous(limits = c(ymin_ChIP, ymax_ChIP),
                    labels = function(x) sprintf("%6.3f", x)) +
 scale_x_discrete(breaks = c(1,
-                            (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_ChIP[[7]])[1]/length(ChIPNames))-(downstream/Athila_binSize),
+                            (upstream/binSize)+1,
+                            (dim(summaryDFfeature_ChIP[[7]])[1]/length(ChIPNames))-(downstream/binSize),
                             dim(summaryDFfeature_ChIP[[7]])[1]/length(ChIPNames)),
                  labels = c(paste0("-", flankName),
                             featureStartLab,
                             featureEndLab,
                             paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_ChIP[[7]])[1]/length(ChIPNames))-(downstream/Athila_binSize)),
+geom_vline(xintercept = c((upstream/binSize)+1,
+                          (dim(summaryDFfeature_ChIP[[7]])[1]/length(ChIPNames))-(downstream/binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -818,8 +828,7 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                               ggObj3_combined_ChIP,
                                               ggObj4_combined_ChIP,
                                               ggObj5_combined_ChIP,
-                                              ggObj6_combined_ChIP,
-                                              ggObj7_combined_ChIP
+                                              ggObj6_combined_ChIP
                                              ),
                                  layout_matrix = cbind(
                                                        1,
@@ -827,17 +836,16 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                                        3,
                                                        4,
                                                        5,
-                                                       6,
-                                                       7
+                                                       6
                                                       ))
 ggsave(paste0(plotDir,
-              paste0(ChIPNames, collapse = "_"),
+              "sRNA_", paste0(unique(sRNAsize), collapse = "_"), "nt_",
+              paste0(unique(ChIPNames), collapse = "_"),
               "_avgProfiles_around",
-              "_CEN180_ranLoc_CENgap_nonCENAthila_CENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
+              "_CEN180_ranLoc_CENgap_CENAthila_nonCENAthila_nonCENGypsy_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_", align, ".pdf"),
        plot = ggObjGA_combined,
-       height = 6.5, width = 7*7, limitsize = FALSE)
-
+       height = 6.5, width = 7*6, limitsize = FALSE)
 
 # log2ChIP
 log2ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
@@ -866,30 +874,30 @@ log2ChIP_soloLTRMats <- mclapply(seq_along(ChIP_soloLTRMats), function(x) {
 # Add column names
 for(x in seq_along(log2ChIP_featureMats)) {
   colnames(log2ChIP_featureMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                       paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                       paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+                                           paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+                                           paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
   colnames(log2ChIP_ranLocMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                      paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                      paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+                                          paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+                                          paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
   colnames(log2ChIP_gapMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                   paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                   paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+                                       paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                       paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
   colnames(log2ChIP_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+                                          paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                          paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
   colnames(log2ChIP_nonCENAthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                            paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                            paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+                                                paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                                paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
   colnames(log2ChIP_TEsfMats[[x]]) <- c(paste0("u", 1:(upstream/binSize)),
-                                    paste0("t", ((upstream/binSize)+1):((upstream+TEsf_bodyLength)/binSize)),
-                                    paste0("d", (((upstream+TEsf_bodyLength)/binSize)+1):(((upstream+TEsf_bodyLength)/binSize)+(downstream/binSize))))
+                                        paste0("t", ((upstream/binSize)+1):((upstream+TEsf_bodyLength)/binSize)),
+                                        paste0("d", (((upstream+TEsf_bodyLength)/binSize)+1):(((upstream+TEsf_bodyLength)/binSize)+(downstream/binSize))))
   colnames(log2ChIP_soloLTRMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                    paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                    paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+                                           paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+                                           paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
 }
 
 # Create list of lists in which each element in the enclosing list corresponds to a library
-# and the two elements in the nested list correspond to coverage matrices for features and random loci
+# and the two elements in the nested list correspond to coverage matrices for features and random loci 
 log2ChIP_mats <- mclapply(seq_along(log2ChIP_featureMats), function(x) {
   list(
        # features
@@ -906,7 +914,7 @@ log2ChIP_mats <- mclapply(seq_along(log2ChIP_featureMats), function(x) {
        log2ChIP_TEsfMats[[x]],
        # soloLTRs
        log2ChIP_soloLTRMats[[x]]
-      )
+      ) 
 }, mc.cores = length(log2ChIP_featureMats))
 
 # Transpose matrix and convert into dataframe
@@ -1012,29 +1020,27 @@ summaryDFfeature_log2ChIP <- list(
   bind_rows(nonCENAthilaTmp, .id = "libName"),
   bind_rows(TEsfTmp, .id = "libName"),
   bind_rows(soloLTRTmp, .id = "libName")
-)
+)  
 for(x in seq_along(summaryDFfeature_log2ChIP)) {
   summaryDFfeature_log2ChIP[[x]]$libName <- factor(summaryDFfeature_log2ChIP[[x]]$libName,
-                                               levels = log2ChIPNamesPlot)
+                                                   levels = log2ChIPNamesPlot)
 }
 
 # Define y-axis limits
 ymin_log2ChIP <- min(c(summaryDFfeature_log2ChIP[[1]]$CI_lower,
-                   summaryDFfeature_log2ChIP[[2]]$CI_lower,
-                   summaryDFfeature_log2ChIP[[3]]$CI_lower,
-                   summaryDFfeature_log2ChIP[[4]]$CI_lower,
-                   summaryDFfeature_log2ChIP[[5]]$CI_lower,
-                   summaryDFfeature_log2ChIP[[6]]$CI_lower,
-                   summaryDFfeature_log2ChIP[[7]]$CI_lower),
-                 na.rm = T)
+                       summaryDFfeature_log2ChIP[[2]]$CI_lower,
+                       summaryDFfeature_log2ChIP[[3]]$CI_lower,
+                       summaryDFfeature_log2ChIP[[4]]$CI_lower,
+                       summaryDFfeature_log2ChIP[[5]]$CI_lower,
+                       summaryDFfeature_log2ChIP[[6]]$CI_lower),
+                     na.rm = T)
 ymax_log2ChIP <- max(c(summaryDFfeature_log2ChIP[[1]]$CI_upper,
-                   summaryDFfeature_log2ChIP[[2]]$CI_upper,
-                   summaryDFfeature_log2ChIP[[3]]$CI_upper,
-                   summaryDFfeature_log2ChIP[[4]]$CI_upper,
-                   summaryDFfeature_log2ChIP[[5]]$CI_upper,
-                   summaryDFfeature_log2ChIP[[6]]$CI_upper,
-                   summaryDFfeature_log2ChIP[[7]]$CI_upper),
-                 na.rm = T)
+                       summaryDFfeature_log2ChIP[[2]]$CI_upper,
+                       summaryDFfeature_log2ChIP[[3]]$CI_upper,
+                       summaryDFfeature_log2ChIP[[4]]$CI_upper,
+                       summaryDFfeature_log2ChIP[[5]]$CI_upper,
+                       summaryDFfeature_log2ChIP[[6]]$CI_upper),
+                     na.rm = T)
 
 # Define legend labels
 legendLabs <- lapply(seq_along(log2ChIPNamesPlot), function(x) {
@@ -1130,6 +1136,10 @@ labs(x = "",
      y = bquote("Log"[2] * "(" * .(yLabPlot) * ")")) +
 annotation_custom(legendLabs[[1]]) +
 annotation_custom(legendLabs[[2]]) +
+annotation_custom(legendLabs[[3]]) +
+annotation_custom(legendLabs[[4]]) +
+annotation_custom(legendLabs[[5]]) +
+annotation_custom(legendLabs[[6]]) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -1168,15 +1178,15 @@ scale_fill_manual(values = log2ChIPColours) +
 scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
                    labels = function(x) sprintf("%6.3f", x)) +
 scale_x_discrete(breaks = c(1,
-                            (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_log2ChIP[[3]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize),
+                            (upstream/binSize)+1,
+                            (dim(summaryDFfeature_log2ChIP[[3]])[1]/length(log2ChIPNames))-(downstream/binSize),
                             dim(summaryDFfeature_log2ChIP[[3]])[1]/length(log2ChIPNames)),
                  labels = c(paste0("-", flankName),
                             featureStartLab,
                             featureEndLab,
                             paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_log2ChIP[[3]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize)),
+geom_vline(xintercept = c((upstream/binSize)+1,
+                          (dim(summaryDFfeature_log2ChIP[[3]])[1]/length(log2ChIPNames))-(downstream/binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -1272,13 +1282,13 @@ scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
 scale_x_discrete(breaks = c(1,
                             (upstream/Athila_binSize)+1,
                             (dim(summaryDFfeature_log2ChIP[[5]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_log2ChIP[[4]])[1]/length(log2ChIPNames)),
+                            dim(summaryDFfeature_log2ChIP[[5]])[1]/length(log2ChIPNames)),
                  labels = c(paste0("-", flankName),
                             featureStartLab,
                             featureEndLab,
                             paste0("+", flankName))) +
 geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_log2ChIP[[4]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize)),
+                          (dim(summaryDFfeature_log2ChIP[[5]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -1372,15 +1382,15 @@ scale_fill_manual(values = log2ChIPColours) +
 scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
                    labels = function(x) sprintf("%6.3f", x)) +
 scale_x_discrete(breaks = c(1,
-                            (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_log2ChIP[[7]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize),
+                            (upstream/binSize)+1,
+                            (dim(summaryDFfeature_log2ChIP[[7]])[1]/length(log2ChIPNames))-(downstream/binSize),
                             dim(summaryDFfeature_log2ChIP[[7]])[1]/length(log2ChIPNames)),
                  labels = c(paste0("-", flankName),
                             featureStartLab,
                             featureEndLab,
                             paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_log2ChIP[[7]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize)),
+geom_vline(xintercept = c((upstream/binSize)+1,
+                          (dim(summaryDFfeature_log2ChIP[[7]])[1]/length(log2ChIPNames))-(downstream/binSize)),
            linetype = "dashed",
            size = 1) +
 labs(x = "",
@@ -1409,8 +1419,7 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                               ggObj3_combined_log2ChIP,
                                               ggObj4_combined_log2ChIP,
                                               ggObj5_combined_log2ChIP,
-                                              ggObj6_combined_log2ChIP,
-                                              ggObj7_combined_log2ChIP
+                                              ggObj6_combined_log2ChIP
                                              ),
                                  layout_matrix = cbind(
                                                        1,
@@ -1418,14 +1427,13 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                                        3,
                                                        4,
                                                        5,
-                                                       6,
-                                                       7
+                                                       6
                                                       ))
 ggsave(paste0(plotDir,
-              "log2_",
-              paste0(log2ChIPNames, collapse = "_"),
+              "sRNA_", paste0(unique(sRNAsize), collapse = "_"), "nt_log2_",
+              paste0(unique(log2ChIPNames), collapse = "_"),
               "_avgProfiles_around",
-              "_CEN180_ranLoc_CENgap_nonCENAthila_CENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
+              "_CEN180_ranLoc_CENgap_CENAthila_nonCENAthila_nonCENGypsy_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_", align, ".pdf"),
        plot = ggObjGA_combined,
-       height = 6.5, width = 7*7, limitsize = FALSE)
+       height = 6.5, width = 7*6, limitsize = FALSE)
