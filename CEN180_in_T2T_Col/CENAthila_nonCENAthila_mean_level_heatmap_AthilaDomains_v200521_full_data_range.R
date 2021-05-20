@@ -8,16 +8,17 @@
 # and plot as heatmaps
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CENAthila_nonCENAthila_mean_level_heatmap_v200521_full_data_range.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 2000 2000 '2kb' 10
+# /applications/R/R-4.0.0/bin/Rscript CENAthila_nonCENAthila_mean_level_heatmap_AthilaDomains_v200521_full_data_range.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 2000 0 '0kb' 10 5LTR
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
 #align <- "both"
 #Athila_bodyLength <- 2000
-#upstream <- 2000
-#downstream <- 2000
-#flankName <- "2kb"
+#upstream <- 0
+#downstream <- 0
+#flankName <- "0kb"
 #Athila_binSize <- 10
+#Athila_domain <- "5LTR"
 
 args <- commandArgs(trailingOnly = T)
 chrName <- unlist(strsplit(args[1],
@@ -28,6 +29,7 @@ upstream <- as.numeric(args[4])
 downstream <- as.numeric(args[4])
 flankName <- args[5]
 Athila_binSize <- as.numeric(args[6])
+Athila_domain <- args[7]
 
 options(stringsAsFactors = F)
 library(parallel)
@@ -108,24 +110,24 @@ RNADirs <- sapply(seq_along(RNANames), function(x) {
 })
 
 RNA_AthilaMats <- mclapply(seq_along(RNANames), function(x) {
-    as.matrix(rbind(read.table(paste0(RNADirs[x], "CEN180profiles/matrices/",
+    as.matrix(rbind(read.table(paste0(RNADirs[x], "AthilaDomainProfiles/matrices/",
                                       RNANames[x],
-                                      "_MappedOn_T2T_Col_", align, "_sort_norm_CENAthila_in_",
+                                      "_MappedOn_T2T_Col_", align, "_sort_norm_CENAthila", Athila_domain, "_in_",
                                       paste0(chrName, collapse = "_"), "_matrix_bin", Athila_binSize, "bp_flank", flankName, ".tab"),
                                header = F, skip = 3),
-                    read.table(paste0(RNADirs[x], "CEN180profiles/matrices/",
+                    read.table(paste0(RNADirs[x], "AthilaDomainProfiles/matrices/",
                                       RNANames[x],
-                                      "_MappedOn_T2T_Col_", align, "_sort_norm_nonCENAthila_in_",
+                                      "_MappedOn_T2T_Col_", align, "_sort_norm_nonCENAthila", Athila_domain, "_in_",
                                       paste0(chrName, collapse = "_"), "_matrix_bin", Athila_binSize, "bp_flank", flankName, ".tab"),
                                header = F, skip = 3)))
 }, mc.cores = length(RNANames))
 
-# Add column names
-for(x in seq_along(RNA_AthilaMats)) {
-  colnames(RNA_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                     paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                     paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-}
+## Add column names
+#for(x in seq_along(RNA_AthilaMats)) {
+#  colnames(RNA_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                     paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                     paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#}
 
 RNA_AthilaMats_bodies <- lapply(seq_along(RNA_AthilaMats), function(x) {
   RNA_AthilaMats[[x]][,((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)]
@@ -190,24 +192,24 @@ sRNADirs <- sapply(seq_along(sRNANames), function(x) {
 })
 
 sRNA_AthilaMats <- mclapply(seq_along(sRNANames), function(x) {
-    as.matrix(rbind(read.table(paste0(sRNADirs[x], "CEN180profiles/matrices/",
+    as.matrix(rbind(read.table(paste0(sRNADirs[x], "AthilaDomainProfiles/matrices/",
                                       sRNANames[x],
-                                      "_MappedOn_T2T_Col_", align, "_", sRNAsize[x], "nt_sort_norm_CENAthila_in_",
+                                      "_MappedOn_T2T_Col_", align, "_", sRNAsize[x], "nt_sort_norm_CENAthila", Athila_domain, "_in_",
                                       paste0(chrName, collapse = "_"), "_matrix_bin", Athila_binSize, "bp_flank", flankName, ".tab"),
                                header = F, skip = 3),
-                    read.table(paste0(sRNADirs[x], "CEN180profiles/matrices/",
+                    read.table(paste0(sRNADirs[x], "AthilaDomainProfiles/matrices/",
                                       sRNANames[x],
-                                      "_MappedOn_T2T_Col_", align, "_", sRNAsize[x], "nt_sort_norm_nonCENAthila_in_",
+                                      "_MappedOn_T2T_Col_", align, "_", sRNAsize[x], "nt_sort_norm_nonCENAthila", Athila_domain, "_in_",
                                       paste0(chrName, collapse = "_"), "_matrix_bin", Athila_binSize, "bp_flank", flankName, ".tab"),
                                header = F, skip = 3)))
 }, mc.cores = length(sRNANames))
 
-# Add column names
-for(x in seq_along(sRNA_AthilaMats)) {
-  colnames(sRNA_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-}
+## Add column names
+#for(x in seq_along(sRNA_AthilaMats)) {
+#  colnames(sRNA_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#}
 
 sRNA_AthilaMats_bodies <- lapply(seq_along(sRNA_AthilaMats), function(x) {
   sRNA_AthilaMats[[x]][,((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)]
@@ -284,24 +286,24 @@ DNAmethDirs <- sapply(seq_along(DNAmethNamesDir), function(x) {
 })
 
 DNAmeth_AthilaMats <- mclapply(seq_along(DNAmethNames), function(x) {
-    as.matrix(rbind(read.table(paste0(DNAmethDirs[x], "CEN180profiles/matrices/",
+    as.matrix(rbind(read.table(paste0(DNAmethDirs[x], "AthilaDomainProfiles/matrices/",
                                       DNAmethNames[x],
-                                      "_MappedOn_T2T_Col_", context[x], "_CENAthila_in_",
+                                      "_MappedOn_T2T_Col_", context[x], "_CENAthila", Athila_domain, "_in_",
                                       paste0(chrName, collapse = "_"), "_matrix_bin", Athila_binSize, "bp_flank", flankName, ".tab"),
                                header = F, skip = 3),
-                    read.table(paste0(DNAmethDirs[x], "CEN180profiles/matrices/",
+                    read.table(paste0(DNAmethDirs[x], "AthilaDomainProfiles/matrices/",
                                       DNAmethNames[x],
-                                      "_MappedOn_T2T_Col_", context[x], "_nonCENAthila_in_",
+                                      "_MappedOn_T2T_Col_", context[x], "_nonCENAthila", Athila_domain, "_in_",
                                       paste0(chrName, collapse = "_"), "_matrix_bin", Athila_binSize, "bp_flank", flankName, ".tab"),
                                header = F, skip = 3)))
 }, mc.cores = length(DNAmethNames))
 
-# Add column names
-for(x in seq_along(DNAmeth_AthilaMats)) {
-  colnames(DNAmeth_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                         paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                         paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-}
+## Add column names
+#for(x in seq_along(DNAmeth_AthilaMats)) {
+#  colnames(DNAmeth_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                         paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                         paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#}
 
 DNAmeth_AthilaMats_bodies <- lapply(seq_along(DNAmeth_AthilaMats), function(x) {
   DNAmeth_AthilaMats[[x]][,((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)]
@@ -365,24 +367,24 @@ H3K9me2Dirs <- sapply(seq_along(H3K9me2Names), function(x) {
 })
 
 H3K9me2_AthilaMats <- mclapply(seq_along(H3K9me2Names), function(x) {
-    as.matrix(rbind(read.table(paste0(H3K9me2Dirs[x], "CEN180profiles/matrices/",
+    as.matrix(rbind(read.table(paste0(H3K9me2Dirs[x], "AthilaDomainProfiles/matrices/",
                                       H3K9me2Names[x],
-                                      "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_CENAthila_in_",
+                                      "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_CENAthila", Athila_domain, "_in_",
                                       paste0(chrName, collapse = "_"), "_matrix_bin", Athila_binSize, "bp_flank", flankName, ".tab"),
                                header = F, skip = 3),
-                    read.table(paste0(H3K9me2Dirs[x], "CEN180profiles/matrices/",
+                    read.table(paste0(H3K9me2Dirs[x], "AthilaDomainProfiles/matrices/",
                                       H3K9me2Names[x],
-                                      "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_nonCENAthila_in_",
+                                      "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_nonCENAthila", Athila_domain, "_in_",
                                       paste0(chrName, collapse = "_"), "_matrix_bin", Athila_binSize, "bp_flank", flankName, ".tab"),
                                header = F, skip = 3)))
 }, mc.cores = length(H3K9me2Names))
 
-# Add column names
-for(x in seq_along(H3K9me2_AthilaMats)) {
-  colnames(H3K9me2_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                         paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                         paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-}
+## Add column names
+#for(x in seq_along(H3K9me2_AthilaMats)) {
+#  colnames(H3K9me2_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                         paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                         paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#}
 
 H3K9me2_AthilaMats_bodies <- lapply(seq_along(H3K9me2_AthilaMats), function(x) {
   H3K9me2_AthilaMats[[x]][,((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)]
@@ -445,24 +447,24 @@ ATACDirs <- sapply(seq_along(ATACNames), function(x) {
 })
 
 ATAC_AthilaMats <- mclapply(seq_along(ATACNames), function(x) {
-    as.matrix(rbind(read.table(paste0(ATACDirs[x], "CEN180profiles/matrices/",
+    as.matrix(rbind(read.table(paste0(ATACDirs[x], "AthilaDomainProfiles/matrices/",
                                       ATACNames[x],
-                                      "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_CENAthila_in_",
+                                      "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_CENAthila", Athila_domain, "_in_",
                                       paste0(chrName, collapse = "_"), "_matrix_bin", Athila_binSize, "bp_flank", flankName, ".tab"),
                                header = F, skip = 3),
-                    read.table(paste0(ATACDirs[x], "CEN180profiles/matrices/",
+                    read.table(paste0(ATACDirs[x], "AthilaDomainProfiles/matrices/",
                                       ATACNames[x],
-                                      "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_nonCENAthila_in_",
+                                      "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_nonCENAthila", Athila_domain, "_in_",
                                       paste0(chrName, collapse = "_"), "_matrix_bin", Athila_binSize, "bp_flank", flankName, ".tab"),
                                header = F, skip = 3)))
 }, mc.cores = length(ATACNames))
 
-# Add column names
-for(x in seq_along(ATAC_AthilaMats)) {
-  colnames(ATAC_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-}
+## Add column names
+#for(x in seq_along(ATAC_AthilaMats)) {
+#  colnames(ATAC_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#}
 
 ATAC_AthilaMats_bodies <- lapply(seq_along(ATAC_AthilaMats), function(x) {
   ATAC_AthilaMats[[x]][,((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)]
@@ -519,24 +521,24 @@ SPO11Dirs <- sapply(seq_along(SPO11Names), function(x) {
 })
 
 SPO11_AthilaMats <- mclapply(seq_along(SPO11Names), function(x) {
-    as.matrix(rbind(read.table(paste0(SPO11Dirs[x], "CEN180profiles/matrices/",
+    as.matrix(rbind(read.table(paste0(SPO11Dirs[x], "AthilaDomainProfiles/matrices/",
                                       SPO11Names[x],
-                                      "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_CENAthila_in_",
+                                      "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_CENAthila", Athila_domain, "_in_",
                                       paste0(chrName, collapse = "_"), "_matrix_bin", Athila_binSize, "bp_flank", flankName, ".tab"),
                                header = F, skip = 3),
-                    read.table(paste0(SPO11Dirs[x], "CEN180profiles/matrices/",
+                    read.table(paste0(SPO11Dirs[x], "AthilaDomainProfiles/matrices/",
                                       SPO11Names[x],
-                                      "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_nonCENAthila_in_",
+                                      "_MappedOn_T2T_Col_lowXM_", align, "_sort_norm_nonCENAthila", Athila_domain, "_in_",
                                       paste0(chrName, collapse = "_"), "_matrix_bin", Athila_binSize, "bp_flank", flankName, ".tab"),
                                header = F, skip = 3)))
 }, mc.cores = length(SPO11Names))
 
-# Add column names
-for(x in seq_along(SPO11_AthilaMats)) {
-  colnames(SPO11_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                       paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                       paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-}
+## Add column names
+#for(x in seq_along(SPO11_AthilaMats)) {
+#  colnames(SPO11_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                       paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                       paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#}
 
 SPO11_AthilaMats_bodies <- lapply(seq_along(SPO11_AthilaMats), function(x) {
   SPO11_AthilaMats[[x]][,((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)]
@@ -554,12 +556,8 @@ colnames(SPO11_AthilaMats_bodiesRowSums_mat) <- paste0(SPO11NamesPlot, "_sum")
 
 
 ## Load table of centromeric gap and Athila sequence coordinates
-tab <- read.table("/home/ajt200/analysis/nanopore/T2T_Col/annotation/TEs/Athilas_fulllength_inCentr+outCentr_v270421.bin",
-                  header = T, na.strings = "na")
-colnames(tab)[1] <- "chr"
-tab$chr <- gsub(pattern = "^", replacement = "Chr",
-                x = tab$chr)
-tab$phylo <- toupper(tab$phylo)
+tab <- read.table("/home/ajt200/analysis/nanopore/T2T_Col/annotation/TEs/Athilas_fulllength_inCentr+outCentr_v270421_with_internalQs.tsv",
+                  header = T)
 
 CENATHILA <- tab[tab$position == "in_centr",]
 nonCENATHILA <- tab[tab$position == "out_centr",]
@@ -567,50 +565,6 @@ CENATHILA$phylo <- gsub("^", "CEN", CENATHILA$phylo)
 nonCENATHILA$phylo <- gsub("^", "nonCEN", nonCENATHILA$phylo)
 
 stopifnot(identical(colnames(CENATHILA), colnames(nonCENATHILA)))
-
-CENATHILA <- data.frame(chr = CENATHILA$chr,
-                        gap_start = CENATHILA$gap_start,
-                        gap_stop = CENATHILA$gap_stop,
-                        gap_width = CENATHILA$gap_width,
-                        gap_name = CENATHILA$gap_name,
-                        phylo = CENATHILA$phylo,
-                        genome_left_coord_FL = CENATHILA$genome_left_coord_FL,
-                        genome_right_coord_FL = CENATHILA$genome_right_coord_FL,
-                        length_FL = CENATHILA$length_FL,
-                        direction = CENATHILA$direction,
-                        TE_ID = CENATHILA$TE_ID,
-                        left_TSD = CENATHILA$left_TSD,
-                        right_TSD = CENATHILA$right_TSD,
-                        TSD = CENATHILA$TSD,
-                        quality = CENATHILA$quality,
-                        genome_5LTR_start = CENATHILA$genome_5LTR_start,
-                        genome_5LTR_end = CENATHILA$genome_5LTR_end,
-                        genome_3LTR_start = CENATHILA$genome_3LTR_start,
-                        genome_3LTR_end = CENATHILA$genome_3LTR_end,
-                        internal.length = abs(CENATHILA$genome_3LTR_start-CENATHILA$genome_5LTR_end+1),
-                        position = CENATHILA$position)
-
-nonCENATHILA <- data.frame(chr = nonCENATHILA$chr,
-                           gap_start = nonCENATHILA$gap_start,
-                           gap_stop = nonCENATHILA$gap_stop,
-                           gap_width = nonCENATHILA$gap_width,
-                           gap_name = nonCENATHILA$gap_name,
-                           phylo = nonCENATHILA$phylo,
-                           genome_left_coord_FL = nonCENATHILA$genome_left_coord_FL,
-                           genome_right_coord_FL = nonCENATHILA$genome_right_coord_FL,
-                           length_FL = nonCENATHILA$length_FL,
-                           direction = nonCENATHILA$direction,
-                           TE_ID = nonCENATHILA$TE_ID,
-                           left_TSD = nonCENATHILA$left_TSD,
-                           right_TSD = nonCENATHILA$right_TSD,
-                           TSD = nonCENATHILA$TSD,
-                           quality = nonCENATHILA$quality,
-                           genome_5LTR_start = nonCENATHILA$genome_5LTR_start,
-                           genome_5LTR_end = nonCENATHILA$genome_5LTR_end,
-                           genome_3LTR_start = nonCENATHILA$genome_3LTR_start,
-                           genome_3LTR_end = nonCENATHILA$genome_3LTR_end,
-                           internal.length = abs(nonCENATHILA$genome_3LTR_start-nonCENATHILA$genome_5LTR_end+1),
-                           position = nonCENATHILA$position)
 
 ATHILA <- rbind(CENATHILA, nonCENATHILA)
 tab_extend <- data.frame(ATHILA,
@@ -873,7 +827,7 @@ reg_htmp <- Heatmap(mat = matrix(tab_extend$phylo),
 htmps <- RNA_htmp + sRNA_21nt_htmp + sRNA_22nt_htmp + sRNA_24nt_htmp + CpG_htmp + CHG_htmp + CHH_htmp + H3K9me2_htmp + ATAC_htmp + SPO11_htmp + fam_htmp + reg_htmp 
 
 pdf(paste0(plotDir,
-           "CENATHILA_nonCENATHILA_in_T2T_Col_",
+           "CENATHILA_nonCENATHILA_", Athila_domain, "_in_T2T_Col_",
            paste0(chrName, collapse = "_"), "_mean_RNAseq_sRNAseq_DNAmeth_H3K9me2_ATAC_SPO11_heatmap_colourQuantiles0.0to1.0_v200521.pdf"),
     width = 1.5*length(htmps), height = 8)
 draw(htmps,
@@ -883,5 +837,5 @@ dev.off()
 
 write.table(tab_extend,
             file = paste0("/home/ajt200/analysis/nanopore/T2T_Col/annotation/TEs/",
-                          "t2t_ATHILA_with_mean_RNA_sRNA_DNAmeth_H3K9me2_ATAC_SPO11_v200521.tsv"),
+                          "t2t_ATHILA_with_mean_RNA_sRNA_DNAmeth_H3K9me2_ATAC_SPO11_in_", Athila_domain, "_v200521.tsv"),
             quote = F, sep = "\t", row.names = F, col.names = T)
