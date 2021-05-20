@@ -328,17 +328,44 @@ colnames(DNAmeth_AthilaMats_bodiesRowMeans_mat) <- paste0(DNAmethNamesPlot, "_me
 H3K9me2Names <- c(
                   "Col_0_H3K9me2_ChIP_SRR8180349",
                   "met1_6_H3K9me2_ChIP_SRR8180350",
-
+                  "Col_0_H3K9me2_Rep1_ChIP_SRR11780913",
+                  "Col_0_H3K9me2_Rep2_ChIP_SRR11780923",
+                  "ddm1_H3K9me2_Rep1_ChIP_SRR11780918",
+                  "ddm1_H3K9me2_Rep2_ChIP_SRR11780928",
+                  "Col_0_H3K9me2_Rep1_ChIP_SRR1005404", 
+                  "Col_0_H3K9me2_Rep2_ChIP_SRR1999292", 
+                  "drm1_drm2_cmt2_cmt3_H3K9me2_Rep1_ChIP_SRR1005407",
+                  "drm1_drm2_cmt2_cmt3_H3K9me2_Rep2_ChIP_SRR1999295",
+                  "kss_H3K9me2_Rep1_ChIP_SRR1005410",
+                  "kss_H3K9me2_Rep2_ChIP_SRR1999298"
                  )
 H3K9me2NamesDir <- c(
                      "H3K9me2_seedling_Choi_Zilberman_2020_MolCell/snakemake_ChIPseq_T2T_Col",
                      "H3K9me2_seedling_Choi_Zilberman_2020_MolCell/snakemake_ChIPseq_T2T_Col",
-
+                     "H3K9me2_leaf_Osakabe_Berger_2021_NCB/snakemake_ChIPseq_T2T_Col",
+                     "H3K9me2_leaf_Osakabe_Berger_2021_NCB/snakemake_ChIPseq_T2T_Col",
+                     "H3K9me2_leaf_Osakabe_Berger_2021_NCB/snakemake_ChIPseq_T2T_Col",
+                     "H3K9me2_leaf_Osakabe_Berger_2021_NCB/snakemake_ChIPseq_T2T_Col",
+                     "H3K9me2_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_ChIPseq_T2T_Col",
+                     "H3K9me2_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_ChIPseq_T2T_Col",
+                     "H3K9me2_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_ChIPseq_T2T_Col",
+                     "H3K9me2_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_ChIPseq_T2T_Col",
+                     "H3K9me2_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_ChIPseq_T2T_Col",
+                     "H3K9me2_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_ChIPseq_T2T_Col"
                     )
 H3K9me2NamesPlot <- c(
                       "wt_H3K9me2",
                       "met1_H3K9me2",
- 
+                      "wt_H3K9me2_Rep1",
+                      "wt_H3K9me2_Rep2",
+                      "ddm1_H3K9me2_Rep1",
+                      "ddm1_H3K9me2_Rep2",
+                      "wt_H3K9me2_Rep1",
+                      "wt_H3K9me2_Rep2",
+                      "ddcc_H3K9me2_Rep1",
+                      "ddcc_H3K9me2_Rep2",
+                      "kss_H3K9me2_Rep1",
+                      "kss_H3K9me2_Rep2"
                      )
 
 H3K9me2Dirs <- sapply(seq_along(H3K9me2Names), function(x) {
@@ -384,12 +411,42 @@ colnames(H3K9me2_AthilaMats_bodiesRowSums_mat) <- paste0(H3K9me2NamesPlot, "_sum
 
 # Load feature matrices for each data set
 # ATAC
-ATACNames <- c("Col_0_ATACseq_Rep1_SRR12362020,Col_0_ATACseq_Rep2_SRR12362021,Col_0_ATACseq_Rep3_SRR12362022,Col_0_ATACseq_Rep4_SRR12362023,met1_3_ATACseq_Rep1_SRR12362042,met1_3_ATACseq_Rep2_SRR12362043",
-                             split = ","))
-ATACNamesDir <- c("ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col",
-                                split = ","))
-ATACNamesPlot <- c("wt_ATAC_Rep1,wt_ATAC_Rep2,wt_ATAC_Rep3,wt_ATAC_Rep4,met1_ATAC_Rep1,met1_ATAC_Rep2",
-                                 split = ","))
+ATACNames <- c(
+               "Col_0_ATACseq_Rep1_SRR12362020",
+               "Col_0_ATACseq_Rep2_SRR12362021",
+               "Col_0_ATACseq_Rep3_SRR12362022",
+               "Col_0_ATACseq_Rep4_SRR12362023",
+               "met1_3_ATACseq_Rep1_SRR12362042",
+               "met1_3_ATACseq_Rep2_SRR12362043",
+               "ddm1_ATACseq_Rep1_SRR12362026",
+               "ddm1_ATACseq_Rep2_SRR12362027",
+               "drm1_drm2_cmt2_cmt3_ATACseq_Rep1_SRR12362024",
+               "drm1_drm2_cmt2_cmt3_ATACseq_Rep2_SRR12362025"
+              )
+ATACNamesDir <- c(
+                  "ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col",
+                  "ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col",
+                  "ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col",
+                  "ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col",
+                  "ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col",
+                  "ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col",
+                  "ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col",
+                  "ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col",
+                  "ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col",
+                  "ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col"
+                 )
+ATACNamesPlot <- c(
+                   "wt_ATAC_Rep1",
+                   "wt_ATAC_Rep2",
+                   "wt_ATAC_Rep3",
+                   "wt_ATAC_Rep4",
+                   "met1_ATAC_Rep1",
+                   "met1_ATAC_Rep2",
+                   "ddm1_ATAC_Rep1",
+                   "ddm1_ATAC_Rep2",
+                   "ddcc_ATAC_Rep1",
+                   "ddcc_ATAC_Rep2"
+                  )
 
 ATACDirs <- sapply(seq_along(ATACNames), function(x) {
   paste0("/home/ajt200/analysis/",
@@ -434,12 +491,36 @@ colnames(ATAC_AthilaMats_bodiesRowSums_mat) <- paste0(ATACNamesPlot, "_sum")
 
 # Load feature matrices for each data set
 # SPO11
-SPO11Names <- c("WT_SPO11oligos_Rep1,WT_SPO11oligos_Rep2,WT_SPO11oligos_Rep3,met1_SPO11oligos_Rep1,met1_SPO11oligos_Rep2,met1_SPO11oligos_Rep3",
-                                split = ","))
-SPO11NamesDir <- c("160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col,160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col",
-                                   split = ","))
-SPO11NamesPlot <- c("wt_SPO11_Rep1,wt_SPO11_Rep2,wt_SPO11_Rep3,met1_SPO11_Rep1,met1_SPO11_Rep2,met1_SPO11_Rep3",
-                                    split = ","))
+SPO11Names <- c(
+                "WT_SPO11oligos_Rep1",
+                "WT_SPO11oligos_Rep2",
+                "WT_SPO11oligos_Rep3",
+                "met1_SPO11oligos_Rep1",
+                "met1_SPO11oligos_Rep2",
+                "met1_SPO11oligos_Rep3",
+                "kss_SPO11oligos_Rep1",
+                "kss_SPO11oligos_Rep2"
+               )
+SPO11NamesDir <- c(
+                   "160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col",
+                   "160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col",
+                   "160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_T2T_Col",
+                   "160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col",
+                   "160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col",
+                   "160518_Kyuha_SPO11oligos/met1/snakemake_SPO11oligos_T2T_Col",
+                   "160518_Kyuha_SPO11oligos/kss/snakemake_SPO11oligos_T2T_Col",
+                   "160518_Kyuha_SPO11oligos/kss/snakemake_SPO11oligos_T2T_Col"
+                  )
+SPO11NamesPlot <- c(
+                    "wt_SPO11_Rep1",
+                    "wt_SPO11_Rep2",
+                    "wt_SPO11_Rep3",
+                    "met1_SPO11_Rep1",
+                    "met1_SPO11_Rep2",
+                    "met1_SPO11_Rep3",
+                    "kss_SPO11_Rep1",
+                    "kss_SPO11_Rep2"
+                   )
 
 SPO11Dirs <- sapply(seq_along(SPO11Names), function(x) {
   paste0("/home/ajt200/analysis/",
@@ -571,7 +652,7 @@ featureHeatmap <- function(mat,
           column_title_rot = 0,
           column_title_gp = gpar(fontsize = 13),
           column_labels = sub("_.+", "", colnames(mat)),
-          column_names_rot = 0,
+          column_names_rot = 90,
           column_names_centered = TRUE,
           cluster_columns = FALSE,
           cluster_column_slices = FALSE,
@@ -739,7 +820,7 @@ fam_htmp <- Heatmap(mat = matrix(tab_extend$phylo),
                             "nonCENATHILA5" = rich10()(10)[4], "nonCENATHILA6A" = rich10()(10)[3], "nonCENATHILA6B" = rich10()(10)[2],
                             "nonCENATHILA7A" = rich10()(10)[1]),
                     row_order = c(1:nrow(matrix(tab_extend$phylo))),
-                    column_title = "Family",
+                    column_title = "Fam.",
                     column_title_rot = 0,
                     column_title_gp = gpar(fontsize = 13),
                     column_labels = NULL,
@@ -765,11 +846,45 @@ fam_htmp <- Heatmap(mat = matrix(tab_extend$phylo),
                     use_raster = FALSE)
                     #use_raster = TRUE, raster_device = "png", raster_quality = 4)
 
-htmps <- RNA_htmp + sRNA_21nt_htmp + sRNA_22nt_htmp + sRNA_24nt_htmp + CpG_htmp + CHG_htmp + CHH_htmp + H3K9me2_htmp + ATAC_htmp + SPO11_htmp + fam_htmp 
+reg_htmp <- Heatmap(mat = matrix(tab_extend$phylo),
+                    col = c("CENATHILA1" = "darkorange1", "CENATHILA2" = "darkorange1", "CENATHILA5" = "darkorange1",
+                            "CENATHILA6A" = "darkorange1", "CENATHILA6B" = "darkorange1",
+                            "nonCENATHILA0_I" = "grey50", "nonCENATHILA1" = "grey50", "nonCENATHILA2" = "grey50",
+                            "nonCENATHILA3" = "grey50", "nonCENATHILA4" = "grey50", "nonCENATHILA4C" = "grey50",
+                            "nonCENATHILA5" = "grey50", "nonCENATHILA6A" = "grey50", "nonCENATHILA6B" = "grey50",
+                            "nonCENATHILA7A" = "grey50"),
+                    row_order = c(1:nrow(matrix(tab_extend$phylo))),
+                    column_title = "Reg.",
+                    column_title_rot = 0,
+                    column_title_gp = gpar(fontsize = 13),
+                    column_labels = NULL,
+                    cluster_rows = FALSE,
+                    cluster_row_slices = FALSE,
+                    heatmap_legend_param = list(title = "Region",
+                                                title_position = "topcenter",
+                                                title_gp = gpar(font = 2, fontsize = 12),
+                                                legend_direction = "horizontal",
+                                                nrow = 2,
+                                                labels_gp = gpar(fontsize = 10)),
+                    heatmap_width = unit(10, "mm"),
+                    heatmap_height = unit(4, "npc"),
+                    column_gap = unit(0, "mm"),
+                    row_gap = unit(1.0, "mm"),
+                    row_split = factor(tab_extend$phylo,
+                                       levels = sort(unique(as.character(tab_extend$phylo)))),
+                    row_title_side = "right",
+                    row_title_rot = 0,
+                    border = FALSE,
+                    # If converting into png with pdfTotiffTopng.sh,
+                    # set use_raster to FALSE
+                    use_raster = FALSE)
+                    #use_raster = TRUE, raster_device = "png", raster_quality = 4)
+
+htmps <- RNA_htmp + sRNA_21nt_htmp + sRNA_22nt_htmp + sRNA_24nt_htmp + CpG_htmp + CHG_htmp + CHH_htmp + H3K9me2_htmp + ATAC_htmp + SPO11_htmp + fam_htmp + reg_htmp 
 
 pdf(paste0(plotDir,
            "CENATHILA_nonCENATHILA_in_T2T_Col_",
-           paste0(chrName, collapse = "_"), "_mean_RNAseq_sRNAseq_DNAmeth_H3K9me2_ATAC_SPO11_heatmap_colourQuantiles0.0to1.0.pdf"),
+           paste0(chrName, collapse = "_"), "_mean_RNAseq_sRNAseq_DNAmeth_H3K9me2_ATAC_SPO11_heatmap_colourQuantiles0.0to1.0_v200521.pdf"),
     width = 1.5*length(htmps), height = 8)
 draw(htmps,
      heatmap_legend_side = "bottom",
@@ -778,5 +893,5 @@ dev.off()
 
 write.table(tab_extend,
             file = paste0("/home/ajt200/analysis/nanopore/T2T_Col/annotation/TEs/",
-                          "t2t_ATHILA_with_mean_RNA_sRNA_DNAmeth_H3K9me2_ATAC_SPO11_v120521.tsv"),
+                          "t2t_ATHILA_with_mean_RNA_sRNA_DNAmeth_H3K9me2_ATAC_SPO11_v200521.tsv"),
             quote = F, sep = "\t", row.names = F, col.names = T)
