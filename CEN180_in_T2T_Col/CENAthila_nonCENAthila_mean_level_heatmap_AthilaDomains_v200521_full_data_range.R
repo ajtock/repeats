@@ -8,7 +8,7 @@
 # and plot as heatmaps
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CENAthila_nonCENAthila_mean_level_heatmap_AthilaDomains_v200521_full_data_range.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 2000 0 '0kb' 10 5LTR
+# /applications/R/R-4.0.0/bin/Rscript CENAthila_nonCENAthila_mean_level_heatmap_AthilaDomains_v200521_full_data_range.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 2000 0 '0kb' 10 5LTR "5' LTR"
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -19,6 +19,7 @@
 #flankName <- "0kb"
 #Athila_binSize <- 10
 #Athila_domain <- "5LTR"
+#Athila_domain_plot <- "5' LTR"
 
 args <- commandArgs(trailingOnly = T)
 chrName <- unlist(strsplit(args[1],
@@ -30,6 +31,7 @@ downstream <- as.numeric(args[4])
 flankName <- args[5]
 Athila_binSize <- as.numeric(args[6])
 Athila_domain <- args[7]
+Athila_domain_plot <- args[8]
 
 options(stringsAsFactors = F)
 library(parallel)
@@ -148,10 +150,10 @@ colnames(RNA_AthilaMats_bodiesRowSums_mat) <- paste0(RNANamesPlot, "_sum")
 sRNANames <- c(
                "Col_0_sRNA_ERR966148",
                "met1_3_sRNA_ERR966149",
-               "Col_0_sRNA_SRR1042171",
-               "ddm1_2_sRNA_SRR1042172",
-#               "s7_Col_0_sRNA_SRR1042176",
-#               "s8_ddm1_2_sRNA_SRR1042177",
+#               "Col_0_sRNA_SRR1042171",
+#               "ddm1_2_sRNA_SRR1042172",
+               "s7_Col_0_sRNA_SRR1042176",
+               "s8_ddm1_2_sRNA_SRR1042177",
                "Col_0_sRNA_SRR1005417",
                "drm1_drm2_cmt2_cmt3_sRNA_SRR1005420",
                "kss_sRNA_SRR1005421"
@@ -159,10 +161,10 @@ sRNANames <- c(
 sRNANamesDir <- c(
                   "sRNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_sRNAseq_T2T_Col",
                   "sRNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_sRNAseq_T2T_Col",
-                  "sRNAseq_floral_Creasey_Martienssen_2014_Nature/snakemake_sRNAseq_T2T_Col",
-                  "sRNAseq_floral_Creasey_Martienssen_2014_Nature/snakemake_sRNAseq_T2T_Col",
 #                  "sRNAseq_floral_Creasey_Martienssen_2014_Nature/snakemake_sRNAseq_T2T_Col",
 #                  "sRNAseq_floral_Creasey_Martienssen_2014_Nature/snakemake_sRNAseq_T2T_Col",
+                  "sRNAseq_floral_Creasey_Martienssen_2014_Nature/snakemake_sRNAseq_T2T_Col",
+                  "sRNAseq_floral_Creasey_Martienssen_2014_Nature/snakemake_sRNAseq_T2T_Col",
                   "sRNAseq_floral_Stroud_Jacobsen_2014_NSMB/snakemake_sRNAseq_T2T_Col",
                   "sRNAseq_floral_Stroud_Jacobsen_2014_NSMB/snakemake_sRNAseq_T2T_Col",
                   "sRNAseq_floral_Stroud_Jacobsen_2014_NSMB/snakemake_sRNAseq_T2T_Col"
@@ -170,10 +172,10 @@ sRNANamesDir <- c(
 sRNANamesPlot <- c(
                    "wt",
                    "met1",
-                   "wt",
-                   "ddm1",
 #                   "wt",
 #                   "ddm1",
+                   "wt",
+                   "ddm1",
                    "wt",
                    "ddcc",
                    "kss"
@@ -773,8 +775,8 @@ fam_htmp <- Heatmap(mat = matrix(tab_extend$phylo),
                     heatmap_legend_param = list(title = "Family",
                                                 title_position = "topcenter",
                                                 title_gp = gpar(font = 2, fontsize = 12),
-                                                legend_direction = "horizontal",
-                                                nrow = 2,
+                                                legend_direction = "vertical",
+                                                nrow = length(unique(as.character(tab_extend$phylo))),
                                                 labels_gp = gpar(fontsize = 10)),
                     heatmap_width = unit(10, "mm"),
                     heatmap_height = unit(4, "npc"),
@@ -807,8 +809,8 @@ reg_htmp <- Heatmap(mat = matrix(tab_extend$phylo),
                     heatmap_legend_param = list(title = "Region",
                                                 title_position = "topcenter",
                                                 title_gp = gpar(font = 2, fontsize = 12),
-                                                legend_direction = "horizontal",
-                                                nrow = 2,
+                                                legend_direction = "vertical",
+                                                nrow = length(unique(as.character(tab_extend$phylo))),
                                                 labels_gp = gpar(fontsize = 10)),
                     heatmap_width = unit(10, "mm"),
                     heatmap_height = unit(4, "npc"),
@@ -829,10 +831,22 @@ htmps <- RNA_htmp + sRNA_21nt_htmp + sRNA_22nt_htmp + sRNA_24nt_htmp + CpG_htmp 
 pdf(paste0(plotDir,
            "CENATHILA_nonCENATHILA_", Athila_domain, "_in_T2T_Col_",
            paste0(chrName, collapse = "_"), "_mean_RNAseq_sRNAseq_DNAmeth_H3K9me2_ATAC_SPO11_heatmap_colourQuantiles0.0to1.0_v200521.pdf"),
-    width = 1.5*length(htmps), height = 8)
+    width = 1.5*length(htmps), height = 10)
+if(Athila_domain %in% c("5LTR", "IQ2", "IQ4")) {
+  legendGap <- unit(14, "mm")
+} else if(Athila_domain %in% c("3LTR")) {
+  legendGap <- unit(16, "mm")
+} else if(Athila_domain %in% c("IQ1")) {
+  legendGap <- unit(12, "mm")
+} else if(Athila_domain %in% c("IQ3")) {
+  legendGap <- unit(18, "mm")
+}
 draw(htmps,
+     gap = unit(1, "mm"),
+     column_title = paste0("ATHILA ", Athila_domain_plot),
+     column_title_gp = gpar(font = 2, fontsize = 16),
      heatmap_legend_side = "bottom",
-     gap = unit(c(1), "mm"))
+     legend_gap = legendGap) 
 dev.off()
 
 write.table(tab_extend,
