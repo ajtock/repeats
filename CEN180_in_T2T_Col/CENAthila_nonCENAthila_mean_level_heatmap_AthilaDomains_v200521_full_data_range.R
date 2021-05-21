@@ -89,16 +89,16 @@ RNANamesDir <- c(
                  "RNAseq_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_RNAseq_STAR_T2T_Col"
                 )
 RNANamesPlot <- c(
-                  "wt_RNA",
+                  "WT_RNA",
                   "met1_RNA",
-                  "wt_RNA_Rep1",
-                  "wt_RNA_Rep2",
-                  "wt_RNA_Rep3",
+                  "WT_RNA_Rep1",
+                  "WT_RNA_Rep2",
+                  "WT_RNA_Rep3",
                   "ddm1_RNA_Rep1",
                   "ddm1_RNA_Rep2",
                   "ddm1_RNA_Rep3",
-                  "wt_RNA_Rep1",
-                  "wt_RNA_Rep2",
+                  "WT_RNA_Rep1",
+                  "WT_RNA_Rep2",
                   "ddcc_RNA_Rep1",
                   "ddcc_RNA_Rep2",
                   "kss_RNA_Rep1",
@@ -170,13 +170,13 @@ sRNANamesDir <- c(
                   "sRNAseq_floral_Stroud_Jacobsen_2014_NSMB/snakemake_sRNAseq_T2T_Col"
                  )
 sRNANamesPlot <- c(
-                   "wt",
+                   "WT",
                    "met1",
-#                   "wt",
+#                   "WT",
 #                   "ddm1",
-                   "wt",
+                   "WT",
                    "ddm1",
-                   "wt",
+                   "WT",
                    "ddcc",
                    "kss"
                   )
@@ -256,13 +256,13 @@ DNAmethNamesDir <- c(
                      "BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_T2T_Col"
                     )
 DNAmethNamesPlot <- c(
-                      "wt_Rep1_PE",
-                      "wt_Rep2_PE",
+                      "WT_Rep1_PE",
+                      "WT_Rep2_PE",
                       "met1_Rep1_PE",
                       "met1_Rep2_PE",
-                      "wt_Rep1_SE",
-                      "wt_Rep2_SE",
-                      "wt_Rep3_SE",
+                      "WT_Rep1_SE",
+                      "WT_Rep2_SE",
+                      "WT_Rep3_SE",
                       "met1_SE",
                       "ddm1_SE",
                       "ddcc_SE",
@@ -348,14 +348,14 @@ H3K9me2NamesDir <- c(
                      "H3K9me2_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_ChIPseq_T2T_Col"
                     )
 H3K9me2NamesPlot <- c(
-                      "wt_H3K9me2",
+                      "WT_H3K9me2",
                       "met1_H3K9me2",
-                      "wt_H3K9me2_Rep1",
-                      "wt_H3K9me2_Rep2",
+                      "WT_H3K9me2_Rep1",
+                      "WT_H3K9me2_Rep2",
                       "ddm1_H3K9me2_Rep1",
                       "ddm1_H3K9me2_Rep2",
-                      "wt_H3K9me2_Rep1",
-                      "wt_H3K9me2_Rep2",
+                      "WT_H3K9me2_Rep1",
+                      "WT_H3K9me2_Rep2",
                       "ddcc_H3K9me2_Rep1",
                       "ddcc_H3K9me2_Rep2",
                       "kss_H3K9me2_Rep1",
@@ -430,10 +430,10 @@ ATACNamesDir <- c(
                   "ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col"
                  )
 ATACNamesPlot <- c(
-                   "wt_ATAC_Rep1",
-                   "wt_ATAC_Rep2",
-                   "wt_ATAC_Rep3",
-                   "wt_ATAC_Rep4",
+                   "WT_ATAC_Rep1",
+                   "WT_ATAC_Rep2",
+                   "WT_ATAC_Rep3",
+                   "WT_ATAC_Rep4",
                    "met1_ATAC_Rep1",
                    "met1_ATAC_Rep2",
                    "ddm1_ATAC_Rep1",
@@ -506,9 +506,9 @@ SPO11NamesDir <- c(
                    "160518_Kyuha_SPO11oligos/kss/snakemake_SPO11oligos_T2T_Col"
                   )
 SPO11NamesPlot <- c(
-                    "wt_SPO11_Rep1",
-                    "wt_SPO11_Rep2",
-                    "wt_SPO11_Rep3",
+                    "WT_SPO11_Rep1",
+                    "WT_SPO11_Rep2",
+                    "WT_SPO11_Rep3",
                     "met1_SPO11_Rep1",
                     "met1_SPO11_Rep2",
                     "met1_SPO11_Rep3",
