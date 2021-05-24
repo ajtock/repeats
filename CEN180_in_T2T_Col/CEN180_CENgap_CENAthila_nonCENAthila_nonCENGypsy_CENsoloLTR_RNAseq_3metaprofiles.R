@@ -9,9 +9,7 @@
 # for all CEN180 sequences, CENgap, CENAthila, nonCENAthila, nonCENGypsy, CENsoloLTR and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_RNAseq_2metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.96' 'WT_RNAseq_Rep1,met1_RNAseq_Rep1' '160601_Kyuha_RNAseq/snakemake_RNAseq_STAR_T2T_Col,160601_Kyuha_RNAseq/snakemake_RNAseq_STAR_T2T_Col' 'WT (Choi et al. 2018),met1-3 (Choi et al. 2018)' 'springgreen2,magenta'
-
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_RNAseq_2metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.96' 'Col_0_RNAseq_Rep1_SRR11780903,ddm1_RNAseq_Rep1_SRR11780906' 'RNAseq_leaf_Osakabe_Berger_2021_NCB/snakemake_RNAseq_STAR_T2T_Col,RNAseq_leaf_Osakabe_Berger_2021_NCB/snakemake_RNAseq_STAR_T2T_Col' 'WT (Osakabe et al. 2021),ddm1 (Osakabe et al. 2021)' 'forestgreen,purple4'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_RNAseq_3metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.96' 'Col_0_RNAseq_Rep1_SRR1005385,drm1_drm2_cmt2_cmt3_RNAseq_Rep1_SRR1005399,kss_RNAseq_Rep1_SRR1005401' 'RNAseq_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_RNAseq_STAR_T2T_Col,RNAseq_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_RNAseq_STAR_T2T_Col,RNAseq_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_RNAseq_STAR_T2T_Col' 'WT (Stroud et al. 2014),ddcc (Stroud et al. 2014),kss (Stroud et al. 2014)' 'darkgreen,blue,deepskyblue'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -541,6 +539,7 @@ labs(x = "",
      y = bquote(.(yLabPlot))) +
 annotation_custom(legendLabs[[1]]) +
 annotation_custom(legendLabs[[2]]) +
+annotation_custom(legendLabs[[3]]) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -1132,6 +1131,7 @@ labs(x = "",
      y = bquote("Log"[2] * "(" * .(yLabPlot) * ")")) +
 annotation_custom(legendLabs[[1]]) +
 annotation_custom(legendLabs[[2]]) +
+annotation_custom(legendLabs[[3]]) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
