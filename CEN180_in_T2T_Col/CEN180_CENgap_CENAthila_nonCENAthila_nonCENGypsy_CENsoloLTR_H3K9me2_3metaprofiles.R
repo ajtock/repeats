@@ -9,9 +9,7 @@
 # for all CEN180 sequences, CENgap, CENAthila, nonCENGypsy, CENsoloLTR and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_ATACseq_4metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.96' 'Col_0_ATACseq_Rep1_SRR12362020,Col_0_ATACseq_Rep2_SRR12362021,met1_3_ATACseq_Rep1_SRR12362042,met1_3_ATACseq_Rep2_SRR12362043' 'ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col' 'WT Rep1,WT Rep2,met1-3 Rep1,met1-3 Rep2' 'springgreen2,forestgreen,magenta,purple4' 'ATAC-seq'
-
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_ATACseq_4metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.96' 'Col_0_ATACseq_Rep1_SRR12362020,met1_3_ATACseq_Rep1_SRR12362042,ddm1_ATACseq_Rep1_SRR12362026,drm1_drm2_cmt2_cmt3_ATACseq_Rep1_SRR12362024' 'ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col' 'WT,met1-3,ddm1,ddcc' 'springgreen2,magenta,purple4,blue' 'ATAC-seq'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_H3K9me2_3metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.96' 'Col_0_H3K9me2_Rep1_ChIP_SRR1005404,drm1_drm2_cmt2_cmt3_H3K9me2_Rep1_ChIP_SRR1005407,kss_H3K9me2_Rep1_ChIP_SRR1005410' 'H3K9me2_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_ChIPseq_T2T_Col,H3K9me2_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_ChIPseq_T2T_Col,H3K9me2_leaf_Stroud_Jacobsen_2014_NSMB/snakemake_ChIPseq_T2T_Col' 'WT (Stroud et al. 2014),ddcc (Stroud et al. 2014),kss (Stroud et al. 2014)' 'darkgreen,blue,deepskyblue' 'H3K9me2 ChIP'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -38,13 +36,13 @@
 ## bottom left
 #legendPos <- as.numeric(unlist(strsplit("0.02,0.40",
 #                                        split = ",")))
-#ChIPNames <- unlist(strsplit("Col_0_ATACseq_Rep1_SRR12362020,Col_0_ATACseq_Rep2_SRR12362021,met1_3_ATACseq_Rep1_SRR12362042,met1_3_ATACseq_Rep2_SRR12362043",
+#ChIPNames <- unlist(strsplit("Col_0_H3K9me2_ChIP_SRR8180349,met1_6_H3K9me2_ChIP_SRR8180350",
 #                             split = ","))
-#ChIPNamesDir <- unlist(strsplit("ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col,ATACseq_floral_Zhong_Jacobsen_2021_PNAS/snakemake_ATACseq_T2T_Col",
+#ChIPNamesDir <- unlist(strsplit("H3K9me2_seedling_Choi_Zilberman_2020_MolCell/snakemake_ChIPseq_T2T_Col,H3K9me2_seedling_Choi_Zilberman_2020_MolCell/snakemake_ChIPseq_T2T_Col",
 #                                split = ","))
-#ChIPNamesPlot <- unlist(strsplit("WT Rep1,WT Rep2,met1-3 Rep1,met1-3 Rep2",
+#ChIPNamesPlot <- unlist(strsplit("wt,met1",
 #                                 split = ","))
-#ChIPColours <- unlist(strsplit("springgreen2,forestgreen,magenta,purple4",
+#ChIPColours <- unlist(strsplit("springgreen2,magenta",
 #                               split = ","))
 #yLabPlot <- "H3K9me2 ChIP"
 
@@ -134,8 +132,8 @@ controlNamesDir <- c(
                      "H3K9me2_seedling_Choi_Zilberman_2020_MolCell/snakemake_ChIPseq_T2T_Col"
                     )
 controlNamesPlot <- c(
-                      "WT input",
-                      "met1-6 input"
+                      "wt input",
+                      "met1 input"
                      )
 controlColours <- c(
                     rep("red", length(controlNamesPlot))
@@ -802,11 +800,10 @@ control_soloLTRMats <- mclapply(seq_along(control_soloLTRMats), function(x) {
 #           linetype = "dashed",
 #           size = 1) +
 #labs(x = "",
-#     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+#     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/input)")) +
 #annotation_custom(legendLabs[[1]]) +
 #annotation_custom(legendLabs[[2]]) +
 #annotation_custom(legendLabs[[3]]) +
-#annotation_custom(legendLabs[[4]]) +
 #theme_bw() +
 #theme(
 #      axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -1100,7 +1097,7 @@ control_soloLTRMats <- mclapply(seq_along(control_soloLTRMats), function(x) {
 #                                                      ))
 #ggsave(paste0(plotDir,
 #              "log2ChIPcontrol_",
-#              log2ChIPNames[1], "_", log2ChIPNames[3],
+#              log2ChIPNames[1], "_", log2ChIPNames[length(log2ChIPNames)],
 #              "_avgProfiles_around",
 #              "_CEN180_ranLoc_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
 #              paste0(chrName, collapse = "_"), "_", align, "_v210521.pdf"),
@@ -1377,7 +1374,6 @@ labs(x = "",
 annotation_custom(legendLabs[[1]]) +
 annotation_custom(legendLabs[[2]]) +
 annotation_custom(legendLabs[[3]]) +
-annotation_custom(legendLabs[[4]]) +
 theme_bw() +
 theme(
       axis.ticks = element_line(size = 1.0, colour = "black"),
@@ -1671,7 +1667,7 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                                       ))
 ggsave(paste0(plotDir,
               "ChIP_",
-              ChIPNames[1], "_", ChIPNames[3],
+              ChIPNames[1], "_", ChIPNames[length(ChIPNames)],
               "_avgProfiles_around",
               "_CEN180_ranLoc_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
               paste0(chrName, collapse = "_"), "_", align, "_v210521.pdf"),
@@ -2240,7 +2236,7 @@ ggsave(paste0(plotDir,
 #                                                      ))
 #ggsave(paste0(plotDir,
 #              "control_",
-#              paste0(controlNames, collapse = "_"),
+#              controlNames[1], "_", controlNames[length(controlNames)],
 #              "_avgProfiles_around",
 #              "_CEN180_ranLoc_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
 #              paste0(chrName, collapse = "_"), "_", align, "_v210521.pdf"),

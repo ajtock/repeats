@@ -9,7 +9,9 @@
 # for all CEN180 sequences, CENgap, CENAthila, nonCENGypsy, CENsoloLTR and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_H3K9me2_2metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.96' 'Col_0_H3K9me2_ChIP_SRR8180349,met1_6_H3K9me2_ChIP_SRR8180350' 'H3K9me2_seedling_Choi_Zilberman_2020_MolCell/snakemake_ChIPseq_T2T_Col,H3K9me2_seedling_Choi_Zilberman_2020_MolCell/snakemake_ChIPseq_T2T_Col' 'wt,met1' 'springgreen2,magenta' 'H3K9me2 ChIP'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_H3K9me2_2metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.96' 'Col_0_H3K9me2_ChIP_SRR8180349,met1_6_H3K9me2_ChIP_SRR8180350' 'H3K9me2_seedling_Choi_Zilberman_2020_MolCell/snakemake_ChIPseq_T2T_Col,H3K9me2_seedling_Choi_Zilberman_2020_MolCell/snakemake_ChIPseq_T2T_Col' 'WT (Choi et al. 2020),met1-6 (Choi et al. 2020)' 'springgreen2,magenta' 'H3K9me2 ChIP'
+
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_H3K9me2_2metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.96' 'Col_0_H3K9me2_Rep1_ChIP_SRR11780913,ddm1_H3K9me2_Rep1_ChIP_SRR11780918' 'H3K9me2_leaf_Osakabe_Berger_2021_NCB/snakemake_ChIPseq_T2T_Col,H3K9me2_leaf_Osakabe_Berger_2021_NCB/snakemake_ChIPseq_T2T_Col' 'WT (Osakabe et al. 2021),ddm1 (Osakabe et al. 2021)' 'forestgreen,purple4' 'H3K9me2 ChIP'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -442,665 +444,666 @@ control_soloLTRMats <- mclapply(seq_along(control_soloLTRMats), function(x) {
   }
 }, mc.cores = length(control_soloLTRMats))
 
-# Conditionally calculate log2(ChIP/control)
-# for each matrix depending on library
-# feature
-log2ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
-  if ( grepl("Col", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[1]]+1))
-  } else if ( grepl("met1", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[2]]+1))
-  }
-}, mc.cores = length(ChIP_featureMats))
 
-# Conditionally calculate log2(ChIP/control)
-# for each matrix depending on library
-# ranLoc
-log2ChIP_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
-  if ( grepl("Col", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[1]]+1))
-  } else if ( grepl("met1", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[2]]+1))
-  }
-}, mc.cores = length(ChIP_ranLocMats))
-
-# Conditionally calculate log2(ChIP/control)
-# for each matrix depending on library
-# gap
-log2ChIP_gapMats <- mclapply(seq_along(ChIP_gapMats), function(x) {
-  if ( grepl("Col", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_gapMats[[x]]+1)/(control_gapMats[[1]]+1))
-  } else if ( grepl("met1", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_gapMats[[x]]+1)/(control_gapMats[[2]]+1))
-  }
-}, mc.cores = length(ChIP_gapMats))
-
-# Conditionally calculate log2(ChIP/control)
-# for each matrix depending on library
-# Athila
-log2ChIP_AthilaMats <- mclapply(seq_along(ChIP_AthilaMats), function(x) {
-  if ( grepl("Col", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_AthilaMats[[x]]+1)/(control_AthilaMats[[1]]+1))
-  } else if ( grepl("met1", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_AthilaMats[[x]]+1)/(control_AthilaMats[[2]]+1))
-  }
-}, mc.cores = length(ChIP_AthilaMats))
-
-# Conditionally calculate log2(ChIP/control)
-# for each matrix depending on library
-# nonCENAthila
-log2ChIP_nonCENAthilaMats <- mclapply(seq_along(ChIP_nonCENAthilaMats), function(x) {
-  if ( grepl("Col", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_nonCENAthilaMats[[x]]+1)/(control_nonCENAthilaMats[[1]]+1))
-  } else if ( grepl("met1", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_nonCENAthilaMats[[x]]+1)/(control_nonCENAthilaMats[[2]]+1))
-  }
-}, mc.cores = length(ChIP_nonCENAthilaMats))
-
-# Conditionally calculate log2(ChIP/control)
-# for each matrix depending on library
-# TEsf
-log2ChIP_TEsfMats <- mclapply(seq_along(ChIP_TEsfMats), function(x) {
-  if ( grepl("Col", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_TEsfMats[[x]]+1)/(control_TEsfMats[[1]]+1))
-  } else if ( grepl("met1", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_TEsfMats[[x]]+1)/(control_TEsfMats[[2]]+1))
-  }
-}, mc.cores = length(ChIP_TEsfMats))
-
-# Conditionally calculate log2(ChIP/control)
-# for each matrix depending on library
-# soloLTR
-log2ChIP_soloLTRMats <- mclapply(seq_along(ChIP_soloLTRMats), function(x) {
-  if ( grepl("Col", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_soloLTRMats[[x]]+1)/(control_soloLTRMats[[1]]+1))
-  } else if ( grepl("met1", ChIPNames[x]) ) {
-    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
-    log2((ChIP_soloLTRMats[[x]]+1)/(control_soloLTRMats[[2]]+1))
-  }
-}, mc.cores = length(ChIP_soloLTRMats))
-
-
-# log2ChIP
-# Add column names
-for(x in seq_along(log2ChIP_featureMats)) {
-  colnames(log2ChIP_featureMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                       paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                       paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
-  colnames(log2ChIP_ranLocMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                      paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                      paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
-  colnames(log2ChIP_gapMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                   paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                   paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-  colnames(log2ChIP_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-  colnames(log2ChIP_nonCENAthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-  colnames(log2ChIP_TEsfMats[[x]]) <- c(paste0("u", 1:(upstream/binSize)),
-                                    paste0("t", ((upstream/binSize)+1):((upstream+TEsf_bodyLength)/binSize)),
-                                    paste0("d", (((upstream+TEsf_bodyLength)/binSize)+1):(((upstream+TEsf_bodyLength)/binSize)+(downstream/binSize))))
-  colnames(log2ChIP_soloLTRMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                    paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                    paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-}
-
-# Create list of lists in which each element in the enclosing list corresponds to a library
-# and the two elements in the nested list correspond to coverage matrices for features and random loci
-log2ChIP_mats <- mclapply(seq_along(log2ChIP_featureMats), function(x) {
-  list(
-       # features
-       log2ChIP_featureMats[[x]],
-       # ranLocs
-       log2ChIP_ranLocMats[[x]],
-       # gaps
-       log2ChIP_gapMats[[x]],
-       # Athilas
-       log2ChIP_AthilaMats[[x]],
-       # nonCENAthilas
-       log2ChIP_nonCENAthilaMats[[x]],
-       # TEsfs
-       log2ChIP_TEsfMats[[x]],
-       # soloLTRs
-       log2ChIP_soloLTRMats[[x]]
-      )
-}, mc.cores = length(log2ChIP_featureMats))
-
-# Transpose matrix and convert into dataframe
-# in which first column is window name
-wideDFfeature_list_log2ChIP <- mclapply(seq_along(log2ChIP_mats), function(x) {
-  lapply(seq_along(log2ChIP_mats[[x]]), function(y) {
-    data.frame(window = colnames(log2ChIP_mats[[x]][[y]]),
-               t(log2ChIP_mats[[x]][[y]]))
-  })
-}, mc.cores = length(log2ChIP_mats))
-
-# Convert into tidy data.frame (long format)
-tidyDFfeature_list_log2ChIP  <- mclapply(seq_along(wideDFfeature_list_log2ChIP), function(x) {
-  lapply(seq_along(log2ChIP_mats[[x]]), function(y) {
-    gather(data  = wideDFfeature_list_log2ChIP[[x]][[y]],
-           key   = feature,
-           value = coverage,
-           -window)
-  }) 
-}, mc.cores = length(wideDFfeature_list_log2ChIP))
-
-# Order levels of factor "window" so that sequential levels
-# correspond to sequential windows
-for(x in seq_along(tidyDFfeature_list_log2ChIP)) {
-  for(y in seq_along(log2ChIP_mats[[x]])) {
-    tidyDFfeature_list_log2ChIP[[x]][[y]]$window <- factor(tidyDFfeature_list_log2ChIP[[x]][[y]]$window,
-                                                           levels = as.character(wideDFfeature_list_log2ChIP[[x]][[y]]$window))
-  }
-}
-
-# Create summary data.frame in which each row corresponds to a window (Column 1),
-# Column2 is the number of coverage values (features) per window,
-# Column3 is the mean of coverage values per window,
-# Column4 is the standard deviation of coverage values per window,
-# Column5 is the standard error of the mean of coverage values per window,
-# Column6 is the lower bound of the 95% confidence interval, and
-# Column7 is the upper bound of the 95% confidence interval
-summaryDFfeature_list_log2ChIP  <- mclapply(seq_along(tidyDFfeature_list_log2ChIP), function(x) {
-  lapply(seq_along(log2ChIP_mats[[x]]), function(y) {
-    data.frame(window = as.character(wideDFfeature_list_log2ChIP[[x]][[y]]$window),
-               n      = tapply(X     = tidyDFfeature_list_log2ChIP[[x]][[y]]$coverage,
-                               INDEX = tidyDFfeature_list_log2ChIP[[x]][[y]]$window,
-                               FUN   = length),
-               mean   = tapply(X     = tidyDFfeature_list_log2ChIP[[x]][[y]]$coverage,
-                               INDEX = tidyDFfeature_list_log2ChIP[[x]][[y]]$window,
-                               FUN   = mean,
-                               na.rm = TRUE),
-               sd     = tapply(X     = tidyDFfeature_list_log2ChIP[[x]][[y]]$coverage,
-                               INDEX = tidyDFfeature_list_log2ChIP[[x]][[y]]$window,
-                               FUN   = sd,
-                               na.rm = TRUE))
-  })
-}, mc.cores = length(tidyDFfeature_list_log2ChIP))
-
-for(x in seq_along(summaryDFfeature_list_log2ChIP)) {
-  for(y in seq_along(log2ChIP_mats[[x]])) {
-    summaryDFfeature_list_log2ChIP[[x]][[y]]$window <- factor(summaryDFfeature_list_log2ChIP[[x]][[y]]$window,
-                                                              levels = as.character(wideDFfeature_list_log2ChIP[[x]][[y]]$window))
-    summaryDFfeature_list_log2ChIP[[x]][[y]]$winNo <- factor(1:dim(summaryDFfeature_list_log2ChIP[[x]][[y]])[1])
-    summaryDFfeature_list_log2ChIP[[x]][[y]]$sem <- summaryDFfeature_list_log2ChIP[[x]][[y]]$sd/sqrt(summaryDFfeature_list_log2ChIP[[x]][[y]]$n-1)
-    summaryDFfeature_list_log2ChIP[[x]][[y]]$CI_lower <- summaryDFfeature_list_log2ChIP[[x]][[y]]$mean -
-      qt(0.975, df = summaryDFfeature_list_log2ChIP[[x]][[y]]$n-1)*summaryDFfeature_list_log2ChIP[[x]][[y]]$sem
-    summaryDFfeature_list_log2ChIP[[x]][[y]]$CI_upper <- summaryDFfeature_list_log2ChIP[[x]][[y]]$mean +
-      qt(0.975, df = summaryDFfeature_list_log2ChIP[[x]][[y]]$n-1)*summaryDFfeature_list_log2ChIP[[x]][[y]]$sem
-  }
-}
-
-# Convert list of lists summaryDFfeature_list_log2ChIP into
-# a list of single data.frames containing all meta-profiles for plotting
-featureTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
-  summaryDFfeature_list_log2ChIP[[x]][[1]]
-})
-ranLocTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
-  summaryDFfeature_list_log2ChIP[[x]][[2]]
-})
-gapTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
-  summaryDFfeature_list_log2ChIP[[x]][[3]]
-})
-AthilaTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
-  summaryDFfeature_list_log2ChIP[[x]][[4]]
-})
-nonCENAthilaTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
-  summaryDFfeature_list_log2ChIP[[x]][[5]]
-})
-TEsfTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
-  summaryDFfeature_list_log2ChIP[[x]][[6]]
-})
-soloLTRTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
-  summaryDFfeature_list_log2ChIP[[x]][[7]]
-})
-names(featureTmp) <- log2ChIPNamesPlot
-names(ranLocTmp) <- log2ChIPNamesPlot
-names(gapTmp) <- log2ChIPNamesPlot
-names(AthilaTmp) <- log2ChIPNamesPlot
-names(nonCENAthilaTmp) <- log2ChIPNamesPlot
-names(TEsfTmp) <- log2ChIPNamesPlot
-names(soloLTRTmp) <- log2ChIPNamesPlot
-summaryDFfeature_log2ChIP <- list(
-  bind_rows(featureTmp, .id = "libName"),
-  bind_rows(ranLocTmp, .id = "libName"),
-  bind_rows(gapTmp, .id = "libName"),
-  bind_rows(AthilaTmp, .id = "libName"),
-  bind_rows(nonCENAthilaTmp, .id = "libName"),
-  bind_rows(TEsfTmp, .id = "libName"),
-  bind_rows(soloLTRTmp, .id = "libName")
-)
-for(x in seq_along(summaryDFfeature_log2ChIP)) {
-  summaryDFfeature_log2ChIP[[x]]$libName <- factor(summaryDFfeature_log2ChIP[[x]]$libName,
-                                                   levels = log2ChIPNamesPlot)
-}
-
-# Define y-axis limits
-ymin_log2ChIP <- min(c(summaryDFfeature_log2ChIP[[1]]$CI_lower,
-                       summaryDFfeature_log2ChIP[[2]]$CI_lower,
-                       summaryDFfeature_log2ChIP[[3]]$CI_lower,
-                       summaryDFfeature_log2ChIP[[4]]$CI_lower,
-                       summaryDFfeature_log2ChIP[[5]]$CI_lower,
-                       summaryDFfeature_log2ChIP[[6]]$CI_lower,
-                       summaryDFfeature_log2ChIP[[7]]$CI_lower),
-                 na.rm = T)
-ymax_log2ChIP <- max(c(summaryDFfeature_log2ChIP[[1]]$CI_upper,
-                       summaryDFfeature_log2ChIP[[2]]$CI_upper,
-                       summaryDFfeature_log2ChIP[[3]]$CI_upper,
-                       summaryDFfeature_log2ChIP[[4]]$CI_upper,
-                       summaryDFfeature_log2ChIP[[5]]$CI_upper,
-                       summaryDFfeature_log2ChIP[[6]]$CI_upper,
-                       summaryDFfeature_log2ChIP[[7]]$CI_upper),
-                 na.rm = T)
-
-# Define legend labels
-legendLabs <- lapply(seq_along(log2ChIPNamesPlot), function(x) {
-  grobTree(textGrob(bquote(.(log2ChIPNamesPlot[x])),
-                    x = legendPos[1], y = legendPos[2]-((x-1)*0.06), just = "left",
-                    gp = gpar(col = log2ChIPColours[x], fontsize = 18)))
-})
-
-# Plot average profiles with 95% CI ribbon
+## Conditionally calculate log2(ChIP/control)
+## for each matrix depending on library
 ## feature
-summaryDFfeature <- summaryDFfeature_log2ChIP[[1]]
-ggObj1_combined_log2ChIP <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = log2ChIPColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = log2ChIPColours) +
-scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            ((upstream-1000)/binSize)+1,
-                            (dim(summaryDFfeature_log2ChIP[[1]])[1]/length(log2ChIPNames))-((downstream-1000)/binSize),
-                            dim(summaryDFfeature_log2ChIP[[1]])[1]/length(log2ChIPNames)),
-                 labels = c(paste0("-", "1kb"),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", "1kb"))) +
-geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
-                          (dim(summaryDFfeature_log2ChIP[[1]])[1]/length(log2ChIPNames))-((downstream-1000)/binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(featureNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
+#log2ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
+#  if ( grepl("Col", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[1]]+1))
+#  } else if ( grepl("met1", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[2]]+1))
+#  }
+#}, mc.cores = length(ChIP_featureMats))
+#
+## Conditionally calculate log2(ChIP/control)
+## for each matrix depending on library
 ## ranLoc
-summaryDFfeature <- summaryDFfeature_log2ChIP[[2]]
-ggObj2_combined_log2ChIP <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = log2ChIPColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = log2ChIPColours) +
-scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            ((upstream-1000)/binSize)+1,
-                            (dim(summaryDFfeature_log2ChIP[[2]])[1]/length(log2ChIPNames))-((downstream-1000)/binSize),
-                            dim(summaryDFfeature_log2ChIP[[2]])[1]/length(log2ChIPNames)),
-                 labels = c(paste0("-", "1kb"),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", "1kb"))) +
-geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
-                          (dim(summaryDFfeature_log2ChIP[[2]])[1]/length(log2ChIPNames))-((downstream-1000)/binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
-annotation_custom(legendLabs[[1]]) +
-annotation_custom(legendLabs[[2]]) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(ranLocNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
+#log2ChIP_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
+#  if ( grepl("Col", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[1]]+1))
+#  } else if ( grepl("met1", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[2]]+1))
+#  }
+#}, mc.cores = length(ChIP_ranLocMats))
+#
+## Conditionally calculate log2(ChIP/control)
+## for each matrix depending on library
 ## gap
-summaryDFfeature <- summaryDFfeature_log2ChIP[[3]]
-ggObj3_combined_log2ChIP <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = log2ChIPColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = log2ChIPColours) +
-scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_log2ChIP[[3]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_log2ChIP[[3]])[1]/length(log2ChIPNames)),
-                 labels = c(paste0("-", flankName),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_log2ChIP[[3]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(gapNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
+#log2ChIP_gapMats <- mclapply(seq_along(ChIP_gapMats), function(x) {
+#  if ( grepl("Col", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_gapMats[[x]]+1)/(control_gapMats[[1]]+1))
+#  } else if ( grepl("met1", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_gapMats[[x]]+1)/(control_gapMats[[2]]+1))
+#  }
+#}, mc.cores = length(ChIP_gapMats))
+#
+## Conditionally calculate log2(ChIP/control)
+## for each matrix depending on library
 ## Athila
-summaryDFfeature <- summaryDFfeature_log2ChIP[[4]]
-ggObj4_combined_log2ChIP <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = log2ChIPColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = log2ChIPColours) +
-scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_log2ChIP[[4]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_log2ChIP[[4]])[1]/length(log2ChIPNames)),
-                 labels = c(paste0("-", flankName),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_log2ChIP[[4]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(AthilaNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
+#log2ChIP_AthilaMats <- mclapply(seq_along(ChIP_AthilaMats), function(x) {
+#  if ( grepl("Col", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_AthilaMats[[x]]+1)/(control_AthilaMats[[1]]+1))
+#  } else if ( grepl("met1", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_AthilaMats[[x]]+1)/(control_AthilaMats[[2]]+1))
+#  }
+#}, mc.cores = length(ChIP_AthilaMats))
+#
+## Conditionally calculate log2(ChIP/control)
+## for each matrix depending on library
 ## nonCENAthila
-summaryDFfeature <- summaryDFfeature_log2ChIP[[5]]
-ggObj5_combined_log2ChIP <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = log2ChIPColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = log2ChIPColours) +
-scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_log2ChIP[[5]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_log2ChIP[[5]])[1]/length(log2ChIPNames)),
-                 labels = c(paste0("-", flankName),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_log2ChIP[[5]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(nonCENAthilaNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
+#log2ChIP_nonCENAthilaMats <- mclapply(seq_along(ChIP_nonCENAthilaMats), function(x) {
+#  if ( grepl("Col", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_nonCENAthilaMats[[x]]+1)/(control_nonCENAthilaMats[[1]]+1))
+#  } else if ( grepl("met1", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_nonCENAthilaMats[[x]]+1)/(control_nonCENAthilaMats[[2]]+1))
+#  }
+#}, mc.cores = length(ChIP_nonCENAthilaMats))
+#
+## Conditionally calculate log2(ChIP/control)
+## for each matrix depending on library
 ## TEsf
-summaryDFfeature <- summaryDFfeature_log2ChIP[[6]]
-ggObj6_combined_log2ChIP <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = log2ChIPColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = log2ChIPColours) +
-scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            (upstream/binSize)+1,
-                            (dim(summaryDFfeature_log2ChIP[[6]])[1]/length(log2ChIPNames))-(downstream/binSize),
-                            dim(summaryDFfeature_log2ChIP[[6]])[1]/length(log2ChIPNames)),
-                 labels = c(paste0("-", flankName),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/binSize)+1,
-                          (dim(summaryDFfeature_log2ChIP[[6]])[1]/length(log2ChIPNames))-(downstream/binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(TEsfNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
+#log2ChIP_TEsfMats <- mclapply(seq_along(ChIP_TEsfMats), function(x) {
+#  if ( grepl("Col", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_TEsfMats[[x]]+1)/(control_TEsfMats[[1]]+1))
+#  } else if ( grepl("met1", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_TEsfMats[[x]]+1)/(control_TEsfMats[[2]]+1))
+#  }
+#}, mc.cores = length(ChIP_TEsfMats))
+#
+## Conditionally calculate log2(ChIP/control)
+## for each matrix depending on library
 ## soloLTR
-summaryDFfeature <- summaryDFfeature_log2ChIP[[7]]
-ggObj7_combined_log2ChIP <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = log2ChIPColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = log2ChIPColours) +
-scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_log2ChIP[[7]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_log2ChIP[[7]])[1]/length(log2ChIPNames)),
-                 labels = c(paste0("-", flankName),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_log2ChIP[[7]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(soloLTRNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
-ggObjGA_combined <- grid.arrange(grobs = list(
-                                              ggObj1_combined_log2ChIP,
-                                              ggObj2_combined_log2ChIP,
-                                              ggObj3_combined_log2ChIP,
-                                              ggObj4_combined_log2ChIP,
-                                              ggObj5_combined_log2ChIP,
-                                              ggObj6_combined_log2ChIP,
-                                              ggObj7_combined_log2ChIP
-                                             ),
-                                 layout_matrix = cbind(
-                                                       1,
-                                                       2,
-                                                       3,
-                                                       4,
-                                                       5,
-                                                       6,
-                                                       7
-                                                      ))
-ggsave(paste0(plotDir,
-              "log2ChIPcontrol_",
-              paste0(log2ChIPNames, collapse = "_"),
-              "_avgProfiles_around",
-              "_CEN180_ranLoc_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
-              paste0(chrName, collapse = "_"), "_", align, ".pdf"),
-       plot = ggObjGA_combined,
-       height = 6.5, width = 7*7, limitsize = FALSE)
+#log2ChIP_soloLTRMats <- mclapply(seq_along(ChIP_soloLTRMats), function(x) {
+#  if ( grepl("Col", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[1], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_soloLTRMats[[x]]+1)/(control_soloLTRMats[[1]]+1))
+#  } else if ( grepl("met1", ChIPNames[x]) ) {
+#    print(paste0(ChIPNames[x], " library; using ", controlNames[2], " for log2((ChIP+1)/(input+1)) calculation"))
+#    log2((ChIP_soloLTRMats[[x]]+1)/(control_soloLTRMats[[2]]+1))
+#  }
+#}, mc.cores = length(ChIP_soloLTRMats))
+#
+#
+## log2ChIP
+## Add column names
+#for(x in seq_along(log2ChIP_featureMats)) {
+#  colnames(log2ChIP_featureMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
+#                                       paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+#                                       paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+#  colnames(log2ChIP_ranLocMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
+#                                      paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+#                                      paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+#  colnames(log2ChIP_gapMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                   paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                   paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#  colnames(log2ChIP_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#  colnames(log2ChIP_nonCENAthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#  colnames(log2ChIP_TEsfMats[[x]]) <- c(paste0("u", 1:(upstream/binSize)),
+#                                    paste0("t", ((upstream/binSize)+1):((upstream+TEsf_bodyLength)/binSize)),
+#                                    paste0("d", (((upstream+TEsf_bodyLength)/binSize)+1):(((upstream+TEsf_bodyLength)/binSize)+(downstream/binSize))))
+#  colnames(log2ChIP_soloLTRMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                    paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                    paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#}
+#
+## Create list of lists in which each element in the enclosing list corresponds to a library
+## and the two elements in the nested list correspond to coverage matrices for features and random loci
+#log2ChIP_mats <- mclapply(seq_along(log2ChIP_featureMats), function(x) {
+#  list(
+#       # features
+#       log2ChIP_featureMats[[x]],
+#       # ranLocs
+#       log2ChIP_ranLocMats[[x]],
+#       # gaps
+#       log2ChIP_gapMats[[x]],
+#       # Athilas
+#       log2ChIP_AthilaMats[[x]],
+#       # nonCENAthilas
+#       log2ChIP_nonCENAthilaMats[[x]],
+#       # TEsfs
+#       log2ChIP_TEsfMats[[x]],
+#       # soloLTRs
+#       log2ChIP_soloLTRMats[[x]]
+#      )
+#}, mc.cores = length(log2ChIP_featureMats))
+#
+## Transpose matrix and convert into dataframe
+## in which first column is window name
+#wideDFfeature_list_log2ChIP <- mclapply(seq_along(log2ChIP_mats), function(x) {
+#  lapply(seq_along(log2ChIP_mats[[x]]), function(y) {
+#    data.frame(window = colnames(log2ChIP_mats[[x]][[y]]),
+#               t(log2ChIP_mats[[x]][[y]]))
+#  })
+#}, mc.cores = length(log2ChIP_mats))
+#
+## Convert into tidy data.frame (long format)
+#tidyDFfeature_list_log2ChIP  <- mclapply(seq_along(wideDFfeature_list_log2ChIP), function(x) {
+#  lapply(seq_along(log2ChIP_mats[[x]]), function(y) {
+#    gather(data  = wideDFfeature_list_log2ChIP[[x]][[y]],
+#           key   = feature,
+#           value = coverage,
+#           -window)
+#  }) 
+#}, mc.cores = length(wideDFfeature_list_log2ChIP))
+#
+## Order levels of factor "window" so that sequential levels
+## correspond to sequential windows
+#for(x in seq_along(tidyDFfeature_list_log2ChIP)) {
+#  for(y in seq_along(log2ChIP_mats[[x]])) {
+#    tidyDFfeature_list_log2ChIP[[x]][[y]]$window <- factor(tidyDFfeature_list_log2ChIP[[x]][[y]]$window,
+#                                                           levels = as.character(wideDFfeature_list_log2ChIP[[x]][[y]]$window))
+#  }
+#}
+#
+## Create summary data.frame in which each row corresponds to a window (Column 1),
+## Column2 is the number of coverage values (features) per window,
+## Column3 is the mean of coverage values per window,
+## Column4 is the standard deviation of coverage values per window,
+## Column5 is the standard error of the mean of coverage values per window,
+## Column6 is the lower bound of the 95% confidence interval, and
+## Column7 is the upper bound of the 95% confidence interval
+#summaryDFfeature_list_log2ChIP  <- mclapply(seq_along(tidyDFfeature_list_log2ChIP), function(x) {
+#  lapply(seq_along(log2ChIP_mats[[x]]), function(y) {
+#    data.frame(window = as.character(wideDFfeature_list_log2ChIP[[x]][[y]]$window),
+#               n      = tapply(X     = tidyDFfeature_list_log2ChIP[[x]][[y]]$coverage,
+#                               INDEX = tidyDFfeature_list_log2ChIP[[x]][[y]]$window,
+#                               FUN   = length),
+#               mean   = tapply(X     = tidyDFfeature_list_log2ChIP[[x]][[y]]$coverage,
+#                               INDEX = tidyDFfeature_list_log2ChIP[[x]][[y]]$window,
+#                               FUN   = mean,
+#                               na.rm = TRUE),
+#               sd     = tapply(X     = tidyDFfeature_list_log2ChIP[[x]][[y]]$coverage,
+#                               INDEX = tidyDFfeature_list_log2ChIP[[x]][[y]]$window,
+#                               FUN   = sd,
+#                               na.rm = TRUE))
+#  })
+#}, mc.cores = length(tidyDFfeature_list_log2ChIP))
+#
+#for(x in seq_along(summaryDFfeature_list_log2ChIP)) {
+#  for(y in seq_along(log2ChIP_mats[[x]])) {
+#    summaryDFfeature_list_log2ChIP[[x]][[y]]$window <- factor(summaryDFfeature_list_log2ChIP[[x]][[y]]$window,
+#                                                              levels = as.character(wideDFfeature_list_log2ChIP[[x]][[y]]$window))
+#    summaryDFfeature_list_log2ChIP[[x]][[y]]$winNo <- factor(1:dim(summaryDFfeature_list_log2ChIP[[x]][[y]])[1])
+#    summaryDFfeature_list_log2ChIP[[x]][[y]]$sem <- summaryDFfeature_list_log2ChIP[[x]][[y]]$sd/sqrt(summaryDFfeature_list_log2ChIP[[x]][[y]]$n-1)
+#    summaryDFfeature_list_log2ChIP[[x]][[y]]$CI_lower <- summaryDFfeature_list_log2ChIP[[x]][[y]]$mean -
+#      qt(0.975, df = summaryDFfeature_list_log2ChIP[[x]][[y]]$n-1)*summaryDFfeature_list_log2ChIP[[x]][[y]]$sem
+#    summaryDFfeature_list_log2ChIP[[x]][[y]]$CI_upper <- summaryDFfeature_list_log2ChIP[[x]][[y]]$mean +
+#      qt(0.975, df = summaryDFfeature_list_log2ChIP[[x]][[y]]$n-1)*summaryDFfeature_list_log2ChIP[[x]][[y]]$sem
+#  }
+#}
+#
+## Convert list of lists summaryDFfeature_list_log2ChIP into
+## a list of single data.frames containing all meta-profiles for plotting
+#featureTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
+#  summaryDFfeature_list_log2ChIP[[x]][[1]]
+#})
+#ranLocTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
+#  summaryDFfeature_list_log2ChIP[[x]][[2]]
+#})
+#gapTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
+#  summaryDFfeature_list_log2ChIP[[x]][[3]]
+#})
+#AthilaTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
+#  summaryDFfeature_list_log2ChIP[[x]][[4]]
+#})
+#nonCENAthilaTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
+#  summaryDFfeature_list_log2ChIP[[x]][[5]]
+#})
+#TEsfTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
+#  summaryDFfeature_list_log2ChIP[[x]][[6]]
+#})
+#soloLTRTmp <- lapply(seq_along(summaryDFfeature_list_log2ChIP), function(x) {
+#  summaryDFfeature_list_log2ChIP[[x]][[7]]
+#})
+#names(featureTmp) <- log2ChIPNamesPlot
+#names(ranLocTmp) <- log2ChIPNamesPlot
+#names(gapTmp) <- log2ChIPNamesPlot
+#names(AthilaTmp) <- log2ChIPNamesPlot
+#names(nonCENAthilaTmp) <- log2ChIPNamesPlot
+#names(TEsfTmp) <- log2ChIPNamesPlot
+#names(soloLTRTmp) <- log2ChIPNamesPlot
+#summaryDFfeature_log2ChIP <- list(
+#  bind_rows(featureTmp, .id = "libName"),
+#  bind_rows(ranLocTmp, .id = "libName"),
+#  bind_rows(gapTmp, .id = "libName"),
+#  bind_rows(AthilaTmp, .id = "libName"),
+#  bind_rows(nonCENAthilaTmp, .id = "libName"),
+#  bind_rows(TEsfTmp, .id = "libName"),
+#  bind_rows(soloLTRTmp, .id = "libName")
+#)
+#for(x in seq_along(summaryDFfeature_log2ChIP)) {
+#  summaryDFfeature_log2ChIP[[x]]$libName <- factor(summaryDFfeature_log2ChIP[[x]]$libName,
+#                                                   levels = log2ChIPNamesPlot)
+#}
+#
+## Define y-axis limits
+#ymin_log2ChIP <- min(c(summaryDFfeature_log2ChIP[[1]]$CI_lower,
+#                       summaryDFfeature_log2ChIP[[2]]$CI_lower,
+#                       summaryDFfeature_log2ChIP[[3]]$CI_lower,
+#                       summaryDFfeature_log2ChIP[[4]]$CI_lower,
+#                       summaryDFfeature_log2ChIP[[5]]$CI_lower,
+#                       summaryDFfeature_log2ChIP[[6]]$CI_lower,
+#                       summaryDFfeature_log2ChIP[[7]]$CI_lower),
+#                 na.rm = T)
+#ymax_log2ChIP <- max(c(summaryDFfeature_log2ChIP[[1]]$CI_upper,
+#                       summaryDFfeature_log2ChIP[[2]]$CI_upper,
+#                       summaryDFfeature_log2ChIP[[3]]$CI_upper,
+#                       summaryDFfeature_log2ChIP[[4]]$CI_upper,
+#                       summaryDFfeature_log2ChIP[[5]]$CI_upper,
+#                       summaryDFfeature_log2ChIP[[6]]$CI_upper,
+#                       summaryDFfeature_log2ChIP[[7]]$CI_upper),
+#                 na.rm = T)
+#
+## Define legend labels
+#legendLabs <- lapply(seq_along(log2ChIPNamesPlot), function(x) {
+#  grobTree(textGrob(bquote(.(log2ChIPNamesPlot[x])),
+#                    x = legendPos[1], y = legendPos[2]-((x-1)*0.06), just = "left",
+#                    gp = gpar(col = log2ChIPColours[x], fontsize = 18)))
+#})
+#
+## Plot average profiles with 95% CI ribbon
+### feature
+#summaryDFfeature <- summaryDFfeature_log2ChIP[[1]]
+#ggObj1_combined_log2ChIP <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = log2ChIPColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = log2ChIPColours) +
+#scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            ((upstream-1000)/binSize)+1,
+#                            (dim(summaryDFfeature_log2ChIP[[1]])[1]/length(log2ChIPNames))-((downstream-1000)/binSize),
+#                            dim(summaryDFfeature_log2ChIP[[1]])[1]/length(log2ChIPNames)),
+#                 labels = c(paste0("-", "1kb"),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", "1kb"))) +
+#geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
+#                          (dim(summaryDFfeature_log2ChIP[[1]])[1]/length(log2ChIPNames))-((downstream-1000)/binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(featureNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+### ranLoc
+#summaryDFfeature <- summaryDFfeature_log2ChIP[[2]]
+#ggObj2_combined_log2ChIP <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = log2ChIPColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = log2ChIPColours) +
+#scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            ((upstream-1000)/binSize)+1,
+#                            (dim(summaryDFfeature_log2ChIP[[2]])[1]/length(log2ChIPNames))-((downstream-1000)/binSize),
+#                            dim(summaryDFfeature_log2ChIP[[2]])[1]/length(log2ChIPNames)),
+#                 labels = c(paste0("-", "1kb"),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", "1kb"))) +
+#geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
+#                          (dim(summaryDFfeature_log2ChIP[[2]])[1]/length(log2ChIPNames))-((downstream-1000)/binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/input)")) +
+#annotation_custom(legendLabs[[1]]) +
+#annotation_custom(legendLabs[[2]]) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(ranLocNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+### gap
+#summaryDFfeature <- summaryDFfeature_log2ChIP[[3]]
+#ggObj3_combined_log2ChIP <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = log2ChIPColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = log2ChIPColours) +
+#scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            (upstream/Athila_binSize)+1,
+#                            (dim(summaryDFfeature_log2ChIP[[3]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize),
+#                            dim(summaryDFfeature_log2ChIP[[3]])[1]/length(log2ChIPNames)),
+#                 labels = c(paste0("-", flankName),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", flankName))) +
+#geom_vline(xintercept = c((upstream/Athila_binSize)+1,
+#                          (dim(summaryDFfeature_log2ChIP[[3]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(gapNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+### Athila
+#summaryDFfeature <- summaryDFfeature_log2ChIP[[4]]
+#ggObj4_combined_log2ChIP <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = log2ChIPColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = log2ChIPColours) +
+#scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            (upstream/Athila_binSize)+1,
+#                            (dim(summaryDFfeature_log2ChIP[[4]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize),
+#                            dim(summaryDFfeature_log2ChIP[[4]])[1]/length(log2ChIPNames)),
+#                 labels = c(paste0("-", flankName),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", flankName))) +
+#geom_vline(xintercept = c((upstream/Athila_binSize)+1,
+#                          (dim(summaryDFfeature_log2ChIP[[4]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(AthilaNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+### nonCENAthila
+#summaryDFfeature <- summaryDFfeature_log2ChIP[[5]]
+#ggObj5_combined_log2ChIP <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = log2ChIPColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = log2ChIPColours) +
+#scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            (upstream/Athila_binSize)+1,
+#                            (dim(summaryDFfeature_log2ChIP[[5]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize),
+#                            dim(summaryDFfeature_log2ChIP[[5]])[1]/length(log2ChIPNames)),
+#                 labels = c(paste0("-", flankName),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", flankName))) +
+#geom_vline(xintercept = c((upstream/Athila_binSize)+1,
+#                          (dim(summaryDFfeature_log2ChIP[[5]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(nonCENAthilaNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+### TEsf
+#summaryDFfeature <- summaryDFfeature_log2ChIP[[6]]
+#ggObj6_combined_log2ChIP <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = log2ChIPColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = log2ChIPColours) +
+#scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            (upstream/binSize)+1,
+#                            (dim(summaryDFfeature_log2ChIP[[6]])[1]/length(log2ChIPNames))-(downstream/binSize),
+#                            dim(summaryDFfeature_log2ChIP[[6]])[1]/length(log2ChIPNames)),
+#                 labels = c(paste0("-", flankName),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", flankName))) +
+#geom_vline(xintercept = c((upstream/binSize)+1,
+#                          (dim(summaryDFfeature_log2ChIP[[6]])[1]/length(log2ChIPNames))-(downstream/binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(TEsfNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+### soloLTR
+#summaryDFfeature <- summaryDFfeature_log2ChIP[[7]]
+#ggObj7_combined_log2ChIP <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = log2ChIPColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = log2ChIPColours) +
+#scale_y_continuous(limits = c(ymin_log2ChIP, ymax_log2ChIP),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            (upstream/Athila_binSize)+1,
+#                            (dim(summaryDFfeature_log2ChIP[[7]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize),
+#                            dim(summaryDFfeature_log2ChIP[[7]])[1]/length(log2ChIPNames)),
+#                 labels = c(paste0("-", flankName),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", flankName))) +
+#geom_vline(xintercept = c((upstream/Athila_binSize)+1,
+#                          (dim(summaryDFfeature_log2ChIP[[7]])[1]/length(log2ChIPNames))-(downstream/Athila_binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Log"[2] * "(" * .(yLabPlot) * "/control)")) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(soloLTRNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+#ggObjGA_combined <- grid.arrange(grobs = list(
+#                                              ggObj1_combined_log2ChIP,
+#                                              ggObj2_combined_log2ChIP,
+#                                              ggObj3_combined_log2ChIP,
+#                                              ggObj4_combined_log2ChIP,
+#                                              ggObj5_combined_log2ChIP,
+#                                              ggObj6_combined_log2ChIP,
+#                                              ggObj7_combined_log2ChIP
+#                                             ),
+#                                 layout_matrix = cbind(
+#                                                       1,
+#                                                       2,
+#                                                       3,
+#                                                       4,
+#                                                       5,
+#                                                       6,
+#                                                       7
+#                                                      ))
+#ggsave(paste0(plotDir,
+#              "log2ChIPcontrol_",
+#              log2ChIPNames[1], "_", log2ChIPNames[length(log2ChIPNames)],
+#              "_avgProfiles_around",
+#              "_CEN180_ranLoc_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
+#              paste0(chrName, collapse = "_"), "_", align, "_v210521.pdf"),
+#       plot = ggObjGA_combined,
+#       height = 6.5, width = 7*7, limitsize = FALSE)
 
 
 # ChIP
@@ -1664,578 +1667,578 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                                       ))
 ggsave(paste0(plotDir,
               "ChIP_",
-              paste0(ChIPNames, collapse = "_"),
+              ChIPNames[1], "_", ChIPNames[length(ChIPNames)],
               "_avgProfiles_around",
               "_CEN180_ranLoc_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
-              paste0(chrName, collapse = "_"), "_", align, ".pdf"),
+              paste0(chrName, collapse = "_"), "_", align, "_v210521.pdf"),
        plot = ggObjGA_combined,
        height = 6.5, width = 7*7, limitsize = FALSE)
 
 
-# control
-# Add column names
-for(x in seq_along(control_featureMats)) {
-  colnames(control_featureMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                       paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                       paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
-  colnames(control_ranLocMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
-                                      paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
-                                      paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
-  colnames(control_gapMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                   paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                   paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-  colnames(control_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-  colnames(control_nonCENAthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-  colnames(control_TEsfMats[[x]]) <- c(paste0("u", 1:(upstream/binSize)),
-                                    paste0("t", ((upstream/binSize)+1):((upstream+TEsf_bodyLength)/binSize)),
-                                    paste0("d", (((upstream+TEsf_bodyLength)/binSize)+1):(((upstream+TEsf_bodyLength)/binSize)+(downstream/binSize))))
-  colnames(control_soloLTRMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
-                                    paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
-                                    paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
-}
-
-# Create list of lists in which each element in the enclosing list corresponds to a library
-# and the two elements in the nested list correspond to coverage matrices for features and random loci
-control_mats <- mclapply(seq_along(control_featureMats), function(x) {
-  list(
-       # features
-       control_featureMats[[x]],
-       # ranLocs
-       control_ranLocMats[[x]],
-       # gaps
-       control_gapMats[[x]],
-       # Athilas
-       control_AthilaMats[[x]],
-       # nonCENAthilas
-       control_nonCENAthilaMats[[x]],
-       # TEsfs
-       control_TEsfMats[[x]],
-       # soloLTRs
-       control_soloLTRMats[[x]]
-      )
-}, mc.cores = length(control_featureMats))
-
-# Transpose matrix and convert into dataframe
-# in which first column is window name
-wideDFfeature_list_control <- mclapply(seq_along(control_mats), function(x) {
-  lapply(seq_along(control_mats[[x]]), function(y) {
-    data.frame(window = colnames(control_mats[[x]][[y]]),
-               t(control_mats[[x]][[y]]))
-  })
-}, mc.cores = length(control_mats))
-
-# Convert into tidy data.frame (long format)
-tidyDFfeature_list_control  <- mclapply(seq_along(wideDFfeature_list_control), function(x) {
-  lapply(seq_along(control_mats[[x]]), function(y) {
-    gather(data  = wideDFfeature_list_control[[x]][[y]],
-           key   = feature,
-           value = coverage,
-           -window)
-  }) 
-}, mc.cores = length(wideDFfeature_list_control))
-
-# Order levels of factor "window" so that sequential levels
-# correspond to sequential windows
-for(x in seq_along(tidyDFfeature_list_control)) {
-  for(y in seq_along(control_mats[[x]])) {
-    tidyDFfeature_list_control[[x]][[y]]$window <- factor(tidyDFfeature_list_control[[x]][[y]]$window,
-                                                           levels = as.character(wideDFfeature_list_control[[x]][[y]]$window))
-  }
-}
-
-# Create summary data.frame in which each row corresponds to a window (Column 1),
-# Column2 is the number of coverage values (features) per window,
-# Column3 is the mean of coverage values per window,
-# Column4 is the standard deviation of coverage values per window,
-# Column5 is the standard error of the mean of coverage values per window,
-# Column6 is the lower bound of the 95% confidence interval, and
-# Column7 is the upper bound of the 95% confidence interval
-summaryDFfeature_list_control  <- mclapply(seq_along(tidyDFfeature_list_control), function(x) {
-  lapply(seq_along(control_mats[[x]]), function(y) {
-    data.frame(window = as.character(wideDFfeature_list_control[[x]][[y]]$window),
-               n      = tapply(X     = tidyDFfeature_list_control[[x]][[y]]$coverage,
-                               INDEX = tidyDFfeature_list_control[[x]][[y]]$window,
-                               FUN   = length),
-               mean   = tapply(X     = tidyDFfeature_list_control[[x]][[y]]$coverage,
-                               INDEX = tidyDFfeature_list_control[[x]][[y]]$window,
-                               FUN   = mean,
-                               na.rm = TRUE),
-               sd     = tapply(X     = tidyDFfeature_list_control[[x]][[y]]$coverage,
-                               INDEX = tidyDFfeature_list_control[[x]][[y]]$window,
-                               FUN   = sd,
-                               na.rm = TRUE))
-  })
-}, mc.cores = length(tidyDFfeature_list_control))
-
-for(x in seq_along(summaryDFfeature_list_control)) {
-  for(y in seq_along(control_mats[[x]])) {
-    summaryDFfeature_list_control[[x]][[y]]$window <- factor(summaryDFfeature_list_control[[x]][[y]]$window,
-                                                              levels = as.character(wideDFfeature_list_control[[x]][[y]]$window))
-    summaryDFfeature_list_control[[x]][[y]]$winNo <- factor(1:dim(summaryDFfeature_list_control[[x]][[y]])[1])
-    summaryDFfeature_list_control[[x]][[y]]$sem <- summaryDFfeature_list_control[[x]][[y]]$sd/sqrt(summaryDFfeature_list_control[[x]][[y]]$n-1)
-    summaryDFfeature_list_control[[x]][[y]]$CI_lower <- summaryDFfeature_list_control[[x]][[y]]$mean -
-      qt(0.975, df = summaryDFfeature_list_control[[x]][[y]]$n-1)*summaryDFfeature_list_control[[x]][[y]]$sem
-    summaryDFfeature_list_control[[x]][[y]]$CI_upper <- summaryDFfeature_list_control[[x]][[y]]$mean +
-      qt(0.975, df = summaryDFfeature_list_control[[x]][[y]]$n-1)*summaryDFfeature_list_control[[x]][[y]]$sem
-  }
-}
-
-# Convert list of lists summaryDFfeature_list_control into
-# a list of single data.frames containing all meta-profiles for plotting
-featureTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
-  summaryDFfeature_list_control[[x]][[1]]
-})
-ranLocTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
-  summaryDFfeature_list_control[[x]][[2]]
-})
-gapTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
-  summaryDFfeature_list_control[[x]][[3]]
-})
-AthilaTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
-  summaryDFfeature_list_control[[x]][[4]]
-})
-nonCENAthilaTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
-  summaryDFfeature_list_control[[x]][[5]]
-})
-TEsfTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
-  summaryDFfeature_list_control[[x]][[6]]
-})
-soloLTRTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
-  summaryDFfeature_list_control[[x]][[7]]
-})
-names(featureTmp) <- controlNamesPlot
-names(ranLocTmp) <- controlNamesPlot
-names(gapTmp) <- controlNamesPlot
-names(AthilaTmp) <- controlNamesPlot
-names(nonCENAthilaTmp) <- controlNamesPlot
-names(TEsfTmp) <- controlNamesPlot
-names(soloLTRTmp) <- controlNamesPlot
-summaryDFfeature_control <- list(
-  bind_rows(featureTmp, .id = "libName"),
-  bind_rows(ranLocTmp, .id = "libName"),
-  bind_rows(gapTmp, .id = "libName"),
-  bind_rows(AthilaTmp, .id = "libName"),
-  bind_rows(nonCENAthilaTmp, .id = "libName"),
-  bind_rows(TEsfTmp, .id = "libName"),
-  bind_rows(soloLTRTmp, .id = "libName")
-)
-for(x in seq_along(summaryDFfeature_control)) {
-  summaryDFfeature_control[[x]]$libName <- factor(summaryDFfeature_control[[x]]$libName,
-                                                   levels = controlNamesPlot)
-}
-
-# Define y-axis limits
-ymin_control <- min(c(summaryDFfeature_control[[1]]$CI_lower,
-                       summaryDFfeature_control[[2]]$CI_lower,
-                       summaryDFfeature_control[[3]]$CI_lower,
-                       summaryDFfeature_control[[4]]$CI_lower,
-                       summaryDFfeature_control[[5]]$CI_lower,
-                       summaryDFfeature_control[[6]]$CI_lower,
-                       summaryDFfeature_control[[7]]$CI_lower),
-                 na.rm = T)
-ymax_control <- max(c(summaryDFfeature_control[[1]]$CI_upper,
-                       summaryDFfeature_control[[2]]$CI_upper,
-                       summaryDFfeature_control[[3]]$CI_upper,
-                       summaryDFfeature_control[[4]]$CI_upper,
-                       summaryDFfeature_control[[5]]$CI_upper,
-                       summaryDFfeature_control[[6]]$CI_upper,
-                       summaryDFfeature_control[[7]]$CI_upper),
-                 na.rm = T)
-
-# Define legend labels
-legendLabs <- lapply(seq_along(controlNamesPlot), function(x) {
-  grobTree(textGrob(bquote(.(controlNamesPlot[x])),
-                    x = legendPos[1], y = legendPos[2]-((x-1)*0.06), just = "left",
-                    gp = gpar(col = controlColours[x], fontsize = 18)))
-})
-
-# Plot average profiles with 95% CI ribbon
-## feature
-summaryDFfeature <- summaryDFfeature_control[[1]]
-ggObj1_combined_control <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = controlColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = controlColours) +
-scale_y_continuous(limits = c(ymin_control, ymax_control),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            ((upstream-1000)/binSize)+1,
-                            (dim(summaryDFfeature_control[[1]])[1]/length(controlNames))-((downstream-1000)/binSize),
-                            dim(summaryDFfeature_control[[1]])[1]/length(controlNames)),
-                 labels = c(paste0("-", "1kb"),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", "1kb"))) +
-geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
-                          (dim(summaryDFfeature_control[[1]])[1]/length(controlNames))-((downstream-1000)/binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Norm. coverage")) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(featureNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
-## ranLoc
-summaryDFfeature <- summaryDFfeature_control[[2]]
-ggObj2_combined_control <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = controlColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = controlColours) +
-scale_y_continuous(limits = c(ymin_control, ymax_control),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            ((upstream-1000)/binSize)+1,
-                            (dim(summaryDFfeature_control[[2]])[1]/length(controlNames))-((downstream-1000)/binSize),
-                            dim(summaryDFfeature_control[[2]])[1]/length(controlNames)),
-                 labels = c(paste0("-", "1kb"),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", "1kb"))) +
-geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
-                          (dim(summaryDFfeature_control[[2]])[1]/length(controlNames))-((downstream-1000)/binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Norm. coverage")) +
-annotation_custom(legendLabs[[1]]) +
-annotation_custom(legendLabs[[2]]) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(ranLocNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
-## gap
-summaryDFfeature <- summaryDFfeature_control[[3]]
-ggObj3_combined_control <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = controlColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = controlColours) +
-scale_y_continuous(limits = c(ymin_control, ymax_control),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_control[[3]])[1]/length(controlNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_control[[3]])[1]/length(controlNames)),
-                 labels = c(paste0("-", flankName),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_control[[3]])[1]/length(controlNames))-(downstream/Athila_binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Norm. coverage")) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(gapNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
-## Athila
-summaryDFfeature <- summaryDFfeature_control[[4]]
-ggObj4_combined_control <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = controlColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = controlColours) +
-scale_y_continuous(limits = c(ymin_control, ymax_control),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_control[[4]])[1]/length(controlNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_control[[4]])[1]/length(controlNames)),
-                 labels = c(paste0("-", flankName),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_control[[4]])[1]/length(controlNames))-(downstream/Athila_binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Norm. coverage")) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(AthilaNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
-## nonCENAthila
-summaryDFfeature <- summaryDFfeature_control[[5]]
-ggObj5_combined_control <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = controlColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = controlColours) +
-scale_y_continuous(limits = c(ymin_control, ymax_control),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_control[[5]])[1]/length(controlNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_control[[5]])[1]/length(controlNames)),
-                 labels = c(paste0("-", flankName),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_control[[5]])[1]/length(controlNames))-(downstream/Athila_binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Norm. coverage")) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(nonCENAthilaNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
-## TEsf
-summaryDFfeature <- summaryDFfeature_control[[6]]
-ggObj6_combined_control <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = controlColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = controlColours) +
-scale_y_continuous(limits = c(ymin_control, ymax_control),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            (upstream/binSize)+1,
-                            (dim(summaryDFfeature_control[[6]])[1]/length(controlNames))-(downstream/binSize),
-                            dim(summaryDFfeature_control[[6]])[1]/length(controlNames)),
-                 labels = c(paste0("-", flankName),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/binSize)+1,
-                          (dim(summaryDFfeature_control[[6]])[1]/length(controlNames))-(downstream/binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Norm. coverage")) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(TEsfNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
-## soloLTR
-summaryDFfeature <- summaryDFfeature_control[[7]]
-ggObj7_combined_control <- ggplot(data = summaryDFfeature,
-                                   mapping = aes(x = winNo,
-                                                 y = mean,
-                                                 group = libName)
-                                  ) +
-geom_line(data = summaryDFfeature,
-          mapping = aes(colour = libName),
-          size = 1) +
-scale_colour_manual(values = controlColours) +
-geom_ribbon(data = summaryDFfeature,
-            mapping = aes(ymin = CI_lower,
-                          ymax = CI_upper,
-                          fill = libName),
-            alpha = 0.4) +
-scale_fill_manual(values = controlColours) +
-scale_y_continuous(limits = c(ymin_control, ymax_control),
-                   labels = function(x) sprintf("%6.3f", x)) +
-scale_x_discrete(breaks = c(1,
-                            (upstream/Athila_binSize)+1,
-                            (dim(summaryDFfeature_control[[7]])[1]/length(controlNames))-(downstream/Athila_binSize),
-                            dim(summaryDFfeature_control[[7]])[1]/length(controlNames)),
-                 labels = c(paste0("-", flankName),
-                            featureStartLab,
-                            featureEndLab,
-                            paste0("+", flankName))) +
-geom_vline(xintercept = c((upstream/Athila_binSize)+1,
-                          (dim(summaryDFfeature_control[[7]])[1]/length(controlNames))-(downstream/Athila_binSize)),
-           linetype = "dashed",
-           size = 1) +
-labs(x = "",
-     y = bquote("Norm. coverage")) +
-theme_bw() +
-theme(
-      axis.ticks = element_line(size = 1.0, colour = "black"),
-      axis.ticks.length = unit(0.25, "cm"),
-      axis.text.x = element_text(size = 22, colour = "black"),
-      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
-      axis.title = element_text(size = 30, colour = "black"),
-      legend.position = "none",
-      panel.grid = element_blank(),
-      panel.border = element_rect(size = 3.5, colour = "black"),
-      panel.background = element_blank(),
-      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-      plot.title = element_text(hjust = 0.5, size = 30)) +
-ggtitle(bquote(.(soloLTRNamePlot) ~ "(" * italic("n") ~ "=" ~
-               .(prettyNum(summaryDFfeature$n[1],
-                           big.mark = ",", trim = T)) *
-               ")"))
-
-ggObjGA_combined <- grid.arrange(grobs = list(
-                                              ggObj1_combined_control,
-                                              ggObj2_combined_control,
-                                              ggObj3_combined_control,
-                                              ggObj4_combined_control,
-                                              ggObj5_combined_control,
-                                              ggObj6_combined_control,
-                                              ggObj7_combined_control
-                                             ),
-                                 layout_matrix = cbind(
-                                                       1,
-                                                       2,
-                                                       3,
-                                                       4,
-                                                       5,
-                                                       6,
-                                                       7
-                                                      ))
-ggsave(paste0(plotDir,
-              "control_",
-              paste0(controlNames, collapse = "_"),
-              "_avgProfiles_around",
-              "_CEN180_ranLoc_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
-              paste0(chrName, collapse = "_"), "_", align, ".pdf"),
-       plot = ggObjGA_combined,
-       height = 6.5, width = 7*7, limitsize = FALSE)
+## control
+## Add column names
+#for(x in seq_along(control_featureMats)) {
+#  colnames(control_featureMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
+#                                       paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+#                                       paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+#  colnames(control_ranLocMats[[x]]) <- c(paste0("u", 1:((upstream-1000)/binSize)),
+#                                      paste0("t", (((upstream-1000)/binSize)+1):(((upstream-1000)+bodyLength)/binSize)),
+#                                      paste0("d", ((((upstream-1000)+bodyLength)/binSize)+1):((((upstream-1000)+bodyLength)/binSize)+((downstream-1000)/binSize))))
+#  colnames(control_gapMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                   paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                   paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#  colnames(control_AthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#  colnames(control_nonCENAthilaMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                      paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                      paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#  colnames(control_TEsfMats[[x]]) <- c(paste0("u", 1:(upstream/binSize)),
+#                                    paste0("t", ((upstream/binSize)+1):((upstream+TEsf_bodyLength)/binSize)),
+#                                    paste0("d", (((upstream+TEsf_bodyLength)/binSize)+1):(((upstream+TEsf_bodyLength)/binSize)+(downstream/binSize))))
+#  colnames(control_soloLTRMats[[x]]) <- c(paste0("u", 1:(upstream/Athila_binSize)),
+#                                    paste0("t", ((upstream/Athila_binSize)+1):((upstream+Athila_bodyLength)/Athila_binSize)),
+#                                    paste0("d", (((upstream+Athila_bodyLength)/Athila_binSize)+1):(((upstream+Athila_bodyLength)/Athila_binSize)+(downstream/Athila_binSize))))
+#}
+#
+## Create list of lists in which each element in the enclosing list corresponds to a library
+## and the two elements in the nested list correspond to coverage matrices for features and random loci
+#control_mats <- mclapply(seq_along(control_featureMats), function(x) {
+#  list(
+#       # features
+#       control_featureMats[[x]],
+#       # ranLocs
+#       control_ranLocMats[[x]],
+#       # gaps
+#       control_gapMats[[x]],
+#       # Athilas
+#       control_AthilaMats[[x]],
+#       # nonCENAthilas
+#       control_nonCENAthilaMats[[x]],
+#       # TEsfs
+#       control_TEsfMats[[x]],
+#       # soloLTRs
+#       control_soloLTRMats[[x]]
+#      )
+#}, mc.cores = length(control_featureMats))
+#
+## Transpose matrix and convert into dataframe
+## in which first column is window name
+#wideDFfeature_list_control <- mclapply(seq_along(control_mats), function(x) {
+#  lapply(seq_along(control_mats[[x]]), function(y) {
+#    data.frame(window = colnames(control_mats[[x]][[y]]),
+#               t(control_mats[[x]][[y]]))
+#  })
+#}, mc.cores = length(control_mats))
+#
+## Convert into tidy data.frame (long format)
+#tidyDFfeature_list_control  <- mclapply(seq_along(wideDFfeature_list_control), function(x) {
+#  lapply(seq_along(control_mats[[x]]), function(y) {
+#    gather(data  = wideDFfeature_list_control[[x]][[y]],
+#           key   = feature,
+#           value = coverage,
+#           -window)
+#  }) 
+#}, mc.cores = length(wideDFfeature_list_control))
+#
+## Order levels of factor "window" so that sequential levels
+## correspond to sequential windows
+#for(x in seq_along(tidyDFfeature_list_control)) {
+#  for(y in seq_along(control_mats[[x]])) {
+#    tidyDFfeature_list_control[[x]][[y]]$window <- factor(tidyDFfeature_list_control[[x]][[y]]$window,
+#                                                           levels = as.character(wideDFfeature_list_control[[x]][[y]]$window))
+#  }
+#}
+#
+## Create summary data.frame in which each row corresponds to a window (Column 1),
+## Column2 is the number of coverage values (features) per window,
+## Column3 is the mean of coverage values per window,
+## Column4 is the standard deviation of coverage values per window,
+## Column5 is the standard error of the mean of coverage values per window,
+## Column6 is the lower bound of the 95% confidence interval, and
+## Column7 is the upper bound of the 95% confidence interval
+#summaryDFfeature_list_control  <- mclapply(seq_along(tidyDFfeature_list_control), function(x) {
+#  lapply(seq_along(control_mats[[x]]), function(y) {
+#    data.frame(window = as.character(wideDFfeature_list_control[[x]][[y]]$window),
+#               n      = tapply(X     = tidyDFfeature_list_control[[x]][[y]]$coverage,
+#                               INDEX = tidyDFfeature_list_control[[x]][[y]]$window,
+#                               FUN   = length),
+#               mean   = tapply(X     = tidyDFfeature_list_control[[x]][[y]]$coverage,
+#                               INDEX = tidyDFfeature_list_control[[x]][[y]]$window,
+#                               FUN   = mean,
+#                               na.rm = TRUE),
+#               sd     = tapply(X     = tidyDFfeature_list_control[[x]][[y]]$coverage,
+#                               INDEX = tidyDFfeature_list_control[[x]][[y]]$window,
+#                               FUN   = sd,
+#                               na.rm = TRUE))
+#  })
+#}, mc.cores = length(tidyDFfeature_list_control))
+#
+#for(x in seq_along(summaryDFfeature_list_control)) {
+#  for(y in seq_along(control_mats[[x]])) {
+#    summaryDFfeature_list_control[[x]][[y]]$window <- factor(summaryDFfeature_list_control[[x]][[y]]$window,
+#                                                              levels = as.character(wideDFfeature_list_control[[x]][[y]]$window))
+#    summaryDFfeature_list_control[[x]][[y]]$winNo <- factor(1:dim(summaryDFfeature_list_control[[x]][[y]])[1])
+#    summaryDFfeature_list_control[[x]][[y]]$sem <- summaryDFfeature_list_control[[x]][[y]]$sd/sqrt(summaryDFfeature_list_control[[x]][[y]]$n-1)
+#    summaryDFfeature_list_control[[x]][[y]]$CI_lower <- summaryDFfeature_list_control[[x]][[y]]$mean -
+#      qt(0.975, df = summaryDFfeature_list_control[[x]][[y]]$n-1)*summaryDFfeature_list_control[[x]][[y]]$sem
+#    summaryDFfeature_list_control[[x]][[y]]$CI_upper <- summaryDFfeature_list_control[[x]][[y]]$mean +
+#      qt(0.975, df = summaryDFfeature_list_control[[x]][[y]]$n-1)*summaryDFfeature_list_control[[x]][[y]]$sem
+#  }
+#}
+#
+## Convert list of lists summaryDFfeature_list_control into
+## a list of single data.frames containing all meta-profiles for plotting
+#featureTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+#  summaryDFfeature_list_control[[x]][[1]]
+#})
+#ranLocTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+#  summaryDFfeature_list_control[[x]][[2]]
+#})
+#gapTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+#  summaryDFfeature_list_control[[x]][[3]]
+#})
+#AthilaTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+#  summaryDFfeature_list_control[[x]][[4]]
+#})
+#nonCENAthilaTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+#  summaryDFfeature_list_control[[x]][[5]]
+#})
+#TEsfTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+#  summaryDFfeature_list_control[[x]][[6]]
+#})
+#soloLTRTmp <- lapply(seq_along(summaryDFfeature_list_control), function(x) {
+#  summaryDFfeature_list_control[[x]][[7]]
+#})
+#names(featureTmp) <- controlNamesPlot
+#names(ranLocTmp) <- controlNamesPlot
+#names(gapTmp) <- controlNamesPlot
+#names(AthilaTmp) <- controlNamesPlot
+#names(nonCENAthilaTmp) <- controlNamesPlot
+#names(TEsfTmp) <- controlNamesPlot
+#names(soloLTRTmp) <- controlNamesPlot
+#summaryDFfeature_control <- list(
+#  bind_rows(featureTmp, .id = "libName"),
+#  bind_rows(ranLocTmp, .id = "libName"),
+#  bind_rows(gapTmp, .id = "libName"),
+#  bind_rows(AthilaTmp, .id = "libName"),
+#  bind_rows(nonCENAthilaTmp, .id = "libName"),
+#  bind_rows(TEsfTmp, .id = "libName"),
+#  bind_rows(soloLTRTmp, .id = "libName")
+#)
+#for(x in seq_along(summaryDFfeature_control)) {
+#  summaryDFfeature_control[[x]]$libName <- factor(summaryDFfeature_control[[x]]$libName,
+#                                                   levels = controlNamesPlot)
+#}
+#
+## Define y-axis limits
+#ymin_control <- min(c(summaryDFfeature_control[[1]]$CI_lower,
+#                       summaryDFfeature_control[[2]]$CI_lower,
+#                       summaryDFfeature_control[[3]]$CI_lower,
+#                       summaryDFfeature_control[[4]]$CI_lower,
+#                       summaryDFfeature_control[[5]]$CI_lower,
+#                       summaryDFfeature_control[[6]]$CI_lower,
+#                       summaryDFfeature_control[[7]]$CI_lower),
+#                 na.rm = T)
+#ymax_control <- max(c(summaryDFfeature_control[[1]]$CI_upper,
+#                       summaryDFfeature_control[[2]]$CI_upper,
+#                       summaryDFfeature_control[[3]]$CI_upper,
+#                       summaryDFfeature_control[[4]]$CI_upper,
+#                       summaryDFfeature_control[[5]]$CI_upper,
+#                       summaryDFfeature_control[[6]]$CI_upper,
+#                       summaryDFfeature_control[[7]]$CI_upper),
+#                 na.rm = T)
+#
+## Define legend labels
+#legendLabs <- lapply(seq_along(controlNamesPlot), function(x) {
+#  grobTree(textGrob(bquote(.(controlNamesPlot[x])),
+#                    x = legendPos[1], y = legendPos[2]-((x-1)*0.06), just = "left",
+#                    gp = gpar(col = controlColours[x], fontsize = 18)))
+#})
+#
+## Plot average profiles with 95% CI ribbon
+### feature
+#summaryDFfeature <- summaryDFfeature_control[[1]]
+#ggObj1_combined_control <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = controlColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = controlColours) +
+#scale_y_continuous(limits = c(ymin_control, ymax_control),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            ((upstream-1000)/binSize)+1,
+#                            (dim(summaryDFfeature_control[[1]])[1]/length(controlNames))-((downstream-1000)/binSize),
+#                            dim(summaryDFfeature_control[[1]])[1]/length(controlNames)),
+#                 labels = c(paste0("-", "1kb"),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", "1kb"))) +
+#geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
+#                          (dim(summaryDFfeature_control[[1]])[1]/length(controlNames))-((downstream-1000)/binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Norm. coverage")) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(featureNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+### ranLoc
+#summaryDFfeature <- summaryDFfeature_control[[2]]
+#ggObj2_combined_control <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = controlColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = controlColours) +
+#scale_y_continuous(limits = c(ymin_control, ymax_control),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            ((upstream-1000)/binSize)+1,
+#                            (dim(summaryDFfeature_control[[2]])[1]/length(controlNames))-((downstream-1000)/binSize),
+#                            dim(summaryDFfeature_control[[2]])[1]/length(controlNames)),
+#                 labels = c(paste0("-", "1kb"),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", "1kb"))) +
+#geom_vline(xintercept = c(((upstream-1000)/binSize)+1,
+#                          (dim(summaryDFfeature_control[[2]])[1]/length(controlNames))-((downstream-1000)/binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Norm. coverage")) +
+#annotation_custom(legendLabs[[1]]) +
+#annotation_custom(legendLabs[[2]]) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(ranLocNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+### gap
+#summaryDFfeature <- summaryDFfeature_control[[3]]
+#ggObj3_combined_control <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = controlColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = controlColours) +
+#scale_y_continuous(limits = c(ymin_control, ymax_control),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            (upstream/Athila_binSize)+1,
+#                            (dim(summaryDFfeature_control[[3]])[1]/length(controlNames))-(downstream/Athila_binSize),
+#                            dim(summaryDFfeature_control[[3]])[1]/length(controlNames)),
+#                 labels = c(paste0("-", flankName),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", flankName))) +
+#geom_vline(xintercept = c((upstream/Athila_binSize)+1,
+#                          (dim(summaryDFfeature_control[[3]])[1]/length(controlNames))-(downstream/Athila_binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Norm. coverage")) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(gapNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+### Athila
+#summaryDFfeature <- summaryDFfeature_control[[4]]
+#ggObj4_combined_control <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = controlColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = controlColours) +
+#scale_y_continuous(limits = c(ymin_control, ymax_control),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            (upstream/Athila_binSize)+1,
+#                            (dim(summaryDFfeature_control[[4]])[1]/length(controlNames))-(downstream/Athila_binSize),
+#                            dim(summaryDFfeature_control[[4]])[1]/length(controlNames)),
+#                 labels = c(paste0("-", flankName),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", flankName))) +
+#geom_vline(xintercept = c((upstream/Athila_binSize)+1,
+#                          (dim(summaryDFfeature_control[[4]])[1]/length(controlNames))-(downstream/Athila_binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Norm. coverage")) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(AthilaNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+### nonCENAthila
+#summaryDFfeature <- summaryDFfeature_control[[5]]
+#ggObj5_combined_control <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = controlColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = controlColours) +
+#scale_y_continuous(limits = c(ymin_control, ymax_control),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            (upstream/Athila_binSize)+1,
+#                            (dim(summaryDFfeature_control[[5]])[1]/length(controlNames))-(downstream/Athila_binSize),
+#                            dim(summaryDFfeature_control[[5]])[1]/length(controlNames)),
+#                 labels = c(paste0("-", flankName),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", flankName))) +
+#geom_vline(xintercept = c((upstream/Athila_binSize)+1,
+#                          (dim(summaryDFfeature_control[[5]])[1]/length(controlNames))-(downstream/Athila_binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Norm. coverage")) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(nonCENAthilaNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+### TEsf
+#summaryDFfeature <- summaryDFfeature_control[[6]]
+#ggObj6_combined_control <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = controlColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = controlColours) +
+#scale_y_continuous(limits = c(ymin_control, ymax_control),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            (upstream/binSize)+1,
+#                            (dim(summaryDFfeature_control[[6]])[1]/length(controlNames))-(downstream/binSize),
+#                            dim(summaryDFfeature_control[[6]])[1]/length(controlNames)),
+#                 labels = c(paste0("-", flankName),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", flankName))) +
+#geom_vline(xintercept = c((upstream/binSize)+1,
+#                          (dim(summaryDFfeature_control[[6]])[1]/length(controlNames))-(downstream/binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Norm. coverage")) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(TEsfNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+### soloLTR
+#summaryDFfeature <- summaryDFfeature_control[[7]]
+#ggObj7_combined_control <- ggplot(data = summaryDFfeature,
+#                                   mapping = aes(x = winNo,
+#                                                 y = mean,
+#                                                 group = libName)
+#                                  ) +
+#geom_line(data = summaryDFfeature,
+#          mapping = aes(colour = libName),
+#          size = 1) +
+#scale_colour_manual(values = controlColours) +
+#geom_ribbon(data = summaryDFfeature,
+#            mapping = aes(ymin = CI_lower,
+#                          ymax = CI_upper,
+#                          fill = libName),
+#            alpha = 0.4) +
+#scale_fill_manual(values = controlColours) +
+#scale_y_continuous(limits = c(ymin_control, ymax_control),
+#                   labels = function(x) sprintf("%6.3f", x)) +
+#scale_x_discrete(breaks = c(1,
+#                            (upstream/Athila_binSize)+1,
+#                            (dim(summaryDFfeature_control[[7]])[1]/length(controlNames))-(downstream/Athila_binSize),
+#                            dim(summaryDFfeature_control[[7]])[1]/length(controlNames)),
+#                 labels = c(paste0("-", flankName),
+#                            featureStartLab,
+#                            featureEndLab,
+#                            paste0("+", flankName))) +
+#geom_vline(xintercept = c((upstream/Athila_binSize)+1,
+#                          (dim(summaryDFfeature_control[[7]])[1]/length(controlNames))-(downstream/Athila_binSize)),
+#           linetype = "dashed",
+#           size = 1) +
+#labs(x = "",
+#     y = bquote("Norm. coverage")) +
+#theme_bw() +
+#theme(
+#      axis.ticks = element_line(size = 1.0, colour = "black"),
+#      axis.ticks.length = unit(0.25, "cm"),
+#      axis.text.x = element_text(size = 22, colour = "black"),
+#      axis.text.y = element_text(size = 18, colour = "black", family = "Luxi Mono"),
+#      axis.title = element_text(size = 30, colour = "black"),
+#      legend.position = "none",
+#      panel.grid = element_blank(),
+#      panel.border = element_rect(size = 3.5, colour = "black"),
+#      panel.background = element_blank(),
+#      plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+#      plot.title = element_text(hjust = 0.5, size = 30)) +
+#ggtitle(bquote(.(soloLTRNamePlot) ~ "(" * italic("n") ~ "=" ~
+#               .(prettyNum(summaryDFfeature$n[1],
+#                           big.mark = ",", trim = T)) *
+#               ")"))
+#
+#ggObjGA_combined <- grid.arrange(grobs = list(
+#                                              ggObj1_combined_control,
+#                                              ggObj2_combined_control,
+#                                              ggObj3_combined_control,
+#                                              ggObj4_combined_control,
+#                                              ggObj5_combined_control,
+#                                              ggObj6_combined_control,
+#                                              ggObj7_combined_control
+#                                             ),
+#                                 layout_matrix = cbind(
+#                                                       1,
+#                                                       2,
+#                                                       3,
+#                                                       4,
+#                                                       5,
+#                                                       6,
+#                                                       7
+#                                                      ))
+#ggsave(paste0(plotDir,
+#              "control_",
+#              controlNames[1], "_", controlNames[length(controlNames)],
+#              "_avgProfiles_around",
+#              "_CEN180_ranLoc_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
+#              paste0(chrName, collapse = "_"), "_", align, "_v210521.pdf"),
+#       plot = ggObjGA_combined,
+#       height = 6.5, width = 7*7, limitsize = FALSE)
