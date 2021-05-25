@@ -870,7 +870,7 @@ reg_htmp <- Heatmap(mat = matrix(tab_extend$phylo),
                     use_raster = FALSE)
                     #use_raster = TRUE, raster_device = "png", raster_quality = 4)
 
-htmps <- RNA_htmp + sRNA_21nt_htmp + sRNA_22nt_htmp + sRNA_24nt_htmp + CpG_htmp + CHG_htmp + CHH_htmp + H3K9me2_htmp + ATAC_htmp + SPO11_htmp + fam_htmp + reg_htmp 
+htmps <- RNA_htmp + sRNA_21nt_htmp + sRNA_22nt_htmp + sRNA_24nt_htmp + CpG_htmp + CHG_htmp + CHH_htmp + H3K9me2_htmp + ATAC_htmp + SPO11_htmp + reg_htmp + fam_htmp 
 
 pdf(paste0(plotDir,
            "CENATHILA_nonCENATHILA_in_T2T_Col_",
