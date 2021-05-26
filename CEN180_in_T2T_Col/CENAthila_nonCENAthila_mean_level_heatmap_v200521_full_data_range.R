@@ -828,6 +828,7 @@ fam_htmp <- Heatmap(mat = matrix(tab_extend$phylo),
                     row_gap = unit(1.0, "mm"),
                     row_split = factor(tab_extend$phylo,
                                        levels = sort(unique(as.character(tab_extend$phylo)))),
+                    row_title = NULL,
                     row_title_side = "right",
                     row_title_rot = 0,
                     border = FALSE,
@@ -837,12 +838,12 @@ fam_htmp <- Heatmap(mat = matrix(tab_extend$phylo),
                     #use_raster = TRUE, raster_device = "png", raster_quality = 4)
 
 reg_htmp <- Heatmap(mat = matrix(tab_extend$phylo),
-                    col = c("CENATHILA1" = "darkorange1", "CENATHILA2" = "darkorange1", "CENATHILA5" = "darkorange1",
-                            "CENATHILA6A" = "darkorange1", "CENATHILA6B" = "darkorange1",
-                            "nonCENATHILA0_I" = "grey50", "nonCENATHILA1" = "grey50", "nonCENATHILA2" = "grey50",
-                            "nonCENATHILA3" = "grey50", "nonCENATHILA4" = "grey50", "nonCENATHILA4C" = "grey50",
-                            "nonCENATHILA5" = "grey50", "nonCENATHILA6A" = "grey50", "nonCENATHILA6B" = "grey50",
-                            "nonCENATHILA7A" = "grey50"),
+                    col = c("CENATHILA1" = "#008ebe", "CENATHILA2" = "#008ebe", "CENATHILA5" = "#008ebe",
+                            "CENATHILA6A" = "#008ebe", "CENATHILA6B" = "#008ebe",
+                            "nonCENATHILA0_I" = "#be3000", "nonCENATHILA1" = "#be3000", "nonCENATHILA2" = "#be3000",
+                            "nonCENATHILA3" = "#be3000", "nonCENATHILA4" = "#be3000", "nonCENATHILA4C" = "#be3000",
+                            "nonCENATHILA5" = "#be3000", "nonCENATHILA6A" = "#be3000", "nonCENATHILA6B" = "#be3000",
+                            "nonCENATHILA7A" = "#be3000"),
                     row_order = c(1:nrow(matrix(tab_extend$phylo))),
                     column_title = "Reg.",
                     column_title_rot = 0,
@@ -862,6 +863,7 @@ reg_htmp <- Heatmap(mat = matrix(tab_extend$phylo),
                     row_gap = unit(1.0, "mm"),
                     row_split = factor(tab_extend$phylo,
                                        levels = sort(unique(as.character(tab_extend$phylo)))),
+                    row_title = NULL,
                     row_title_side = "right",
                     row_title_rot = 0,
                     border = FALSE,
@@ -870,7 +872,11 @@ reg_htmp <- Heatmap(mat = matrix(tab_extend$phylo),
                     use_raster = FALSE)
                     #use_raster = TRUE, raster_device = "png", raster_quality = 4)
 
-htmps <- RNA_htmp + sRNA_21nt_htmp + sRNA_22nt_htmp + sRNA_24nt_htmp + CpG_htmp + CHG_htmp + CHH_htmp + H3K9me2_htmp + ATAC_htmp + SPO11_htmp + reg_htmp + fam_htmp 
+#htmps <- RNA_htmp + sRNA_21nt_htmp + sRNA_22nt_htmp + sRNA_24nt_htmp + CpG_htmp + CHG_htmp + CHH_htmp + H3K9me2_htmp + ATAC_htmp + SPO11_htmp + reg_htmp + fam_htmp 
+
+htmps <- reg_htmp + fam_htmp + RNA_htmp + sRNA_21nt_htmp + sRNA_22nt_htmp + sRNA_24nt_htmp + CpG_htmp + CHG_htmp + CHH_htmp + H3K9me2_htmp + ATAC_htmp + SPO11_htmp
+
+legendGap <- unit(15, "mm")
 
 pdf(paste0(plotDir,
            "CENATHILA_nonCENATHILA_in_T2T_Col_",
@@ -881,7 +887,7 @@ draw(htmps,
      column_title = "ATHILA (5' LTR start to 3' LTR end)",
      column_title_gp = gpar(font = 2, fontsize = 16),
      heatmap_legend_side = "bottom",
-     legend_gap = unit(15, "mm")) 
+     legend_gap = legendGap) 
 dev.off()
 
 write.table(tab_extend,
