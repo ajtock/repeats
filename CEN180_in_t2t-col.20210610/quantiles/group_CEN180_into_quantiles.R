@@ -660,9 +660,9 @@ mclapply(seq_along(orderingFactor), function(w) {
   } else if(orderingFactor[w] == "mCG_PE_BSseq_in_bodies" & chrName[length(chrName)] == "Chr4") {
     quantiles <- 3
   } else if(grepl("input", orderingFactor[w])) {
-    quantiles <- 3
+    quantiles <- 2
   } else if(grepl("gDNA", orderingFactor[w])) {
-    quantiles <- 3
+    quantiles <- 2
   } else {
     quantiles <- quantiles
   }
@@ -756,19 +756,25 @@ profilesVal_feature <- c(
                               CEN180$array_size),
                          log2ChIP_featureMats_bodiesRowMeans,
 #                         DNAmeth_featureMats_bodiesRowMeans,
-                         control_featureMats_bodiesRowMeans
+                         control_featureMats_bodiesRowMeans[2],
+                         control_featureMats_bodiesRowMeans[3],
+                         control_featureMats_bodiesRowMeans[1]
                         )
 profilesDF_feature <- as.data.frame(do.call(cbind, profilesVal_feature),
                                     stringsAsFactors = F)
-profileNames_feature <- c("SNVs",
+profileNames_feature <- c(
+                          "SNVs",
                           "% identity",
-                          "Activity",
+                          "Repetitiveness",
                           "HOR count",
                           "HOR avg. size",
                           "Array size",
                           log2ChIPNamesPlot,
 #                          DNAmethNamesPlot,
-                          controlNamesPlot)
+                          controlNamesPlot[2],
+                          controlNamesPlot[3],
+                          controlNamesPlot[1]
+                         )
 colnames(profilesDF_feature) <- profileNames_feature
 
 # Create correlation matrix
@@ -868,9 +874,9 @@ ggObj <- ggplot(data = corDat_feature,
         plot.title = element_text(hjust = 0.5, size = 30, colour = "black")) +
   ggtitle(bquote("Spearman's" ~ italic(r[s]) ~
 #  ggtitle(bquote("Pearson's" ~ italic(r) ~
-                 "for mean levels at CEN180 in t2t-col.20210610" ~
+                 "for levels at CEN180 in t2t-col.20210610" ~
                  .(paste0(chrName, collapse = ",")))) 
-ggsave(paste0(outDir, "Spearman_correlation_matrix_mean_levels_at_CEN180_in_t2t-col.20210610_",
+ggsave(paste0(outDir, "Spearman_correlation_matrix_levels_at_CEN180_in_t2t-col.20210610_",
               paste0(chrName, collapse = "_"), "_qVals.pdf"),
        plot = ggObj, height = 30, width = 30)
 
@@ -922,7 +928,7 @@ ggsave(paste0(outDir, "Spearman_correlation_matrix_mean_levels_at_CEN180_in_t2t-
 #  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
 #              method = "gam", formula = y~s(x)) +
 #  labs(x = "Mappability (k=150 e=4)",
-#       y = "Activity") +
+#       y = "Repetitiveness") +
 #  theme_bw() +
 #  theme(
 #        axis.ticks = element_line(size = 0.5, colour = "black"),
@@ -1016,7 +1022,7 @@ ggTrend5 <- ggplot(data = CEN180,
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
               method = "gam", formula = y~s(x)) +
   labs(x = "CENH3",
-       y = "Activity") +
+       y = "Repetitiveness") +
   theme_bw() +
   theme(
         axis.ticks = element_line(size = 0.5, colour = "black"),
@@ -1053,7 +1059,7 @@ ggTrend6 <- ggplot(data = CEN180,
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
               method = "gam", formula = y~s(x)) +
   labs(x = "SNVs",
-       y = "Activity") +
+       y = "Repetitiveness") +
   theme_bw() +
   theme(
         axis.ticks = element_line(size = 0.5, colour = "black"),
@@ -1213,6 +1219,96 @@ ggTrend10 <- ggplot(data = CEN180,
                          digits = 5)) ~
                  "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
 
+# CENH3_in_bodies vs LoCENH3_in_bodies
+ggTrend11 <- ggplot(data = CEN180,
+                   mapping = aes(x = CENH3_in_bodies,
+                                 y = LoCENH3_in_bodies)) +
+  geom_hex(bins = 60) +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y~s(x)) +
+  labs(x = "CENH3",
+       y = "LoCENH3") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180$CENH3_in_bodies, CEN180$LoCENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180$CENH3_in_bodies, CEN180$LoCENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# CENH3_in_bodies vs ZmCENH3_in_bodies
+ggTrend12 <- ggplot(data = CEN180,
+                   mapping = aes(x = CENH3_in_bodies,
+                                 y = ZmCENH3_in_bodies)) +
+  geom_hex(bins = 60) +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y~s(x)) +
+  labs(x = "CENH3",
+       y = "ZmCENH3") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180$CENH3_in_bodies, CEN180$ZmCENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180$CENH3_in_bodies, CEN180$ZmCENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# LoCENH3_in_bodies vs ZmCENH3_in_bodies
+ggTrend13 <- ggplot(data = CEN180,
+                   mapping = aes(x = LoCENH3_in_bodies,
+                                 y = ZmCENH3_in_bodies)) +
+  geom_hex(bins = 60) +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y~s(x)) +
+  labs(x = "LoCENH3",
+       y = "ZmCENH3") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180$LoCENH3_in_bodies, CEN180$ZmCENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180$LoCENH3_in_bodies, CEN180$ZmCENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
 ggTrend_combined <- grid.arrange(grobs = list(
 #                                              ggTrend1,
 #                                              ggTrend2,
@@ -1223,14 +1319,20 @@ ggTrend_combined <- grid.arrange(grobs = list(
                                               ggTrend7,
                                               ggTrend8,
                                               ggTrend9,
-                                              ggTrend10
+                                              ggTrend10,
+                                              ggTrend11,
+                                              ggTrend12,
+                                              ggTrend13
                                              ),
                                  layout_matrix = rbind(
-                                                       1:4,
-                                                       5:8,
-                                                       9:12
+#                                                       1:4,
+#                                                       5:8,
+#                                                       9:12,
+#                                                       13
+                                                       1:6,
+                                                       7:12
                                                       ))
 ggsave(paste0(outDir,
-              "trends_for_mean_levels_at_CEN180_in_t2t-col.20210610_",
+              "trends_for_levels_at_CEN180_in_t2t-col.20210610_",
               paste0(chrName, collapse = "_"), ".pdf"),
-       plot = ggTrend_combined, height = 7*3, width = 8*4)
+       plot = ggTrend_combined, height = 7*2, width = 8*6)
