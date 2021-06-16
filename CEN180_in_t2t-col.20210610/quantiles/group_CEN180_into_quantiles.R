@@ -741,138 +741,140 @@ mclapply(seq_along(orderingFactor), function(w) {
 }, mc.cores = length(orderingFactor), mc.preschedule = F)
 
 
-## Make correlation matrix (colour-gradient heatmap)
-## Redefine outDir
-#outDir <- paste0("correlations/", paste0(chrName, collapse = "_"), "/")
-#system(paste0("[ -d ", outDir, " ] || mkdir -p ", outDir))
-#
-## Combine profiles into one data.frame in which each profile is a column
-#profilesVal_feature <- c(
-#                         list(CEN180$wSNV,
-#                              CEN180$HORlengthsSum,
-#                              CEN180$HORcount,
-#                              CEN180$HORavgSize,
-#                              CEN180$array_size),
-#                         log2ChIP_featureMats_bodiesRowMeans,
+# Make correlation matrix (colour-gradient heatmap)
+# Redefine outDir
+outDir <- paste0("correlations/", paste0(chrName, collapse = "_"), "/")
+system(paste0("[ -d ", outDir, " ] || mkdir -p ", outDir))
+
+# Combine profiles into one data.frame in which each profile is a column
+profilesVal_feature <- c(
+                         list(CEN180$wSNV,
+                              CEN180$percentageIdentity,
+                              CEN180$HORlengthsSum,
+                              CEN180$HORcount,
+                              CEN180$HORavgSize,
+                              CEN180$array_size),
+                         log2ChIP_featureMats_bodiesRowMeans,
 #                         DNAmeth_featureMats_bodiesRowMeans,
-#                         control_featureMats_bodiesRowMeans
-#                        )
-#profilesDF_feature <- as.data.frame(do.call(cbind, profilesVal_feature),
-#                                    stringsAsFactors = F)
-#profileNames_feature <- c("SNVs",
-#                          "Activity",
-#                          "HOR count",
-#                          "HOR avg. size",
-#                          "Array size",
-#                          log2ChIPNamesPlot,
+                         control_featureMats_bodiesRowMeans
+                        )
+profilesDF_feature <- as.data.frame(do.call(cbind, profilesVal_feature),
+                                    stringsAsFactors = F)
+profileNames_feature <- c("SNVs",
+                          "% identity",
+                          "Activity",
+                          "HOR count",
+                          "HOR avg. size",
+                          "Array size",
+                          log2ChIPNamesPlot,
 #                          DNAmethNamesPlot,
-#                           controlNamesPlot)
-#colnames(profilesDF_feature) <- profileNames_feature
-#
-## Create correlation matrix
-#corMat_feature <- round(cor(profilesDF_feature,
-#                            method = "spearman",
-#                            use = "pairwise.complete.obs"),
-#                        digits = 2)
-#
-## Set duplicates to NA
-#for(x in 1:dim(corMat_feature)[1]) {
-#  corMat_feature[x, x] <- NA
-#  if(x > 1) {
-#    corMat_feature[x, 1:x-1] <- NA
-#  }
-#}
-#corMat_feature <- corMat_feature[,-1]
-#
-## Convert into reshape::melt formatted data.frame
-## and remove duplicate pairs
-#corDat_feature <- melt(corMat_feature)
-#corDat_feature <- corDat_feature[-which(is.na(corDat_feature[,3])),]
-#
-## Order the data.frame for plotting
-#profileNamesList_feature <- as.list(profileNames_feature)
-#names(profileNamesList_feature) <- profileNames_feature
-#levels(corDat_feature$X1) <- rev(profileNamesList_feature)
-#levels(corDat_feature$X2) <- profileNamesList_feature[-1]
-#
-## Get P-values for correlation matrix
-#corMatSig_feature <- rcorr(as.matrix(profilesDF_feature),
-#                           type = "spearman")$P
-## Set duplicates to NA
-#for(x in 1:dim(corMatSig_feature)[1]) {
-#  corMatSig_feature[x, x] <- NA
-#  if(x > 1) {
-#    corMatSig_feature[x, 1:x-1] <- NA
-#  }
-#}
-#corMatSig_feature <- corMatSig_feature[,-1]
-#
-## Convert into reshape::melt formatted data.frame
-## and remove duplicate pairs
-#corDatSig_feature <- melt(corMatSig_feature)
-#corDatSig_feature <- corDatSig_feature[-which(is.na(corDatSig_feature[,3])),]
-#
-## Standardise P-values to a sample size of 100 (q-values) as proposed by
-## Good (1982) Standardized tail-area probabilities. Journal of Computation and Simulation 16: 65-66
-## and summarised by Woolley (2003):
-## https://stats.stackexchange.com/questions/22233/how-to-choose-significance-level-for-a-large-data-set
-## http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.518.5341&rep=rep1&type=pdf
-## Woolley (2003): "Clearly, the meaningfulness of the p-value diminishes as the sample size increases";
-## Anne Z. (2012, Pearson eCollege, Denver): "In the real world, there are unlikely to be semi-partial correlations
-## that are exactly zero, which is the null hypothesis in testing significance of a regression coefficient."
-## Formally, the standardised p-value is defined as:
-## q = min(0.5, p * sqrt( (n/100) ))
-## Woolley (2003): "The value of 0.5 is somewhat arbitrary, though its purpose is to avoid q-values of greater than 1."
-#n <- dim(profilesDF_feature)[1]
-#corDatSig_feature$value <- sapply(corDatSig_feature$value, function(x) {
-#  round(min(0.5, x * sqrt( (n/100) )),
-#        digits = 2)
-#})
-#
-## Order the data.frame for plotting
-#levels(corDatSig_feature$X1) <- rev(profileNamesList_feature)
-#levels(corDatSig_feature$X2) <- profileNamesList_feature[-1]
-#
-## Plot
-#ggObj <- ggplot(data = corDat_feature,
-#                mapping = aes(X2, X1, fill = value)) +
-#  geom_tile() +
-##  geom_text(mapping = aes(X2, X1, label = value), size = 5) +
-#  geom_text(data = corDatSig_feature,
-#            mapping = aes(X2, X1, label = value), size = 8) +
-#  scale_fill_gradient2(name = bquote("Spearman's" ~ italic(r[s])),
-##  scale_fill_gradient2(name = bquote("Pearson's" ~ italic(r)),
-#                       low = "blue", mid = "white", high = "red",
-#                       midpoint = 0, breaks = seq(-1, 1, by = 0.4), limits = c(-1, 1)) +
-#  scale_x_discrete(expand = c(0, 0), position = "top") +
-#  scale_y_discrete(expand = c(0, 0)) +
-#  labs(x = "", y = "") +
-#  guides(fill = guide_colourbar(barwidth = 40, barheight = 6,
-#                                title.position = "top", title.hjust = 0.5)) +
-#  theme_bw() +
-#  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 0, size = 39, colour = "black"),
-#        axis.text.y = element_text(angle = 0, vjust = 0.5, hjust = 1, size = 39, colour = "black"),
-#        panel.grid.major = element_blank(),
-#        panel.border = element_blank(),
-#        panel.background = element_blank(),
-#        axis.ticks = element_blank(),
-#        legend.title = element_text(size = 40),
-#        legend.text = element_text(size = 40),
-#        legend.justification = c(1, 0),
-#        legend.position = c(0.65, 0.05),
-#        legend.direction = "horizontal",
-#        legend.background = element_rect(fill = "transparent"),
-#        plot.margin = unit(c(5.5, 110.5, 5.5, 5.5), "pt"),
-#        plot.title = element_text(hjust = 0.5, size = 30, colour = "black")) +
-#  ggtitle(bquote("Spearman's" ~ italic(r[s]) ~
-##  ggtitle(bquote("Pearson's" ~ italic(r) ~
-#                 "for mean levels at CEN180 in t2t-col.20210610" ~
-#                 .(paste0(chrName, collapse = ",")))) 
-#ggsave(paste0(outDir, "Spearman_correlation_matrix_mean_levels_at_CEN180_in_t2t-col.20210610_",
-#              paste0(chrName, collapse = "_"), "_qVals.pdf"),
-#       plot = ggObj, height = 30, width = 30)
-#
-## Make scatter plots with trend lines
+                          controlNamesPlot)
+colnames(profilesDF_feature) <- profileNames_feature
+
+# Create correlation matrix
+corMat_feature <- round(cor(profilesDF_feature,
+                            method = "spearman",
+                            use = "pairwise.complete.obs"),
+                        digits = 2)
+
+# Set duplicates to NA
+for(x in 1:dim(corMat_feature)[1]) {
+  corMat_feature[x, x] <- NA
+  if(x > 1) {
+    corMat_feature[x, 1:x-1] <- NA
+  }
+}
+corMat_feature <- corMat_feature[,-1]
+
+# Convert into reshape::melt formatted data.frame
+# and remove duplicate pairs
+corDat_feature <- melt(corMat_feature)
+corDat_feature <- corDat_feature[-which(is.na(corDat_feature[,3])),]
+
+# Order the data.frame for plotting
+profileNamesList_feature <- as.list(profileNames_feature)
+names(profileNamesList_feature) <- profileNames_feature
+levels(corDat_feature$X1) <- rev(profileNamesList_feature)
+levels(corDat_feature$X2) <- profileNamesList_feature[-1]
+
+# Get P-values for correlation matrix
+corMatSig_feature <- rcorr(as.matrix(profilesDF_feature),
+                           type = "spearman")$P
+# Set duplicates to NA
+for(x in 1:dim(corMatSig_feature)[1]) {
+  corMatSig_feature[x, x] <- NA
+  if(x > 1) {
+    corMatSig_feature[x, 1:x-1] <- NA
+  }
+}
+corMatSig_feature <- corMatSig_feature[,-1]
+
+# Convert into reshape::melt formatted data.frame
+# and remove duplicate pairs
+corDatSig_feature <- melt(corMatSig_feature)
+corDatSig_feature <- corDatSig_feature[-which(is.na(corDatSig_feature[,3])),]
+
+# Standardise P-values to a sample size of 100 (q-values) as proposed by
+# Good (1982) Standardized tail-area probabilities. Journal of Computation and Simulation 16: 65-66
+# and summarised by Woolley (2003):
+# https://stats.stackexchange.com/questions/22233/how-to-choose-significance-level-for-a-large-data-set
+# http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.518.5341&rep=rep1&type=pdf
+# Woolley (2003): "Clearly, the meaningfulness of the p-value diminishes as the sample size increases";
+# Anne Z. (2012, Pearson eCollege, Denver): "In the real world, there are unlikely to be semi-partial correlations
+# that are exactly zero, which is the null hypothesis in testing significance of a regression coefficient."
+# Formally, the standardised p-value is defined as:
+# q = min(0.5, p * sqrt( (n/100) ))
+# Woolley (2003): "The value of 0.5 is somewhat arbitrary, though its purpose is to avoid q-values of greater than 1."
+n <- dim(profilesDF_feature)[1]
+corDatSig_feature$value <- sapply(corDatSig_feature$value, function(x) {
+  round(min(0.5, x * sqrt( (n/100) )),
+        digits = 2)
+})
+
+# Order the data.frame for plotting
+levels(corDatSig_feature$X1) <- rev(profileNamesList_feature)
+levels(corDatSig_feature$X2) <- profileNamesList_feature[-1]
+
+# Plot
+ggObj <- ggplot(data = corDat_feature,
+                mapping = aes(X2, X1, fill = value)) +
+  geom_tile() +
+#  geom_text(mapping = aes(X2, X1, label = value), size = 5) +
+  geom_text(data = corDatSig_feature,
+            mapping = aes(X2, X1, label = value), size = 8) +
+  scale_fill_gradient2(name = bquote("Spearman's" ~ italic(r[s])),
+#  scale_fill_gradient2(name = bquote("Pearson's" ~ italic(r)),
+                       low = "blue", mid = "white", high = "red",
+                       midpoint = 0, breaks = seq(-1, 1, by = 0.4), limits = c(-1, 1)) +
+  scale_x_discrete(expand = c(0, 0), position = "top") +
+  scale_y_discrete(expand = c(0, 0)) +
+  labs(x = "", y = "") +
+  guides(fill = guide_colourbar(barwidth = 40, barheight = 6,
+                                title.position = "top", title.hjust = 0.5)) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust = 0, size = 39, colour = "black"),
+        axis.text.y = element_text(angle = 0, vjust = 0.5, hjust = 1, size = 39, colour = "black"),
+        panel.grid.major = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.ticks = element_blank(),
+        legend.title = element_text(size = 40),
+        legend.text = element_text(size = 40),
+        legend.justification = c(1, 0),
+        legend.position = c(0.65, 0.05),
+        legend.direction = "horizontal",
+        legend.background = element_rect(fill = "transparent"),
+        plot.margin = unit(c(5.5, 110.5, 5.5, 5.5), "pt"),
+        plot.title = element_text(hjust = 0.5, size = 30, colour = "black")) +
+  ggtitle(bquote("Spearman's" ~ italic(r[s]) ~
+#  ggtitle(bquote("Pearson's" ~ italic(r) ~
+                 "for mean levels at CEN180 in t2t-col.20210610" ~
+                 .(paste0(chrName, collapse = ",")))) 
+ggsave(paste0(outDir, "Spearman_correlation_matrix_mean_levels_at_CEN180_in_t2t-col.20210610_",
+              paste0(chrName, collapse = "_"), "_qVals.pdf"),
+       plot = ggObj, height = 30, width = 30)
+
+# Make scatter plots with trend lines
 ## map_K150_E4_in_bodies vs wSNV
 #ggTrend1 <- ggplot(data = CEN180,
 #                   mapping = aes(x = map_K150_E4_in_bodies,
@@ -1000,235 +1002,235 @@ mclapply(seq_along(orderingFactor), function(w) {
 #                 .(round(min(0.5, cor.test(CEN180$map_K150_E4_in_bodies, CEN180$CENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
 #                         digits = 5)) ~
 #                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
-#
-## CENH3_in_bodies vs HORlengthsSum
-#ggTrend5 <- ggplot(data = CEN180,
-#                   mapping = aes(x = CENH3_in_bodies,
-#                                 y = HORlengthsSum+1)) +
-#  geom_hex(bins = 60) +
-#  scale_y_continuous(trans = log10_trans(),
-#                     breaks = trans_breaks("log10", function(x) 10^x),
-#                     labels = trans_format("log10", math_format(10^.x))) +
-#  annotation_logticks(sides = "l") +
-#  scale_fill_viridis() +
-#  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-#              method = "gam", formula = y~s(x)) +
-#  labs(x = "CENH3",
-#       y = "Activity") +
-#  theme_bw() +
-#  theme(
-#        axis.ticks = element_line(size = 0.5, colour = "black"),
-#        axis.ticks.length = unit(0.25, "cm"),
-#        axis.text.x = element_text(size = 16, colour = "black"),
-#        axis.text.y = element_text(size = 16, colour = "black"),
-#        axis.title = element_text(size = 18, colour = "black"),
-#        panel.grid = element_blank(),
-#        panel.background = element_blank(),
-#        panel.border = element_rect(size = 1.0, colour = "black"),
-#        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-#        plot.title = element_text(hjust = 0.5, size = 18)) +
-#  ggtitle(bquote(italic(r[s]) ~ "=" ~
-#                 .(round(cor.test(CEN180$CENH3_in_bodies, CEN180$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
-#                         digits = 2)) *
-#                 ";" ~ italic(P) ~ "=" ~
-#                 .(round(min(0.5, cor.test(CEN180$CENH3_in_bodies, CEN180$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
-#                         digits = 5)) ~
-#                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
-#
-## wSNV vs HORlengthsSum 
-#ggTrend6 <- ggplot(data = CEN180,
-#                   mapping = aes(x = wSNV,
-#                                 y = HORlengthsSum+1)) +
-#  geom_hex(bins = 60) +
-#  scale_x_continuous(trans = log2_trans(),
-#                     breaks = trans_breaks("log2", function(x) 2^x),
-#                     labels = trans_format("log2", math_format(2^.x))) +
-#  scale_y_continuous(trans = log10_trans(),
-#                     breaks = trans_breaks("log10", function(x) 10^x),
-#                     labels = trans_format("log10", math_format(10^.x))) +
-#  annotation_logticks(sides = "lb") +
-#  scale_fill_viridis() +
-#  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-#              method = "gam", formula = y~s(x)) +
-#  labs(x = "SNVs",
-#       y = "Activity") +
-#  theme_bw() +
-#  theme(
-#        axis.ticks = element_line(size = 0.5, colour = "black"),
-#        axis.ticks.length = unit(0.25, "cm"),
-#        axis.text.x = element_text(size = 16, colour = "black"),
-#        axis.text.y = element_text(size = 16, colour = "black"),
-#        axis.title = element_text(size = 18, colour = "black"),
-#        panel.grid = element_blank(),
-#        panel.background = element_blank(),
-#        panel.border = element_rect(size = 1.0, colour = "black"),
-#        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-#        plot.title = element_text(hjust = 0.5, size = 18)) +
-#  ggtitle(bquote(italic(r[s]) ~ "=" ~
-#                 .(round(cor.test(CEN180$wSNV, CEN180$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
-#                         digits = 2)) *
-#                 ";" ~ italic(P) ~ "=" ~
-#                 .(round(min(0.5, cor.test(CEN180$wSNV, CEN180$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
-#                         digits = 5)) ~
-#                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
-#
-## wSNV vs H3K9me2_in_bodies
-#ggTrend7 <- ggplot(data = CEN180,
-#                   mapping = aes(x = wSNV,
-#                                 y = H3K9me2_in_bodies)) +
-#  geom_hex(bins = 60) +
-#  scale_x_continuous(trans = log2_trans(),
-#                     breaks = trans_breaks("log2", function(x) 2^x),
-#                     labels = trans_format("log2", math_format(2^.x))) +
-#  annotation_logticks(sides = "b") +
-#  scale_fill_viridis() +
-#  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-#              method = "gam", formula = y~s(x)) +
-#  labs(x = "SNVs",
-#       y = "H3K9me2") +
-#  theme_bw() +
-#  theme(
-#        axis.ticks = element_line(size = 0.5, colour = "black"),
-#        axis.ticks.length = unit(0.25, "cm"),
-#        axis.text.x = element_text(size = 16, colour = "black"),
-#        axis.text.y = element_text(size = 16, colour = "black"),
-#        axis.title = element_text(size = 18, colour = "black"),
-#        panel.grid = element_blank(),
-#        panel.background = element_blank(),
-#        panel.border = element_rect(size = 1.0, colour = "black"),
-#        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-#        plot.title = element_text(hjust = 0.5, size = 18)) +
-#  ggtitle(bquote(italic(r[s]) ~ "=" ~
-#                 .(round(cor.test(CEN180$wSNV, CEN180$H3K9me2_in_bodies, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
-#                         digits = 2)) *
-#                 ";" ~ italic(P) ~ "=" ~
-#                 .(round(min(0.5, cor.test(CEN180$wSNV, CEN180$H3K9me2_in_bodies, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
-#                         digits = 5)) ~
-#                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
-#
-## wSNV vs CENH3_in_bodies
-#ggTrend8 <- ggplot(data = CEN180,
-#                   mapping = aes(x = wSNV,
-#                                 y = CENH3_in_bodies)) +
-#  geom_hex(bins = 60) +
-#  scale_x_continuous(trans = log2_trans(),
-#                     breaks = trans_breaks("log2", function(x) 2^x),
-#                     labels = trans_format("log2", math_format(2^.x))) +
-#  annotation_logticks(sides = "b") +
-#  scale_fill_viridis() +
-#  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-#              method = "gam", formula = y~s(x)) +
-#  labs(x = "SNVs",
-#       y = "CENH3") +
-#  theme_bw() +
-#  theme(
-#        axis.ticks = element_line(size = 0.5, colour = "black"),
-#        axis.ticks.length = unit(0.25, "cm"),
-#        axis.text.x = element_text(size = 16, colour = "black"),
-#        axis.text.y = element_text(size = 16, colour = "black"),
-#        axis.title = element_text(size = 18, colour = "black"),
-#        panel.grid = element_blank(),
-#        panel.background = element_blank(),
-#        panel.border = element_rect(size = 1.0, colour = "black"),
-#        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-#        plot.title = element_text(hjust = 0.5, size = 18)) +
-#  ggtitle(bquote(italic(r[s]) ~ "=" ~
-#                 .(round(cor.test(CEN180$wSNV, CEN180$CENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
-#                         digits = 2)) *
-#                 ";" ~ italic(P) ~ "=" ~
-#                 .(round(min(0.5, cor.test(CEN180$wSNV, CEN180$CENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
-#                         digits = 5)) ~
-#                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
-#
-## CENH3_in_bodies vs HORavgSize
-#ggTrend9 <- ggplot(data = CEN180,
-#                   mapping = aes(x = CENH3_in_bodies,
-#                                 y = HORavgSize)) +
-#  geom_hex(bins = 60) +
-#  scale_y_continuous(trans = log2_trans(),
-#                     breaks = trans_breaks("log2", function(x) 2^x),
-#                     labels = trans_format("log2", math_format(2^.x))) +
-#  annotation_logticks(sides = "l") +
-#  scale_fill_viridis() +
-#  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-#              method = "gam", formula = y~s(x)) +
-#  labs(x = "CENH3",
-#       y = "HOR avg. size") +
-#  theme_bw() +
-#  theme(
-#        axis.ticks = element_line(size = 0.5, colour = "black"),
-#        axis.ticks.length = unit(0.25, "cm"),
-#        axis.text.x = element_text(size = 16, colour = "black"),
-#        axis.text.y = element_text(size = 16, colour = "black"),
-#        axis.title = element_text(size = 18, colour = "black"),
-#        panel.grid = element_blank(),
-#        panel.background = element_blank(),
-#        panel.border = element_rect(size = 1.0, colour = "black"),
-#        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-#        plot.title = element_text(hjust = 0.5, size = 18)) +
-#  ggtitle(bquote(italic(r[s]) ~ "=" ~
-#                 .(round(cor.test(CEN180$CENH3_in_bodies, CEN180$HORavgSize, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
-#                         digits = 2)) *
-#                 ";" ~ italic(P) ~ "=" ~
-#                 .(round(min(0.5, cor.test(CEN180$CENH3_in_bodies, CEN180$HORavgSize, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
-#                         digits = 5)) ~
-#                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
-#
-## wSNV vs HORavgSize 
-#ggTrend10 <- ggplot(data = CEN180,
-#                    mapping = aes(x = wSNV,
-#                                  y = HORavgSize)) +
-#  geom_hex(bins = 60) +
-#  scale_x_continuous(trans = log2_trans(),
-#                     breaks = trans_breaks("log2", function(x) 2^x),
-#                     labels = trans_format("log2", math_format(2^.x))) +
-#  scale_y_continuous(trans = log2_trans(),
-#                     breaks = trans_breaks("log2", function(x) 2^x),
-#                     labels = trans_format("log2", math_format(2^.x))) +
-#  annotation_logticks(sides = "lb") +
-#  scale_fill_viridis() +
-#  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-#              method = "gam", formula = y~s(x)) +
-#  labs(x = "SNVs",
-#       y = "HOR avg. size") +
-#  theme_bw() +
-#  theme(
-#        axis.ticks = element_line(size = 0.5, colour = "black"),
-#        axis.ticks.length = unit(0.25, "cm"),
-#        axis.text.x = element_text(size = 16, colour = "black"),
-#        axis.text.y = element_text(size = 16, colour = "black"),
-#        axis.title = element_text(size = 18, colour = "black"),
-#        panel.grid = element_blank(),
-#        panel.background = element_blank(),
-#        panel.border = element_rect(size = 1.0, colour = "black"),
-#        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
-#        plot.title = element_text(hjust = 0.5, size = 18)) +
-#  ggtitle(bquote(italic(r[s]) ~ "=" ~
-#                 .(round(cor.test(CEN180$wSNV, CEN180$HORavgSize, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
-#                         digits = 2)) *
-#                 ";" ~ italic(P) ~ "=" ~
-#                 .(round(min(0.5, cor.test(CEN180$wSNV, CEN180$HORavgSize, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
-#                         digits = 5)) ~
-#                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
-#
-#ggTrend_combined <- grid.arrange(grobs = list(
+
+# CENH3_in_bodies vs HORlengthsSum
+ggTrend5 <- ggplot(data = CEN180,
+                   mapping = aes(x = CENH3_in_bodies,
+                                 y = HORlengthsSum+1)) +
+  geom_hex(bins = 60) +
+  scale_y_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "l") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y~s(x)) +
+  labs(x = "CENH3",
+       y = "Activity") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180$CENH3_in_bodies, CEN180$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180$CENH3_in_bodies, CEN180$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# wSNV vs HORlengthsSum 
+ggTrend6 <- ggplot(data = CEN180,
+                   mapping = aes(x = wSNV,
+                                 y = HORlengthsSum+1)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x),
+                     labels = trans_format("log2", math_format(2^.x))) +
+  scale_y_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "lb") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y~s(x)) +
+  labs(x = "SNVs",
+       y = "Activity") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180$wSNV, CEN180$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180$wSNV, CEN180$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# wSNV vs H3K9me2_in_bodies
+ggTrend7 <- ggplot(data = CEN180,
+                   mapping = aes(x = wSNV,
+                                 y = H3K9me2_in_bodies)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x),
+                     labels = trans_format("log2", math_format(2^.x))) +
+  annotation_logticks(sides = "b") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y~s(x)) +
+  labs(x = "SNVs",
+       y = "H3K9me2") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180$wSNV, CEN180$H3K9me2_in_bodies, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180$wSNV, CEN180$H3K9me2_in_bodies, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# wSNV vs CENH3_in_bodies
+ggTrend8 <- ggplot(data = CEN180,
+                   mapping = aes(x = wSNV,
+                                 y = CENH3_in_bodies)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x),
+                     labels = trans_format("log2", math_format(2^.x))) +
+  annotation_logticks(sides = "b") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y~s(x)) +
+  labs(x = "SNVs",
+       y = "CENH3") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180$wSNV, CEN180$CENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180$wSNV, CEN180$CENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# CENH3_in_bodies vs HORavgSize
+ggTrend9 <- ggplot(data = CEN180,
+                   mapping = aes(x = CENH3_in_bodies,
+                                 y = HORavgSize)) +
+  geom_hex(bins = 60) +
+  scale_y_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x),
+                     labels = trans_format("log2", math_format(2^.x))) +
+  annotation_logticks(sides = "l") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y~s(x)) +
+  labs(x = "CENH3",
+       y = "HOR avg. size") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180$CENH3_in_bodies, CEN180$HORavgSize, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180$CENH3_in_bodies, CEN180$HORavgSize, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# wSNV vs HORavgSize 
+ggTrend10 <- ggplot(data = CEN180,
+                    mapping = aes(x = wSNV,
+                                  y = HORavgSize)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x),
+                     labels = trans_format("log2", math_format(2^.x))) +
+  scale_y_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x),
+                     labels = trans_format("log2", math_format(2^.x))) +
+  annotation_logticks(sides = "lb") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y~s(x)) +
+  labs(x = "SNVs",
+       y = "HOR avg. size") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180$wSNV, CEN180$HORavgSize, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180$wSNV, CEN180$HORavgSize, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+ggTrend_combined <- grid.arrange(grobs = list(
 #                                              ggTrend1,
 #                                              ggTrend2,
 #                                              ggTrend3,
 #                                              ggTrend4,
-#                                              ggTrend5,
-#                                              ggTrend6,
-#                                              ggTrend7,
-#                                              ggTrend8,
-#                                              ggTrend9,
-#                                              ggTrend10
-#                                             ),
-#                                 layout_matrix = rbind(
-#                                                       1:4,
-#                                                       5:8,
-#                                                       9:12
-#                                                      ))
-#ggsave(paste0(outDir,
-#              "trends_for_mean_levels_at_CEN180_in_t2t-col.20210610_",
-#              paste0(chrName, collapse = "_"), ".pdf"),
-#       plot = ggTrend_combined, height = 7*3, width = 8*4)
+                                              ggTrend5,
+                                              ggTrend6,
+                                              ggTrend7,
+                                              ggTrend8,
+                                              ggTrend9,
+                                              ggTrend10
+                                             ),
+                                 layout_matrix = rbind(
+                                                       1:4,
+                                                       5:8,
+                                                       9:12
+                                                      ))
+ggsave(paste0(outDir,
+              "trends_for_mean_levels_at_CEN180_in_t2t-col.20210610_",
+              paste0(chrName, collapse = "_"), ".pdf"),
+       plot = ggTrend_combined, height = 7*3, width = 8*4)
