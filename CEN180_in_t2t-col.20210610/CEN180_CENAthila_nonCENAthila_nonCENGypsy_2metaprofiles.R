@@ -241,7 +241,7 @@ control_ranLocMats <- mclapply(seq_along(control_ranLocMats), function(x) {
 # Athila
 ChIP_AthilaMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
-    as.matrix(read.table(paste0(ChIPDirs[x], "CEN180profiles/matrices/",
+    as.matrix(read.table(paste0(ChIPDirs[x], "CENAthilaProfiles/matrices/",
                                 ChIPNames[x],
                                 "_MappedOn_t2t-col.20210610_lowXM_", align, "_sort_norm_CENAthila_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
@@ -262,7 +262,7 @@ ChIP_AthilaMats <- mclapply(seq_along(ChIP_AthilaMats), function(x) {
 # Athila
 control_AthilaMats <- mclapply(seq_along(controlNames), function(x) {
   lapply(seq_along(chrName), function(y) {
-    as.matrix(read.table(paste0(controlDirs[x], "CEN180profiles/matrices/",
+    as.matrix(read.table(paste0(controlDirs[x], "CENAthilaProfiles/matrices/",
                                 controlNames[x],
                                 "_MappedOn_t2t-col.20210610_lowXM_", align, "_sort_norm_CENAthila_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
@@ -283,7 +283,7 @@ control_AthilaMats <- mclapply(seq_along(control_AthilaMats), function(x) {
 # nonCENAthila
 ChIP_nonCENAthilaMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
-    as.matrix(read.table(paste0(ChIPDirs[x], "CEN180profiles/matrices/",
+    as.matrix(read.table(paste0(ChIPDirs[x], "CENAthilaProfiles/matrices/",
                                 ChIPNames[x],
                                 "_MappedOn_t2t-col.20210610_lowXM_", align, "_sort_norm_nonCENAthila_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
@@ -304,7 +304,7 @@ ChIP_nonCENAthilaMats <- mclapply(seq_along(ChIP_nonCENAthilaMats), function(x) 
 # nonCENAthila
 control_nonCENAthilaMats <- mclapply(seq_along(controlNames), function(x) {
   lapply(seq_along(chrName), function(y) {
-    as.matrix(read.table(paste0(controlDirs[x], "CEN180profiles/matrices/",
+    as.matrix(read.table(paste0(controlDirs[x], "CENAthilaProfiles/matrices/",
                                 controlNames[x],
                                 "_MappedOn_t2t-col.20210610_lowXM_", align, "_sort_norm_nonCENAthila_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
