@@ -2,14 +2,13 @@
 
 # author: Andy Tock
 # contact: ajt200@cam.ac.uk
-# date: 16.06.2021
+# date: 13.07.2021
 
 # Group CEN180 sequences (identified by Piotr and Ian) in t2t-col.20210610 (assembled partly by Matt)
 # into quantiles according to decreasing:
 # 1. weighted SNV values relative to a genome-wide CEN180 consensus (calculated by Piotr)
-# 2. number of CEN180 sequences in a tandem repeat array of >= 2 near-contiguous CEN180 sequences
-#    (<= 10 bp apart) on the same strand
-# 3. repeat activity (calculated by Piotr; column titled "HORlengthsSum" by Piotr; i.e., the sum of repeat units that make up the HORs of which a given repeat unit is a member)
+# 2. distance to nearest CEN180 gap (for all gaps, gaps containing ATHILA, or gaps not containing ATHILA)
+# 3. repeat repetitiveness (calculated by Piotr; column titled "HORlengthsSum" by Piotr; i.e., the sum of repeat units that make up the HORs of which a given repeat unit is a member)
 # 4. coverage for various data sets (e.g., mean CENH3 ChIP-seq log2(ChIP/input) values)
 # 5. mappability given various k-mers
 
@@ -52,6 +51,9 @@ library(grid)
 library(gridExtra)
 library(extrafont)
 library(scales)
+library(GenomicRanges)
+#library(tidyr)
+#library(ggbeeswarm)
 
 # Load table of CEN180 coordinates in BED format
 CEN180 <- read.table(paste0("/home/ajt200/analysis/nanopore/t2t-col.20210610/annotation/CEN180/CEN180_in_t2t-col.20210610_",
@@ -64,66 +66,183 @@ colnames(CEN180) <- c("chr", "start", "end", "featureID", "wSNV", "strand", "HOR
 
 CEN180 <- data.frame(CEN180,
                      HORavgSize = (CEN180$HORlengthsSum+1) / (CEN180$HORcount+1))
-# Get CEN180 coordinates within chrName
-CEN180 <- CEN180[which(CEN180$chr %in% chrName),]
 
-# Determine if each CEN180 sequence is part of a tandem repeat array
-# of >= 2 near-contiguous CEN180 sequences (<= 10 bp apart) on the same strand
-# Assign an array ID number to each CEN180 within a tandem repeat array
-# and count the number of tandem repeats within the array
-CEN180$tandem_repeat <- as.logical("")
-CEN180$array <- as.integer("")
-CEN180$array_size <- as.integer("")
-CEN180_TR <- NULL
+# Load table of centromeric gaps in the main CEN180 arrays > 1 kb (both those containing and those not containing ATHILA)
+CENgapAll <- read.table(paste0("/home/ajt200/analysis/nanopore/t2t-col.20210610/annotation/CENgapAll/CENgapAll_in_t2t-col.20210610_",
+                               paste0(chrName, collapse = "_"), ".bed"),
+                        header = F)
+colnames(CENgapAll) <- c("chr", "start", "end", "featureID", "score", "strand")
+CENgapAllGR <- GRanges(seqnames = CENgapAll$chr,
+                       ranges = IRanges(CENgapAll$start+1, CENgapAll$end),
+                       strand = CENgapAll$strand,
+                       featureID = CENgapAll$featureID)
+# Load table of centromeric gaps in the main CEN180 arrays > 1 kb containing ATHILA
+CENgapAllAthila <- read.table(paste0("/home/ajt200/analysis/nanopore/t2t-col.20210610/annotation/CENgapAllAthila/CENgapAllAthila_in_t2t-col.20210610_",
+                                     paste0(chrName, collapse = "_"), ".bed"),
+                              header = F)
+colnames(CENgapAllAthila) <- c("chr", "start", "end", "featureID", "score", "strand")
+CENgapAllAthilaGR <- GRanges(seqnames = CENgapAllAthila$chr,
+                             ranges = IRanges(CENgapAllAthila$start+1, CENgapAllAthila$end),
+                             strand = CENgapAllAthila$strand,
+                             featureID = CENgapAllAthila$featureID)
+# Load table of centromeric gaps in the main CEN180 arrays > 1 kb not containing ATHILA
+CENgapAllNotAthila <- read.table(paste0("/home/ajt200/analysis/nanopore/t2t-col.20210610/annotation/CENgapAllNotAthila/CENgapAllNotAthila_in_t2t-col.20210610_",
+                                        paste0(chrName, collapse = "_"), ".bed"),
+                                 header = F)
+colnames(CENgapAllNotAthila) <- c("chr", "start", "end", "featureID", "score", "strand")
+CENgapAllNotAthilaGR <- GRanges(seqnames = CENgapAllNotAthila$chr,
+                                ranges = IRanges(CENgapAllNotAthila$start+1, CENgapAllNotAthila$end),
+                                strand = CENgapAllNotAthila$strand,
+                                featureID = CENgapAllNotAthila$featureID)
+
+# Get distance between each CEN180 and the
+# CENgapAll, CENgapAllAthila, or CENgapAllNotAthila that is nearest
+CEN180_dists <- data.frame()
 for(i in seq_along(chrName)) {
   print(chrName[i])
-  CEN180_chr <- CEN180[CEN180$chr == chrName[i],]
-  # First CEN180 in a chromosome
-  if ( CEN180_chr[2,]$start - CEN180_chr[1,]$end <= 10 &
-       CEN180_chr[2,]$strand == CEN180_chr[1,]$strand ) {
-    CEN180_chr[1,]$tandem_repeat <- TRUE
-    CEN180_chr[1,]$array <- as.integer(1)
-  } else {
-    CEN180_chr[1,]$tandem_repeat <- FALSE
-  }
-  # All other CEN180 sequences in a chromosome, except the last
-  for(j in 2:(dim(CEN180_chr)[1]-1)) {
-    if ( CEN180_chr[j,]$start - CEN180_chr[j-1,]$end <= 10 &
-         CEN180_chr[j,]$strand == CEN180_chr[j-1,]$strand ) {
-      CEN180_chr[j,]$tandem_repeat <- TRUE
-      CEN180_chr[j,]$array <- as.integer(CEN180_chr[j-1,]$array)
-    } else if ( CEN180_chr[j+1,]$start - CEN180_chr[j,]$end <= 10 &
-                CEN180_chr[j+1,]$strand == CEN180_chr[j,]$strand ) {
-      CEN180_chr[j,]$tandem_repeat <- TRUE
-      if ( length(CEN180_chr[!is.na(CEN180_chr$array),]$array) > 0 ) {
-        CEN180_chr[j,]$array <- as.integer(CEN180_chr[!is.na(CEN180_chr$array),]$array[
-                                  length(CEN180_chr[!is.na(CEN180_chr$array),]$array)] + 1)
-      } else {
-        CEN180_chr[j,]$array <- as.integer(1)
-      }
-    } else {
-      CEN180_chr[j,]$tandem_repeat <- FALSE
-    }
-  }
-  # Last CEN180 in a chromosome
-  if ( CEN180_chr[dim(CEN180_chr)[1],]$start - CEN180_chr[dim(CEN180_chr)[1]-1,]$end <= 10 &
-       CEN180_chr[dim(CEN180_chr)[1],]$strand == CEN180_chr[dim(CEN180_chr)[1]-1,]$strand ) {
-    CEN180_chr[dim(CEN180_chr)[1],]$tandem_repeat <- TRUE
-    CEN180_chr[dim(CEN180_chr)[1],]$array <- as.integer(CEN180_chr[dim(CEN180_chr)[1]-1,]$array)
-  } else {
-    CEN180_chr[dim(CEN180_chr)[1],]$tandem_repeat <- FALSE
-  }
-  for(k in 1:dim(CEN180_chr)[1]) {
-    if ( CEN180_chr[k,]$tandem_repeat == TRUE ) {
-      CEN180_chr[k,]$array_size <- as.integer(dim(CEN180_chr[
-                                     which(CEN180_chr$array == CEN180_chr[k,]$array),])[1])
-    } else {
-      CEN180_chr[k,]$array_size <- as.integer(1)
-    }
-  } 
-  CEN180_TR <- rbind(CEN180_TR, CEN180_chr)
+
+  CEN180chr <- CEN180[CEN180$chr == chrName[i],]
+
+  CENgapAllGRchr <- CENgapAllGR[seqnames(CENgapAllGR) == chrName[i]]
+  # Calculate distances between start and end coordinates of CEN180 and CENgapAll
+  CEN180Start_vs_CENgapAllStart <- mclapply(seq_along(CEN180chr$start), function(x) {
+    abs(CEN180chr[x,]$start-start(CENgapAllGRchr))
+  }, mc.cores = detectCores(), mc.preschedule = T)
+  CEN180End_vs_CENgapAllEnd <- mclapply(seq_along(CEN180chr$end), function(x) {
+    abs(CEN180chr[x,]$end-end(CENgapAllGRchr))
+  }, mc.cores = detectCores(), mc.preschedule = T)
+  CEN180Start_vs_CENgapAllEnd <- mclapply(seq_along(CEN180chr$start), function(x) {
+    abs(CEN180chr[x,]$start-end(CENgapAllGRchr))
+  }, mc.cores = detectCores(), mc.preschedule = T)
+  CEN180End_vs_CENgapAllStart <- mclapply(seq_along(CEN180chr$end), function(x) {
+    abs(CEN180chr[x,]$end-start(CENgapAllGRchr))
+  }, mc.cores = detectCores(), mc.preschedule = T)
+
+  # Get distance between each CEN180 and the
+  # CENgapAll that is nearest
+  minDistToCENgapAll <- unlist(mclapply(seq_along(CEN180chr$start), function(x) {
+    min(c(CEN180Start_vs_CENgapAllStart[[x]],
+          CEN180End_vs_CENgapAllEnd[[x]],
+          CEN180Start_vs_CENgapAllEnd[[x]],
+          CEN180End_vs_CENgapAllStart[[x]]))
+  }, mc.cores = detectCores(), mc.preschedule = T))
+
+  CENgapAllAthilaGRchr <- CENgapAllAthilaGR[seqnames(CENgapAllAthilaGR) == chrName[i]]
+  # Calculate distances between start and end coordinates of CEN180 and CENgapAllAthila
+  CEN180Start_vs_CENgapAllAthilaStart <- mclapply(seq_along(CEN180chr$start), function(x) {
+    abs(CEN180chr[x,]$start-start(CENgapAllAthilaGRchr))
+  }, mc.cores = detectCores(), mc.preschedule = T)
+  CEN180End_vs_CENgapAllAthilaEnd <- mclapply(seq_along(CEN180chr$end), function(x) {
+    abs(CEN180chr[x,]$end-end(CENgapAllAthilaGRchr))
+  }, mc.cores = detectCores(), mc.preschedule = T)
+  CEN180Start_vs_CENgapAllAthilaEnd <- mclapply(seq_along(CEN180chr$start), function(x) {
+    abs(CEN180chr[x,]$start-end(CENgapAllAthilaGRchr))
+  }, mc.cores = detectCores(), mc.preschedule = T)
+  CEN180End_vs_CENgapAllAthilaStart <- mclapply(seq_along(CEN180chr$end), function(x) {
+    abs(CEN180chr[x,]$end-start(CENgapAllAthilaGRchr))
+  }, mc.cores = detectCores(), mc.preschedule = T)
+
+  # Get distance between each CEN180 and the
+  # CENgapAllAthila that is nearest
+  minDistToCENgapAllAthila <- unlist(mclapply(seq_along(CEN180chr$start), function(x) {
+    min(c(CEN180Start_vs_CENgapAllAthilaStart[[x]],
+          CEN180End_vs_CENgapAllAthilaEnd[[x]],
+          CEN180Start_vs_CENgapAllAthilaEnd[[x]],
+          CEN180End_vs_CENgapAllAthilaStart[[x]]))
+  }, mc.cores = detectCores(), mc.preschedule = T))
+
+  CENgapAllNotAthilaGRchr <- CENgapAllNotAthilaGR[seqnames(CENgapAllNotAthilaGR) == chrName[i]]
+  # Calculate distances between start and end coordinates of CEN180 and CENgapAllNotAthila
+  CEN180Start_vs_CENgapAllNotAthilaStart <- mclapply(seq_along(CEN180chr$start), function(x) {
+    abs(CEN180chr[x,]$start-start(CENgapAllNotAthilaGRchr))
+  }, mc.cores = detectCores(), mc.preschedule = T)
+  CEN180End_vs_CENgapAllNotAthilaEnd <- mclapply(seq_along(CEN180chr$end), function(x) {
+    abs(CEN180chr[x,]$end-end(CENgapAllNotAthilaGRchr))
+  }, mc.cores = detectCores(), mc.preschedule = T)
+  CEN180Start_vs_CENgapAllNotAthilaEnd <- mclapply(seq_along(CEN180chr$start), function(x) {
+    abs(CEN180chr[x,]$start-end(CENgapAllNotAthilaGRchr))
+  }, mc.cores = detectCores(), mc.preschedule = T)
+  CEN180End_vs_CENgapAllNotAthilaStart <- mclapply(seq_along(CEN180chr$end), function(x) {
+    abs(CEN180chr[x,]$end-start(CENgapAllNotAthilaGRchr))
+  }, mc.cores = detectCores(), mc.preschedule = T)
+
+  # Get distance between each CEN180 and the
+  # CENgapAllNotAthila that is nearest
+  minDistToCENgapAllNotAthila <- unlist(mclapply(seq_along(CEN180chr$start), function(x) {
+    min(c(CEN180Start_vs_CENgapAllNotAthilaStart[[x]],
+          CEN180End_vs_CENgapAllNotAthilaEnd[[x]],
+          CEN180Start_vs_CENgapAllNotAthilaEnd[[x]],
+          CEN180End_vs_CENgapAllNotAthilaStart[[x]]))
+  }, mc.cores = detectCores(), mc.preschedule = T))
+
+  CEN180chr <- data.frame(CEN180chr,
+                          minDistToCENgapAll = minDistToCENgapAll,
+                          minDistToCENgapAllAthila = minDistToCENgapAllAthila,
+                          minDistToCENgapAllNotAthila = minDistToCENgapAllNotAthila)
+  CEN180_dists <- rbind(CEN180_dists, CEN180chr)
 }
-CEN180 <- CEN180_TR
+CEN180 <- CEN180_dists
+rm(CEN180_dists); gc()
+
+
+## Determine if each CEN180 sequence is part of a tandem repeat array
+## of >= 2 near-contiguous CEN180 sequences (<= 10 bp apart) on the same strand
+## Assign an array ID number to each CEN180 within a tandem repeat array
+## and count the number of tandem repeats within the array
+#CEN180$tandem_repeat <- as.logical("")
+#CEN180$array <- as.integer("")
+#CEN180$array_size <- as.integer("")
+#CEN180_TR <- NULL
+#for(i in seq_along(chrName)) {
+#  print(chrName[i])
+#  CEN180_chr <- CEN180[CEN180$chr == chrName[i],]
+#  # First CEN180 in a chromosome
+#  if ( CEN180_chr[2,]$start - CEN180_chr[1,]$end <= 10 &
+#       CEN180_chr[2,]$strand == CEN180_chr[1,]$strand ) {
+#    CEN180_chr[1,]$tandem_repeat <- TRUE
+#    CEN180_chr[1,]$array <- as.integer(1)
+#  } else {
+#    CEN180_chr[1,]$tandem_repeat <- FALSE
+#  }
+#  # All other CEN180 sequences in a chromosome, except the last
+#  for(j in 2:(dim(CEN180_chr)[1]-1)) {
+#    if ( CEN180_chr[j,]$start - CEN180_chr[j-1,]$end <= 10 &
+#         CEN180_chr[j,]$strand == CEN180_chr[j-1,]$strand ) {
+#      CEN180_chr[j,]$tandem_repeat <- TRUE
+#      CEN180_chr[j,]$array <- as.integer(CEN180_chr[j-1,]$array)
+#    } else if ( CEN180_chr[j+1,]$start - CEN180_chr[j,]$end <= 10 &
+#                CEN180_chr[j+1,]$strand == CEN180_chr[j,]$strand ) {
+#      CEN180_chr[j,]$tandem_repeat <- TRUE
+#      if ( length(CEN180_chr[!is.na(CEN180_chr$array),]$array) > 0 ) {
+#        CEN180_chr[j,]$array <- as.integer(CEN180_chr[!is.na(CEN180_chr$array),]$array[
+#                                  length(CEN180_chr[!is.na(CEN180_chr$array),]$array)] + 1)
+#      } else {
+#        CEN180_chr[j,]$array <- as.integer(1)
+#      }
+#    } else {
+#      CEN180_chr[j,]$tandem_repeat <- FALSE
+#    }
+#  }
+#  # Last CEN180 in a chromosome
+#  if ( CEN180_chr[dim(CEN180_chr)[1],]$start - CEN180_chr[dim(CEN180_chr)[1]-1,]$end <= 10 &
+#       CEN180_chr[dim(CEN180_chr)[1],]$strand == CEN180_chr[dim(CEN180_chr)[1]-1,]$strand ) {
+#    CEN180_chr[dim(CEN180_chr)[1],]$tandem_repeat <- TRUE
+#    CEN180_chr[dim(CEN180_chr)[1],]$array <- as.integer(CEN180_chr[dim(CEN180_chr)[1]-1,]$array)
+#  } else {
+#    CEN180_chr[dim(CEN180_chr)[1],]$tandem_repeat <- FALSE
+#  }
+#  for(k in 1:dim(CEN180_chr)[1]) {
+#    if ( CEN180_chr[k,]$tandem_repeat == TRUE ) {
+#      CEN180_chr[k,]$array_size <- as.integer(dim(CEN180_chr[
+#                                     which(CEN180_chr$array == CEN180_chr[k,]$array),])[1])
+#    } else {
+#      CEN180_chr[k,]$array_size <- as.integer(1)
+#    }
+#  } 
+#  CEN180_TR <- rbind(CEN180_TR, CEN180_chr)
+#}
+#CEN180 <- CEN180_TR
+
 
 # Load table of coordinates for random loci in BED format
 ranLoc <- read.table(paste0("/home/ajt200/analysis/nanopore/t2t-col.20210610/annotation/CEN180/CEN180_in_t2t-col.20210610_",
@@ -139,11 +258,9 @@ ranLoc <- data.frame(ranLoc,
                      repeatsChromosome = NA,
                      repeatsGenome = NA,
                      HORavgSize = NA,
-                     tandem_repeat = NA,
-                     array = NA,
-                     array_size = NA)
-# Get ranLoc coordinates within chrName
-ranLoc <- ranLoc[which(ranLoc$chr %in% chrName),]
+                     minDistToCENgapAll = NA,
+                     minDistToCENgapAllAthila = NA,
+                     minDistToCENgapAllNotAthila = NA)
 
 # Calculate mean coverage and mappability in CEN180 sequences and random loci
 
