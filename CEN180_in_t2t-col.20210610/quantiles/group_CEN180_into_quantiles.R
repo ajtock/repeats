@@ -55,6 +55,24 @@ library(GenomicRanges)
 #library(tidyr)
 #library(ggbeeswarm)
 
+# Genomic definitions
+fai <- read.table("/home/ajt200/analysis/nanopore/t2t-col.20210610/t2t-col.20210610.fa.fai", header = F)
+chrs <- fai$V1[which(fai$V1 %in% chrName)]
+chrLens <- fai$V2[which(fai$V1 %in% chrName)]
+regionGR <- GRanges(seqnames = chrs,
+                    ranges = IRanges(start = 1,
+                                     end = chrLens),
+                    strand = "*")
+
+# Define centromere GRanges
+CENstart <- c(14841110,3823792,13597188,4203902,11784131)[which(fai$V1 %in% chrName)]
+CENend <- c(17559778,6045243,15733925,6977949,14551809)[which(fai$V1 %in% chrName)]
+CENGR <- GRanges(seqnames = chrs,
+                 ranges = IRanges(start = CENstart,
+                                  end = CENend),
+                 strand = "*")
+
+
 # Load table of CEN180 coordinates in BED format
 CEN180 <- read.table(paste0("/home/ajt200/analysis/nanopore/t2t-col.20210610/annotation/CEN180/CEN180_in_t2t-col.20210610_",
                             paste0(chrName, collapse = "_"), ".bed"),
@@ -370,31 +388,39 @@ controlDirs <- sapply(seq_along(controlNamesDir), function(x) {
 
 ## DNAmeth
 DNAmethNames <- c(
+                  rep("Col_0_deepsignalDNAmeth_30kb_90pc", 2)
 #                  "WT_nanopolishDNAmeth_95_10kb",
-                  rep("Col_0_BSseq_Rep1_ERR965674", 3)
+#                  rep("Col_0_BSseq_Rep1_ERR965674", 3),
 #                  rep("Col0_BSseq_Rep1", 3),
 #                  rep("WT_BSseq_Rep2_2013", 3)
                  )
 DNAmethNamesDir <- c(
+                      rep("nanopore/t2t-col.20210610/deepsignal_DNAmeth", 2)
 #                     "nanopore/t2t-col.20210610/nanopolish_DNAmeth",
-                     rep("BSseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_BSseq_t2t-col.20210610/coverage", 3)
+#                     rep("BSseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_BSseq_t2t-col.20210610/coverage", 3),
 #                     rep("BSseq_seedling_Yang_Zhu_2016_CellRes/snakemake_BSseq_t2t-col.20210610/coverage", 3),
 #                     rep("BSseq_leaf_Stroud_Jacobsen_2013_Cell_2014_NSMB/snakemake_BSseq_t2t-col.20210610/coverage", 3)
                     )
 DNAmethContexts <- c(
-#                     "CpG",
                      "CpG",
-                     "CHG",
-                     "CHH"
+                     "CHG"
+#                     "CHH"
+#                     "CpG",
+#                     "CpG",
+#                     "CHG",
+#                     "CHH",
 #                     "CpG",
 #                     "CHG",
 #                     "CHH"
                     )
 DNAmethNamesPlot <- c(
+                      "mCG (DeepSignal)",
+                      "mCHG (DeepSignal)"
+#                      "mCHH (DeepSignal)"
 #                      "mCG (Nanopolish)",
-                      "mCG (PE BS-seq)",
-                      "mCHG (PE BS-seq)",
-                      "mCHH (PE BS-seq)"
+#                      "mCG (PE BS-seq)",
+#                      "mCHG (PE BS-seq)",
+#                      "mCHH (PE BS-seq)",
 #                      "mCG (SE BS-seq)",
 #                      "mCHG (SE BS-seq)",
 #                      "mCHH (SE BS-seq)"
@@ -439,10 +465,10 @@ ChIP_featureMats <- mclapply(seq_along(ChIPNames), function(x) {
                          colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(ChIPNames))
-# If features from all 5 chromosomes are to be analysed,
-# concatenate the 5 corresponding feature coverage matrices
+# If features from multiple chromosomes are to be analysed,
+# concatenate the corresponding feature coverage matrices
 ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
-  if(length(chrName) == 5) {
+  if(length(chrName) > 1) {
     do.call(rbind, ChIP_featureMats[[x]])
   } else {
     ChIP_featureMats[[x]][[1]]
@@ -554,13 +580,16 @@ CEN180 <- data.frame(CEN180,
 #                     DMC1_V5_Rep1_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[14]],
 #                     DMC1_V5_Rep2_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[15]],
 #                     SPO11oligos_in_bodies = log2ChIP_featureMats_bodiesRowMeans[[3]],
-#                     mCG_Nanopolish_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[1]], 
-#                     mCG_PE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[2]], 
-#                     mCHG_PE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[3]], 
-#                     mCHH_PE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[4]], 
-#                     mCG_SE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[5]], 
-#                     mCHG_SE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[6]], 
-#                     mCHH_SE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[7]], 
+                     mCG_DeepSignal_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[1]], 
+                     mCHG_DeepSignal_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[2]], 
+#                     mCHH_DeepSignal_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[3]], 
+#                     mCG_Nanopolish_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[#]], 
+#                     mCG_PE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[4]], 
+#                     mCHG_PE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[5]], 
+#                     mCHH_PE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[6]], 
+#                     mCG_SE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[7]], 
+#                     mCHG_SE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[8]], 
+#                     mCHH_SE_BSseq_in_bodies = DNAmeth_featureMats_bodiesRowMeans[[9]], 
                      PE_input_REC8_in_bodies = control_featureMats_bodiesRowMeans[[1]],
                      PE_input_CENH3_in_bodies = control_featureMats_bodiesRowMeans[[2]],
                      PE_input_H3K9me2_in_bodies = control_featureMats_bodiesRowMeans[[3]]
@@ -609,10 +638,10 @@ ChIP_ranLocMats <- mclapply(seq_along(ChIPNames), function(x) {
                          colClasses = c(rep("NULL", 1000/binSize), rep(NA, ((1000*2)+(180))/binSize), rep("NULL", 1000/binSize))))
   })
 }, mc.cores = length(ChIPNames))
-# If ranLocs from all 5 chromosomes are to be analysed,
-# concatenate the 5 corresponding ranLoc coverage matrices
+# If ranLocs from multiple chromosomes are to be analysed,
+# concatenate the corresponding ranLoc coverage matrices
 ChIP_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
-  if(length(chrName) == 5) {
+  if(length(chrName) > 1) {
     do.call(rbind, ChIP_ranLocMats[[x]])
   } else {
     ChIP_ranLocMats[[x]][[1]]
@@ -724,13 +753,16 @@ ranLoc <- data.frame(ranLoc,
 #                     DMC1_V5_Rep1_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[14]],
 #                     DMC1_V5_Rep2_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[15]],
 #                     SPO11oligos_in_bodies = log2ChIP_ranLocMats_bodiesRowMeans[[3]],
-#                     mCG_Nanopolish_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[1]], 
-#                     mCG_PE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[2]], 
-#                     mCHG_PE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[3]], 
-#                     mCHH_PE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[4]], 
-#                     mCG_SE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[5]], 
-#                     mCHG_SE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[6]], 
-#                     mCHH_SE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[7]], 
+                     mCG_DeepSignal_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[1]], 
+                     mCHG_DeepSignal_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[2]], 
+#                     mCHH_DeepSignal_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[3]], 
+#                     mCG_Nanopolish_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[#]], 
+#                     mCG_PE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[4]], 
+#                     mCHG_PE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[5]], 
+#                     mCHH_PE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[6]], 
+#                     mCG_SE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[7]], 
+#                     mCHG_SE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[8]], 
+#                     mCHH_SE_BSseq_in_bodies = DNAmeth_ranLocMats_bodiesRowMeans[[9]], 
                      PE_input_REC8_in_bodies = control_ranLocMats_bodiesRowMeans[[1]],
                      PE_input_CENH3_in_bodies = control_ranLocMats_bodiesRowMeans[[2]],
                      PE_input_H3K9me2_in_bodies = control_ranLocMats_bodiesRowMeans[[3]]
@@ -745,7 +777,7 @@ ranLoc <- data.frame(ranLoc,
                      )
 
 # Define set of ordering factors to be used for grouping genes into quantiles
-orderingFactor <- colnames(CEN180)[c(5, 7, 8, 9, 10, 13:length(colnames(CEN180)))]
+orderingFactor <- colnames(CEN180)[c(5, 7:10, 11:13, 14:17, 18:19, 20:length(colnames(CEN180)))]
 outDir <- paste0("quantiles_by_", orderingFactor, "/",
                  paste0(chrName, collapse = "_"), "/")
 plotDir <- paste0(outDir, "/plots/")
@@ -776,6 +808,8 @@ mclapply(seq_along(orderingFactor), function(w) {
     quantiles <- 3
   } else if(orderingFactor[w] == "mCG_PE_BSseq_in_bodies" & chrName[length(chrName)] == "Chr4") {
     quantiles <- 3
+#  } else if(orderingFactor[w] == "mCG_DeepSignal_in_bodies" & chrName[length(chrName)] == "Chr4") {
+#    quantiles <- 3
   } else if(grepl("input", orderingFactor[w])) {
     quantiles <- 2
   } else if(grepl("gDNA", orderingFactor[w])) {
@@ -870,9 +904,11 @@ profilesVal_feature <- c(
                               CEN180$HORlengthsSum,
                               CEN180$HORcount,
                               CEN180$HORavgSize,
-                              CEN180$array_size),
+                              CEN180$minDistToCENgapAll,
+                              CEN180$minDistToCENgapAllAthila,
+                              CEN180$minDistToCENgapAllNotAthila),
                          log2ChIP_featureMats_bodiesRowMeans,
-#                         DNAmeth_featureMats_bodiesRowMeans,
+                         DNAmeth_featureMats_bodiesRowMeans,
                          control_featureMats_bodiesRowMeans[2],
                          control_featureMats_bodiesRowMeans[3],
                          control_featureMats_bodiesRowMeans[1]
@@ -880,14 +916,16 @@ profilesVal_feature <- c(
 profilesDF_feature <- as.data.frame(do.call(cbind, profilesVal_feature),
                                     stringsAsFactors = F)
 profileNames_feature <- c(
-                          "SNVs",
+                          "Variant score ('wSNV')",
                           "% identity",
                           "Repetitiveness",
                           "HOR count",
                           "HOR avg. size",
-                          "Array size",
+                          "Dist. gap (all)",
+                          "Dist. gap (ATHILA)",
+                          "Dist. gap (not ATHILA)",
                           log2ChIPNamesPlot,
-#                          DNAmethNamesPlot,
+                          DNAmethNamesPlot,
                           controlNamesPlot[2],
                           controlNamesPlot[3],
                           controlNamesPlot[1]
@@ -994,10 +1032,10 @@ ggObj <- ggplot(data = corDat_feature,
                  "for levels at CEN180 in t2t-col.20210610" ~
                  .(paste0(chrName, collapse = ",")))) 
 ggsave(paste0(outDir, "Spearman_correlation_matrix_levels_at_CEN180_in_t2t-col.20210610_",
-              paste0(chrName, collapse = "_"), "_qVals.pdf"),
+              paste0(chrName, collapse = "_"), "_qVals_v130721.pdf"),
        plot = ggObj, height = 30, width = 30)
 
-# Make scatter plots with trend lines
+# Make hexagonal heatmaps of 2d bin counts with trend lines
 ## map_K150_E4_in_bodies vs wSNV
 #ggTrend1 <- ggplot(data = CEN180,
 #                   mapping = aes(x = map_K150_E4_in_bodies,
@@ -1009,9 +1047,9 @@ ggsave(paste0(outDir, "Spearman_correlation_matrix_levels_at_CEN180_in_t2t-col.2
 #  annotation_logticks(sides = "l") +
 #  scale_fill_viridis() +
 #  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-#              method = "gam", formula = y~s(x)) +
+#              method = "gam", formula = y ~ s(x, bs = "cs")) +
 #  labs(x = "Mappability (k=150 e=4)",
-#       y = "SNVs") +
+#       y = "Variant score ('wSNV')") +
 #  theme_bw() +
 #  theme(
 #        axis.ticks = element_line(size = 0.5, colour = "black"),
@@ -1043,7 +1081,7 @@ ggsave(paste0(outDir, "Spearman_correlation_matrix_levels_at_CEN180_in_t2t-col.2
 #  annotation_logticks(sides = "l") +
 #  scale_fill_viridis() +
 #  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-#              method = "gam", formula = y~s(x)) +
+#              method = "gam", formula = y ~ s(x, bs = "cs")) +
 #  labs(x = "Mappability (k=150 e=4)",
 #       y = "Repetitiveness") +
 #  theme_bw() +
@@ -1073,7 +1111,7 @@ ggsave(paste0(outDir, "Spearman_correlation_matrix_levels_at_CEN180_in_t2t-col.2
 #  geom_hex(bins = 60) +
 #  scale_fill_viridis() +
 #  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-#              method = "gam", formula = y~s(x)) +
+#              method = "gam", formula = y ~ s(x, bs = "cs")) +
 #  labs(x = "Mappability (k=150 e=4)",
 #       y = "H3K9me2") +
 #  theme_bw() +
@@ -1103,7 +1141,7 @@ ggsave(paste0(outDir, "Spearman_correlation_matrix_levels_at_CEN180_in_t2t-col.2
 #  geom_hex(bins = 60) +
 #  scale_fill_viridis() +
 #  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-#              method = "gam", formula = y~s(x)) +
+#              method = "gam", formula = y ~ s(x, bs = "cs")) +
 #  labs(x = "Mappability (k=150 e=4)",
 #       y = "CENH3") +
 #  theme_bw() +
@@ -1137,7 +1175,7 @@ ggTrend5 <- ggplot(data = CEN180,
   annotation_logticks(sides = "l") +
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-              method = "gam", formula = y~s(x)) +
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
   labs(x = "CENH3",
        y = "Repetitiveness") +
   theme_bw() +
@@ -1174,8 +1212,8 @@ ggTrend6 <- ggplot(data = CEN180,
   annotation_logticks(sides = "lb") +
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-              method = "gam", formula = y~s(x)) +
-  labs(x = "SNVs",
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Variant score ('wSNV')",
        y = "Repetitiveness") +
   theme_bw() +
   theme(
@@ -1208,8 +1246,8 @@ ggTrend7 <- ggplot(data = CEN180,
   annotation_logticks(sides = "b") +
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-              method = "gam", formula = y~s(x)) +
-  labs(x = "SNVs",
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Variant score ('wSNV')",
        y = "H3K9me2") +
   theme_bw() +
   theme(
@@ -1242,8 +1280,8 @@ ggTrend8 <- ggplot(data = CEN180,
   annotation_logticks(sides = "b") +
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-              method = "gam", formula = y~s(x)) +
-  labs(x = "SNVs",
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Variant score ('wSNV')",
        y = "CENH3") +
   theme_bw() +
   theme(
@@ -1276,7 +1314,7 @@ ggTrend9 <- ggplot(data = CEN180,
   annotation_logticks(sides = "l") +
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-              method = "gam", formula = y~s(x)) +
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
   labs(x = "CENH3",
        y = "HOR avg. size") +
   theme_bw() +
@@ -1313,8 +1351,8 @@ ggTrend10 <- ggplot(data = CEN180,
   annotation_logticks(sides = "lb") +
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-              method = "gam", formula = y~s(x)) +
-  labs(x = "SNVs",
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Variant score ('wSNV')",
        y = "HOR avg. size") +
   theme_bw() +
   theme(
@@ -1343,7 +1381,7 @@ ggTrend11 <- ggplot(data = CEN180,
   geom_hex(bins = 60) +
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-              method = "gam", formula = y~s(x)) +
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
   labs(x = "CENH3",
        y = "LoCENH3") +
   theme_bw() +
@@ -1373,7 +1411,7 @@ ggTrend12 <- ggplot(data = CEN180,
   geom_hex(bins = 60) +
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-              method = "gam", formula = y~s(x)) +
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
   labs(x = "CENH3",
        y = "ZmCENH3") +
   theme_bw() +
@@ -1403,7 +1441,7 @@ ggTrend13 <- ggplot(data = CEN180,
   geom_hex(bins = 60) +
   scale_fill_viridis() +
   geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
-              method = "gam", formula = y~s(x)) +
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
   labs(x = "LoCENH3",
        y = "ZmCENH3") +
   theme_bw() +
@@ -1453,3 +1491,495 @@ ggsave(paste0(outDir,
               "trends_for_levels_at_CEN180_in_t2t-col.20210610_",
               paste0(chrName, collapse = "_"), ".pdf"),
        plot = ggTrend_combined, height = 7*2, width = 8*6)
+
+
+# Extract CEN180 residing within centromeric boundaries
+CEN180_CEN <- data.frame()
+for(i in seq_along(chrName)) {
+  CEN180_CENchr <- CEN180[CEN180$chr == chrName[i] &
+                          CEN180$start >= CENstart[i] &
+                          CEN180$end <= CENend[i],]
+  CEN180_CEN <- rbind(CEN180_CEN, CEN180_CENchr)
+}
+
+# Make hexagonal heatmaps of 2d bin counts with trend lines
+# minDistToCENgapAll vs wSNV
+ggTrend1 <- ggplot(data = CEN180_CEN,
+                   mapping = aes(x = minDistToCENgapAll,
+                                 y = wSNV)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x),
+                     labels = trans_format("log2", math_format(2^.x))) +
+  annotation_logticks(sides = "lb") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Distance to nearest CENgapAll (bp)",
+       y = "Variant score ('wSNV')") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180_CEN$minDistToCENgapAll, CEN180_CEN$wSNV, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180_CEN$minDistToCENgapAll, CEN180_CEN$wSNV, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180_CEN)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# minDistToCENgapAll vs HORlengthsSum
+ggTrend2 <- ggplot(data = CEN180_CEN,
+                   mapping = aes(x = minDistToCENgapAll,
+                                 y = HORlengthsSum+1)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "lb") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Distance to nearest CENgapAll (bp)",
+       y = "Repetitiveness") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180_CEN$minDistToCENgapAll, CEN180_CEN$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180_CEN$minDistToCENgapAll, CEN180_CEN$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180_CEN)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# minDistToCENgapAll vs HORcount
+ggTrend3 <- ggplot(data = CEN180_CEN,
+                   mapping = aes(x = minDistToCENgapAll,
+                                 y = HORcount+1)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "lb") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Distance to nearest CENgapAll (bp)",
+       y = "HOR count") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180_CEN$minDistToCENgapAll, CEN180_CEN$HORcount, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180_CEN$minDistToCENgapAll, CEN180_CEN$HORcount, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180_CEN)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# minDistToCENgapAll vs CENH3_in_bodies
+ggTrend4 <- ggplot(data = CEN180_CEN,
+                   mapping = aes(x = minDistToCENgapAll,
+                                 y = CENH3_in_bodies)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "b") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Distance to nearest CENgapAll (bp)",
+       y = "CENH3") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180_CEN$minDistToCENgapAll, CEN180_CEN$CENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180_CEN$minDistToCENgapAll, CEN180_CEN$CENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180_CEN)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+ggTrend_combined <- grid.arrange(grobs = list(
+                                              ggTrend1,
+                                              ggTrend2,
+                                              ggTrend3,
+                                              ggTrend4
+                                             ),
+                                 layout_matrix = rbind(
+                                                       1:4
+                                                      ))
+ggsave(paste0(outDir,
+              "trends_for_CEN180_CEN_distance_to_nearest_CENgapAll_in_t2t-col.20210610_",
+              paste0(chrName, collapse = "_"), ".pdf"),
+       plot = ggTrend_combined, height = 7*1, width = 8*4)
+
+
+# Make hexagonal heatmaps of 2d bin counts with trend lines
+# minDistToCENgapAllAthila vs wSNV
+ggTrend1 <- ggplot(data = CEN180_CEN,
+                   mapping = aes(x = minDistToCENgapAllAthila,
+                                 y = wSNV)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x),
+                     labels = trans_format("log2", math_format(2^.x))) +
+  annotation_logticks(sides = "lb") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Distance to nearest CENgapATHILA (bp)",
+       y = "Variant score ('wSNV')") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180_CEN$minDistToCENgapAllAthila, CEN180_CEN$wSNV, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180_CEN$minDistToCENgapAllAthila, CEN180_CEN$wSNV, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180_CEN)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# minDistToCENgapAllAthila vs HORlengthsSum
+ggTrend2 <- ggplot(data = CEN180_CEN,
+                   mapping = aes(x = minDistToCENgapAllAthila,
+                                 y = HORlengthsSum+1)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "lb") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Distance to nearest CENgapATHILA (bp)",
+       y = "Repetitiveness") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180_CEN$minDistToCENgapAllAthila, CEN180_CEN$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180_CEN$minDistToCENgapAllAthila, CEN180_CEN$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180_CEN)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# minDistToCENgapAllAthila vs HORcount
+ggTrend3 <- ggplot(data = CEN180_CEN,
+                   mapping = aes(x = minDistToCENgapAllAthila,
+                                 y = HORcount+1)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "lb") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Distance to nearest CENgapATHILA (bp)",
+       y = "HOR count") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180_CEN$minDistToCENgapAllAthila, CEN180_CEN$HORcount, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180_CEN$minDistToCENgapAllAthila, CEN180_CEN$HORcount, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180_CEN)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# minDistToCENgapAllAthila vs CENH3_in_bodies
+ggTrend4 <- ggplot(data = CEN180_CEN,
+                   mapping = aes(x = minDistToCENgapAllAthila,
+                                 y = CENH3_in_bodies)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "b") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Distance to nearest CENgapATHILA (bp)",
+       y = "CENH3") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180_CEN$minDistToCENgapAllAthila, CEN180_CEN$CENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180_CEN$minDistToCENgapAllAthila, CEN180_CEN$CENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180_CEN)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+ggTrend_combined <- grid.arrange(grobs = list(
+                                              ggTrend1,
+                                              ggTrend2,
+                                              ggTrend3,
+                                              ggTrend4
+                                             ),
+                                 layout_matrix = rbind(
+                                                       1:4
+                                                      ))
+ggsave(paste0(outDir,
+              "trends_for_CEN180_CEN_distance_to_nearest_CENgapAllAthila_in_t2t-col.20210610_",
+              paste0(chrName, collapse = "_"), ".pdf"),
+       plot = ggTrend_combined, height = 7*1, width = 8*4)
+
+
+# Make hexagonal heatmaps of 2d bin counts with trend lines
+# minDistToCENgapAllNotAthila vs wSNV
+ggTrend1 <- ggplot(data = CEN180_CEN,
+                   mapping = aes(x = minDistToCENgapAllNotAthila,
+                                 y = wSNV)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_continuous(trans = log2_trans(),
+                     breaks = trans_breaks("log2", function(x) 2^x),
+                     labels = trans_format("log2", math_format(2^.x))) +
+  annotation_logticks(sides = "lb") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Distance to nearest CENgapNotATHILA (bp)",
+       y = "Variant score ('wSNV')") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180_CEN$minDistToCENgapAllNotAthila, CEN180_CEN$wSNV, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180_CEN$minDistToCENgapAllNotAthila, CEN180_CEN$wSNV, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180_CEN)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# minDistToCENgapAllNotAthila vs HORlengthsSum
+ggTrend2 <- ggplot(data = CEN180_CEN,
+                   mapping = aes(x = minDistToCENgapAllNotAthila,
+                                 y = HORlengthsSum+1)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "lb") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Distance to nearest CENgapNotATHILA (bp)",
+       y = "Repetitiveness") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180_CEN$minDistToCENgapAllNotAthila, CEN180_CEN$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180_CEN$minDistToCENgapAllNotAthila, CEN180_CEN$HORlengthsSum, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180_CEN)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# minDistToCENgapAllNotAthila vs HORcount
+ggTrend3 <- ggplot(data = CEN180_CEN,
+                   mapping = aes(x = minDistToCENgapAllNotAthila,
+                                 y = HORcount+1)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  scale_y_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "lb") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Distance to nearest CENgapNotATHILA (bp)",
+       y = "HOR count") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180_CEN$minDistToCENgapAllNotAthila, CEN180_CEN$HORcount, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180_CEN$minDistToCENgapAllNotAthila, CEN180_CEN$HORcount, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180_CEN)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+# minDistToCENgapAllNotAthila vs CENH3_in_bodies
+ggTrend4 <- ggplot(data = CEN180_CEN,
+                   mapping = aes(x = minDistToCENgapAllNotAthila,
+                                 y = CENH3_in_bodies)) +
+  geom_hex(bins = 60) +
+  scale_x_continuous(trans = log10_trans(),
+                     breaks = trans_breaks("log10", function(x) 10^x),
+                     labels = trans_format("log10", math_format(10^.x))) +
+  annotation_logticks(sides = "b") +
+  scale_fill_viridis() +
+  geom_smooth(colour = "red", fill = "grey70", alpha = 0.9,
+              method = "gam", formula = y ~ s(x, bs = "cs")) +
+  labs(x = "Distance to nearest CENgapNotATHILA (bp)",
+       y = "CENH3") +
+  theme_bw() +
+  theme(
+        axis.ticks = element_line(size = 0.5, colour = "black"),
+        axis.ticks.length = unit(0.25, "cm"),
+        axis.text.x = element_text(size = 16, colour = "black"),
+        axis.text.y = element_text(size = 16, colour = "black"),
+        axis.title = element_text(size = 18, colour = "black"),
+        panel.grid = element_blank(),
+        panel.background = element_blank(),
+        panel.border = element_rect(size = 1.0, colour = "black"),
+        plot.margin = unit(c(0.3,1.2,0.0,0.3), "cm"),
+        plot.title = element_text(hjust = 0.5, size = 18)) +
+  ggtitle(bquote(italic(r[s]) ~ "=" ~
+                 .(round(cor.test(CEN180_CEN$minDistToCENgapAllNotAthila, CEN180_CEN$CENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$estimate[[1]],
+                         digits = 2)) *
+                 ";" ~ italic(P) ~ "=" ~
+                 .(round(min(0.5, cor.test(CEN180_CEN$minDistToCENgapAllNotAthila, CEN180_CEN$CENH3_in_bodies, method = "spearman", use = "pairwise.complete.obs")$p.value * sqrt( (dim(CEN180_CEN)[1]/100) )),
+                         digits = 5)) ~
+                 "(CEN180 in" ~ .(paste0(chrName, collapse = ",")) * ")"))
+
+ggTrend_combined <- grid.arrange(grobs = list(
+                                              ggTrend1,
+                                              ggTrend2,
+                                              ggTrend3,
+                                              ggTrend4
+                                             ),
+                                 layout_matrix = rbind(
+                                                       1:4
+                                                      ))
+ggsave(paste0(outDir,
+              "trends_for_CEN180_CEN_distance_to_nearest_CENgapAllNotAthila_in_t2t-col.20210610_",
+              paste0(chrName, collapse = "_"), ".pdf"),
+       plot = ggTrend_combined, height = 7*1, width = 8*4)
