@@ -9,7 +9,7 @@
 # for all CEN180 sequences, CENAthila, nonCENAthila, nonCENGypsy and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENAthila_nonCENAthila_nonCENGypsy_RNAseq_6metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.96' 'Col_0_RNAseq_Rep1_ERR966157,Col_0_RNAseq_Rep2_ERR966158,Col_0_RNAseq_Rep3_ERR966159,met1_3_RNAseq_Rep1_ERR966160,met1_3_RNAseq_Rep2_ERR966161,met1_3_RNAseq_Rep3_ERR966162' 'RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610' 'wt Rep1,wt Rep2,wt Rep3,met1 Rep1,met1 Rep2,met1 Rep3' 'springgreen2,forestgreen,darkgreen,magenta,purple,purple4'   
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENAthila_nonCENAthila_nonCENGypsy_RNAseq_6metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 '2kb' 10 10 10bp 10bp '0.02,0.96' 'Col_0_RNAseq_Rep1_ERR966157,Col_0_RNAseq_Rep2_ERR966158,Col_0_RNAseq_Rep3_ERR966159,met1_3_RNAseq_Rep1_ERR966160,met1_3_RNAseq_Rep2_ERR966161,met1_3_RNAseq_Rep3_ERR966162' 'RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610' 'WT Rep1,WT Rep2,WT Rep3,met1 Rep1,met1 Rep2,met1 Rep3' 'springgreen2,forestgreen,darkgreen,magenta,purple,purple4'   
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -40,7 +40,7 @@
 #                             split = ","))
 #ChIPNamesDir <- unlist(strsplit("RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610,RNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_RNAseq_STAR_t2t-col.20210610",
 #                                split = ","))
-#ChIPNamesPlot <- unlist(strsplit("wt Rep1,wt Rep2,wt Rep3,met1 Rep1,met1 Rep2,met1 Rep3",
+#ChIPNamesPlot <- unlist(strsplit("WT Rep1,WT Rep2,WT Rep3,met1 Rep1,met1 Rep2,met1 Rep3",
 #                                 split = ","))
 #ChIPColours <- unlist(strsplit("springgreen2,forestgreen,darkgreen,magenta,purple,purple4",
 #                               split = ","))

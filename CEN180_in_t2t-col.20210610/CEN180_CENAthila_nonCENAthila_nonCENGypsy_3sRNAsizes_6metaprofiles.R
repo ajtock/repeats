@@ -9,7 +9,7 @@
 # for all CEN180 sequences and randomly positioned loci
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENAthila_nonCENAthila_nonCENGypsy_3sRNAsizes_6metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96' 'Col_0_sRNA_ERR966148,met1_3_sRNA_ERR966149' 'sRNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_sRNAseq_t2t-col.20210610,sRNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_sRNAseq_t2t-col.20210610' 'wt,met1' 'springgreen2,magenta,forestgreen,purple,darkgreen,purple4' '21,22,24'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENAthila_nonCENAthila_nonCENGypsy_3sRNAsizes_6metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' both 180 2000 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96' 'Col_0_sRNA_ERR966148,met1_3_sRNA_ERR966149' 'sRNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_sRNAseq_t2t-col.20210610,sRNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_sRNAseq_t2t-col.20210610' 'WT,met1' 'springgreen2,magenta,forestgreen,purple,darkgreen,purple4' '21,22,24'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -40,7 +40,7 @@
 #                             split = ","))
 #ChIPNamesDir <- unlist(strsplit("sRNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_sRNAseq_t2t-col.20210610,sRNAseq_leaf_Rigal_Mathieu_2016_PNAS/snakemake_sRNAseq_t2t-col.20210610",
 #                                split = ","))
-#ChIPNamesPlot <- unlist(strsplit("wt,met1",
+#ChIPNamesPlot <- unlist(strsplit("WT,met1",
 #                                 split = ","))
 #ChIPColours <- unlist(strsplit("springgreen2,magenta,forestgreen,purple,darkgreen,purple4",
 #                               split = ","))

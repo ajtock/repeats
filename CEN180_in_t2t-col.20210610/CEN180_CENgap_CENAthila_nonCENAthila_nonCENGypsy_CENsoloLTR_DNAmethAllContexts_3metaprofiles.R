@@ -10,7 +10,7 @@
 
 # Usage:
 
-# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_DNAmethAllContexts_3metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 2000 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96' 'Col_0_deepsignalDNAmeth_30kb_90pc_MappedOn_t2t-col.20210610_CpG,Col_0_deepsignalDNAmeth_30kb_90pc_MappedOn_t2t-col.20210610_CHG,Col_0_deepsignalDNAmeth_30kb_90pc_MappedOn_t2t-col.20210610_CHH' 'nanopore/t2t-col.20210610/deepsignal_DNAmeth,nanopore/t2t-col.20210610/deepsignal_DNAmeth,nanopore/t2t-col.20210610/deepsignal_DNAmeth' 'mCG (DeepSignal),mCHG (DeepSignal),mCHH (DeepSignal)' 'dodgerblue4,dodgerblue1,cyan2'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_DNAmethAllContexts_3metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 180 2000 2000 2000 2kb 10 10 10bp 10bp '0.02,0.96' 'WT_deepsignalDNAmeth_95_30kb_MappedOn_T2T_Col_CpG,WT_deepsignalDNAmeth_95_30kb_MappedOn_T2T_Col_CHG,WT_deepsignalDNAmeth_95_30kb_MappedOn_T2T_Col_CHH' 'nanopore/T2T_Col/deepsignal_DNAmeth,nanopore/T2T_Col/deepsignal_DNAmeth,nanopore/T2T_Col/deepsignal_DNAmeth' 'mCG (DeepSignal),mCHG (DeepSignal),mCHH (DeepSignal)' 'dodgerblue4,dodgerblue1,cyan2'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
@@ -36,9 +36,9 @@
 ## bottom left
 #legendPos <- as.numeric(unlist(strsplit("0.02,0.40",
 #                                        split = ",")))
-#ChIPNames <- unlist(strsplit("Col_0_deepsignalDNAmeth_30kb_90pc_MappedOn_t2t-col.20210610_CpG,Col_0_deepsignalDNAmeth_30kb_90pc_MappedOn_t2t-col.20210610_CHG,Col_0_deepsignalDNAmeth_30kb_90pc_MappedOn_t2t-col.20210610_CHH",
+#ChIPNames <- unlist(strsplit("WT_deepsignalDNAmeth_95_30kb_MappedOn_T2T_Col_CpG,WT_deepsignalDNAmeth_95_30kb_MappedOn_T2T_Col_CHG,WT_deepsignalDNAmeth_95_30kb_MappedOn_T2T_Col_CHH",
 #                             split = ","))
-#ChIPNamesDir <- unlist(strsplit("nanopore/t2t-col.20210610/deepsignal_DNAmeth,nanopore/t2t-col.20210610/deepsignal_DNAmeth,nanopore/t2t-col.20210610/deepsignal_DNAmeth",
+#ChIPNamesDir <- unlist(strsplit("nanopore/T2T_Col/deepsignal_DNAmeth,nanopore/T2T_Col/deepsignal_DNAmeth,nanopore/T2T_Col/deepsignal_DNAmeth",
 #                                split = ","))
 #ChIPNamesPlot <- unlist(strsplit("mCG (DeepSignal),mCHG (DeepSignal),mCHH (DeepSignal)",
 #                                 split = ","))
@@ -835,9 +835,9 @@ ggObjGA_combined <- grid.arrange(grobs = list(
                                                       ))
 ggsave(paste0(plotDir,
               "DNAmethAllContexts_",
-              gsub("_MappedOn_t2t-col.20210610_.+", "", ChIPNames)[1], "_",
+              gsub("_MappedOn_T2T_Col_.+", "", ChIPNames)[1], "_",
               "_avgProfiles_around",
-              "_CEN180_ranLoc_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_in_t2t-col.20210610_",
+              "_CEN180_ranLoc_CENgap_CENAthila_nonCENAthila_nonCENGypsy_CENsoloLTR_in_T2T_Col_",
               paste0(chrName, collapse = "_"), ".pdf"),
        plot = ggObjGA_combined,
        height = 6.5, width = 7*7, limitsize = FALSE)
