@@ -88,7 +88,7 @@ system(paste0("[ -d ", plotDir, " ] || mkdir -p ", plotDir))
 if(length(chrName) == 5) {
   featureNamePlot <- "All CEN180"
   ranLocNamePlot <- "All ranLoc"
-  gapNamePlot <- "All CENgap"
+  gapNamePlot <- "All CENgapAllAthila"
   AthilaNamePlot <- "All CENAthila"
   nonCENAthilaNamePlot <- "All nonCENAthila"
   TEsfNamePlot <- "All nonCENGypsy"
@@ -96,7 +96,7 @@ if(length(chrName) == 5) {
 } else {
   featureNamePlot <- paste0(paste0(chrName, collapse = ","), " CEN180")
   ranLocNamePlot <- paste0(paste0(chrName, collapse = ","), " ranLoc")
-  gapNamePlot <- paste0(paste0(chrName, collapse = ","), " CENgap")
+  gapNamePlot <- paste0(paste0(chrName, collapse = ","), " CENgapAllAthila")
   AthilaNamePlot <- paste0(paste0(chrName, collapse = ","), " CENAthila")
   nonCENAthilaNamePlot <- paste0(paste0(chrName, collapse = ","), " nonCENAthila")
   TEsfNamePlot <- paste0(paste0(chrName, collapse = ","), " nonCENGypsy")
@@ -172,7 +172,7 @@ ChIP_gapMats <- mclapply(seq_along(ChIPNames), function(x) {
   lapply(seq_along(chrName), function(y) {
     as.matrix(read.table(paste0(ChIPDirs[x], "CENAthilaProfiles/matrices/",
                                 ChIPNames[x],
-                                "_CENgap_in_",
+                                "_CENgapAllAthila_in_",
                                 chrName[y], "_matrix_bin", binSize, "bp_flank", flankName, ".tab"),
                          header = F, skip = 3))
   })
