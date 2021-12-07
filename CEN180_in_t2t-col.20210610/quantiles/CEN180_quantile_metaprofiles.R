@@ -211,7 +211,7 @@ log2ChIPNamesPlot <- c(
                        "met1 CENH3 (2×150 bp)",
                        "Col CENH3 (2×250 bp)",
                        "met1 CENH3 (2×250 bp)",
-                       "cmt23 CENH3 (2×250 bp)",
+                       "cmt2 cmt3 CENH3 (2×250 bp)",
                        "ddc CENH3 (2×250 bp)",
                        "kss CENH3 (2×250 bp)"
 #                       "H3K9me2",
@@ -274,7 +274,7 @@ controlNamesPlot <- c(
                       "Col input (2×150 bp)",
                       "met1 input (2×150 bp)",
                       "Col input (2×250 bp)",
-                      "cmt23 input (2×250 bp)",
+                      "cmt2 cmt3 input (2×250 bp)",
                       "ddc input (2×250 bp)",
                       "kss input (2×250 bp)"
 #                      "Input (sonic.)",
