@@ -74,7 +74,7 @@ if(grepl("_in_", orderingFactor)) {
 } else if(orderingFactor == "array_size") {
   featureNamePlot <- "Array-size quantiles"
 } else if(orderingFactor == "HORlengthsSum") {
-  featureNamePlot <- "Repetitiveness quantiles"
+  featureNamePlot <- "Repetitive quantiles"
 } else if(orderingFactor == "HORcount") {
   featureNamePlot <- "HORcount quantiles"
 } else if(orderingFactor == "HORavgSize") {
