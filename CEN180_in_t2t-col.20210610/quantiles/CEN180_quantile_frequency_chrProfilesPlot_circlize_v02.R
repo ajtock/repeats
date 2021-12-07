@@ -7,7 +7,7 @@
 # Plot windowed CEN180 frequencies for CEN180 sequences within orderingFactor quantiles
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_quantile_frequency_chrProfilesPlot_circlize_v02.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 4 10000 perchrom 140721
+# /applications/R/R-4.0.0/bin/Rscript CEN180_quantile_frequency_chrProfilesPlot_circlize_v02.R 'Chr1,Chr2,Chr3,Chr4,Chr5' 4 10000 perchrom 220721
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
