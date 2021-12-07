@@ -70,11 +70,11 @@ system(paste0("[ -d ", plotDir, " ] || mkdir -p ", plotDir))
 if(grepl("_in_", orderingFactor)) {
   featureNamePlot <- paste0(sub("_in_\\w+", "", orderingFactor), " quantiles")
 } else if(grepl("SNV", orderingFactor)) {
-  featureNamePlot <- "SNV quantiles"
+  featureNamePlot <- "Variant quantiles"
 } else if(orderingFactor == "array_size") {
   featureNamePlot <- "Array-size quantiles"
 } else if(orderingFactor == "HORlengthsSum") {
-  featureNamePlot <- "Activity quantiles"
+  featureNamePlot <- "Repetitiveness quantiles"
 } else if(orderingFactor == "HORcount") {
   featureNamePlot <- "HORcount quantiles"
 } else if(orderingFactor == "HORavgSize") {
