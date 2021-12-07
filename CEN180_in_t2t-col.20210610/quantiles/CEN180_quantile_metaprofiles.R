@@ -10,7 +10,7 @@
 # decreasing orderingFactor or randomly
 
 # Usage:
-# /applications/R/R-4.0.0/bin/Rscript CEN180_quantile_metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 both 180 2000 2kb 10 '0.02,0.30'
+# /applications/R/R-4.0.0/bin/Rscript CEN180_quantile_metaprofiles.R 'Chr1,Chr2,Chr3,Chr4,Chr5' wSNV 4 both 180 2000 2kb 10 '0.02,0.96'
 
 #chrName <- unlist(strsplit("Chr1,Chr2,Chr3,Chr4,Chr5",
 #                           split = ","))
