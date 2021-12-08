@@ -171,7 +171,7 @@ ChIPNames <- c(
                "met1_CENH3_PE150_Rep1_ChIP",
                "Col_CENH3_PE250_Rep1_ChIP",
                "met1_CENH3_PE250_Rep1_ChIP",
-               "cmt23_CENH3_PE250_Rep1_ChIP",
+               "cmt2_cmt3_CENH3_PE250_Rep1_ChIP",
                "ddc_CENH3_PE250_Rep1_ChIP",
                "kss_CENH3_PE250_Rep1_ChIP"
 #               "WT_H3K9me2_Rep1_ChIP",
@@ -245,7 +245,7 @@ controlNames <- c(
                   "Col_CENH3_PE150_Rep1_input",
                   "met1_CENH3_PE150_Rep1_input",
                   "Col_CENH3_PE250_Rep1_input",
-                  "cmt23_CENH3_PE250_Rep1_input",
+                  "cmt2_cmt3_CENH3_PE250_Rep1_input",
                   "ddc_CENH3_PE250_Rep1_input",
                   "kss_CENH3_PE250_Rep1_input"
 #                  "WT_REC8_Myc_Rep1_input",
@@ -418,7 +418,7 @@ log2ChIP_featureMats <- mclapply(seq_along(ChIP_featureMats), function(x) {
   } else if ( ChIPNames[x] %in% c("Col_CENH3_PE250_Rep1_ChIP", "met1_CENH3_PE250_Rep1_ChIP") ) {
     print(paste0(ChIPNames[x], " library; using ", controlNames[4], " for log2((ChIP+1)/(input+1)) calculation"))
     log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[4]]+1))
-  } else if ( ChIPNames[x] %in% c("cmt23_CENH3_PE250_Rep1_ChIP") ) {
+  } else if ( ChIPNames[x] %in% c("cmt2_cmt3_CENH3_PE250_Rep1_ChIP") ) {
     print(paste0(ChIPNames[x], " library; using ", controlNames[5], " for log2((ChIP+1)/(input+1)) calculation"))
     log2((ChIP_featureMats[[x]]+1)/(control_featureMats[[5]]+1))
   } else if ( ChIPNames[x] %in% c("ddc_CENH3_PE250_Rep1_ChIP") ) {
@@ -456,7 +456,7 @@ log2ChIP_ranLocMats <- mclapply(seq_along(ChIP_ranLocMats), function(x) {
   } else if ( ChIPNames[x] %in% c("Col_CENH3_PE250_Rep1_ChIP", "met1_CENH3_PE250_Rep1_ChIP") ) {
     print(paste0(ChIPNames[x], " library; using ", controlNames[4], " for log2((ChIP+1)/(input+1)) calculation"))
     log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[4]]+1))
-  } else if ( ChIPNames[x] %in% c("cmt23_CENH3_PE250_Rep1_ChIP") ) {
+  } else if ( ChIPNames[x] %in% c("cmt2_cmt3_CENH3_PE250_Rep1_ChIP") ) {
     print(paste0(ChIPNames[x], " library; using ", controlNames[5], " for log2((ChIP+1)/(input+1)) calculation"))
     log2((ChIP_ranLocMats[[x]]+1)/(control_ranLocMats[[5]]+1))
   } else if ( ChIPNames[x] %in% c("ddc_CENH3_PE250_Rep1_ChIP") ) {
