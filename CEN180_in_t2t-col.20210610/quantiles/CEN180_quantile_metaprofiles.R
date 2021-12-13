@@ -166,7 +166,7 @@ lapply(seq_along(1:quantiles), function(k) {
 # and sort by decreasing log2mat1RegionRowMeans
 # Load feature matrices for CENH3 and input, calculate log2(ChIP/control) coverage
 ChIPNames <- c(
-               "log2_WT_CENH3_Rep1_ChIP_SRR4430537_WT_CENH3_Rep1_input_SRR4430555",
+#               "log2_WT_CENH3_Rep1_ChIP_SRR4430537_WT_CENH3_Rep1_input_SRR4430555",
                "WT_CENH3_Rep1_ChIP_SRR4430537",
                "Col_CENH3_PE150_Rep1_ChIP",
                "met1_CENH3_PE150_Rep1_ChIP",
@@ -192,7 +192,7 @@ ChIPNames <- c(
 #               "WT_SPO11oligos_Rep1"
               )
 ChIPNamesDir <- c(
-                  "CENH3_seedlings_Maheshwari_Comai_2017_GenomeRes/snakemake_ChIPseq_t2t-col.20210610",
+#                  "CENH3_seedlings_Maheshwari_Comai_2017_GenomeRes/snakemake_ChIPseq_t2t-col.20210610",
                   "CENH3_seedlings_Maheshwari_Comai_2017_GenomeRes/snakemake_ChIPseq_t2t-col.20210610",
                   rep("CENH3_PE150_mn359_20210818/snakemake_ChIPseq_t2t-col.20210610", 2),
                   rep("CENH3_PE250_mn359_20210908/snakemake_ChIPseq_t2t-col.20210610", 5)
@@ -208,7 +208,7 @@ ChIPNamesDir <- c(
 #                  "160518_Kyuha_SPO11oligos/WT/snakemake_SPO11oligos_t2t-col.20210610"
                  )
 log2ChIPNamesPlot <- c(
-                       "Col CENH3 (2×100 bp) bwC",
+#                       "Col CENH3 (2×100 bp) bwC",
                        "Col CENH3 (2×100 bp)",
                        "Col CENH3 (2×150 bp)",
                        "met1 CENH3 (2×150 bp)",
@@ -836,7 +836,7 @@ ggsave(paste0(plotDir,
               "log2ChIPcontrol_avgProfiles_around_", quantiles, "quantiles",
                "_by_", orderingFactor,
                "_of_CEN180_in_t2t-col.20210610_",
-               paste0(chrName, collapse = "_"), "_", align, "_incl_bigwigCompare.pdf"),
+               paste0(chrName, collapse = "_"), "_", align, ".pdf"),
        plot = ggObjGA_combined,
        height = 6.5*length(c(log2ChIPNamesPlot)), width = 21, limitsize = FALSE)
 
